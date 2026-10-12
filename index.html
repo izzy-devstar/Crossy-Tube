@@ -1,0 +1,3580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Crossy Rd²</title>
+<meta name="description" content="Crossy Road in a tube. Hop, dodge, and climb the leaderboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; background: #000;
+    font-family: "Arial Black", "Segoe UI", system-ui, sans-serif;
+    user-select: none; -webkit-user-select: none; touch-action: none;
+  }
+  canvas { display: block; }
+  /* the game always shows a 16:9 picture, the same view in any window; spare space becomes dark bars.
+     The transform makes the HUD (position: fixed) sit inside this box instead of the whole window. */
+  #game { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; overflow: hidden; transform: translateZ(0); background: #000; }
+  #game canvas { position: absolute; left: 0; top: 0; }
+  .hud {
+    position: fixed; top: calc(14px + env(safe-area-inset-top, 0px)); color: #fff; pointer-events: none; font-weight: 900;
+    text-shadow: 0 4px 0 #000, 3px 0 0 #000, -3px 0 0 #000, 0 -3px 0 #000;
+  }
+  #score { left: 24px; font-size: 64px; line-height: 1; }
+  #best  { left: 26px; top: calc(86px + env(safe-area-inset-top, 0px)); font-size: 18px; }
+  #coins { right: 26px; font-size: 40px; color: #ffd23f; }
+  #center {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: #fff; text-align: center;
+    pointer-events: none; text-shadow: 0 4px 0 #000, 3px 0 0 #000, -3px 0 0 #000;
+  }
+  #center.dim { background: rgba(0, 0, 0, .35); }
+  #center h1 { font-size: 68px; margin: 0 0 14px; letter-spacing: 2px; }
+  /* blocky 3D start title: white face, extruded sides built from stacked shadows */
+  #center h1.logo {
+    font-family: "Luckiest Guy", "Arial Black", sans-serif;
+    font-size: clamp(56px, 11vw, 132px); letter-spacing: 3px; line-height: 1;
+    color: #fff; -webkit-text-stroke: 3px #1b1b26;
+    text-shadow: 0 3px 0 #c9d4e3, 0 6px 0 #aab8cc, 0 9px 0 #8b9bb2, 0 12px 0 #6c7d97,
+                 0 15px 0 #4e5f7b, 0 18px 0 #33415c, 0 24px 22px rgba(0, 0, 0, .55);
+  }
+  #center h1 .sq { color: #ffd23f; }
+  #center p:empty { display: none; }
+  /* lap counter and bonus pop-ups */
+  .pop {
+    font-family: "Luckiest Guy", "Arial Black", sans-serif;
+    position: fixed; left: 0; right: 0; text-align: center; color: #fff; pointer-events: none;
+    -webkit-text-stroke: 2px #1b1b26; opacity: 0; transition: opacity .15s, transform .15s;
+    text-shadow: 0 3px 0 #6c7d97, 0 6px 0 #33415c, 0 9px 10px rgba(0, 0, 0, .5);
+  }
+  .pop.show { opacity: 1; transform: scale(1.08); }
+  #lap { top: calc(16px + env(safe-area-inset-top, 0px)); font-size: 44px; }
+  #bonus { top: 24%; font-size: 52px; color: #ffd23f; }
+  #center p  { font-size: 22px; margin: 6px; }
+  /* points at the ghost while he's off screen */
+  #ghostPtr { position: fixed; left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+              pointer-events: none; display: none; }
+  #ghostPtr .arrow { position: absolute; inset: 0; }
+  #ghostPtr .arrow::after {
+    content: ''; position: absolute; right: -4px; top: 50%; margin-top: -11px;
+    border-left: 18px solid #fff; border-top: 11px solid transparent; border-bottom: 11px solid transparent;
+    filter: drop-shadow(0 0 2px #1b1b26) drop-shadow(0 0 1px #1b1b26);
+  }
+  /* test mode */
+  #testBtn {
+    position: fixed; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: none;
+    font: 20px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #fff; cursor: pointer;
+    background: #33415c; border: 3px solid #1b1b26; border-radius: 10px; padding: 10px 16px 7px;
+    box-shadow: 0 5px 0 #1b1b26; z-index: 5;
+  }
+  #muteBtn {
+    position: fixed; right: 22px; top: calc(70px + env(safe-area-inset-top, 0px)); z-index: 5; cursor: pointer;
+    font-size: 22px; line-height: 1; color: #fff; background: #33415c; border: 3px solid #1b1b26; border-radius: 10px;
+    padding: 8px 10px; box-shadow: 0 5px 0 #1b1b26;
+  }
+  #muteBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #1b1b26; }
+  #muteBtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  #testBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #1b1b26; }
+  #testTag {
+    position: fixed; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: none;
+    font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #1b1b26; pointer-events: none;
+    background: #ffd23f; border: 3px solid #1b1b26; border-radius: 8px; padding: 6px 12px 3px;
+  }
+  #testPanel {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(10, 14, 24, .55); z-index: 10;
+  }
+  #testPanel.open { display: flex; }
+  #testPanel .card {
+    width: min(760px, 94%); max-height: calc(100% - 24px); overflow-y: auto; box-sizing: border-box; padding: 16px 20px 14px;
+    background: #222a3d; color: #e9edf5; border: 4px solid #1b1b26; border-radius: 16px; box-shadow: 0 10px 0 #1b1b26;
+    font: 15px/1.45 "Segoe UI", system-ui, sans-serif;
+  }
+  #testPanel h2 { font: 30px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 0 0 4px; color: #fff; }
+  #testPanel h3 { font: 17px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 12px 0 6px; color: #ffd23f; }
+  #testPanel .note { margin: 0; color: #b9c2d6; font-size: 13px; line-height: 1.35; }
+  #testPanel .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+  #testPanel .pair { display: flex; gap: 0 28px; flex-wrap: wrap; }
+  #testPanel button {
+    font: 600 14px "Segoe UI", system-ui, sans-serif; color: #fff; cursor: pointer;
+    background: #33415c; border: 2px solid #1b1b26; border-radius: 9px; padding: 6px 10px;
+  }
+  #testPanel button[aria-pressed="true"] { background: #ffd23f; color: #1b1b26; }
+  #testPanel button:focus-visible, #testBtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  #testPanel .actions { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
+  #testPanel #testStart { font: 22px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px;
+                          background: #3fbf5a; padding: 8px 18px 5px; box-shadow: 0 4px 0 #1b1b26; }
+  #testPanel #testExit { margin-left: auto; background: transparent; color: #b9c2d6; }
+  /* leaderboard */
+  .lbcard {
+    box-sizing: border-box; background: #222a3d; color: #e9edf5; border: 4px solid #1b1b26; border-radius: 16px;
+    box-shadow: 0 10px 0 #1b1b26; font: 15px/1.35 "Segoe UI", system-ui, sans-serif; text-shadow: none; text-align: left;
+  }
+  .lbcard h3 { font: 18px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 0 0 8px; color: #ffd23f; }
+  .lbcard button {
+    font: 600 14px "Segoe UI", system-ui, sans-serif; color: #fff; cursor: pointer;
+    background: #33415c; border: 2px solid #1b1b26; border-radius: 9px; padding: 6px 10px;
+  }
+  .lbcard button[aria-pressed="true"] { background: #ffd23f; color: #1b1b26; }
+  .lbcard button:focus-visible, .lbcard input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .lbcard ol { list-style: none; margin: 0; padding: 0; }
+  .lbcard li { display: flex; align-items: baseline; gap: 8px; padding: 3px 8px; border-radius: 8px; }
+  .lbcard li.me { background: #ffd23f; color: #1b1b26; }
+  .lbcard li .rk { width: 26px; font: 16px "Luckiest Guy", "Arial Black", sans-serif; color: #ffd23f; }
+  .lbcard li.me .rk { color: #1b1b26; }
+  .lbcard li .nm { flex: 1; font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; }
+  .lbcard li .sc { font: 18px "Luckiest Guy", "Arial Black", sans-serif; min-width: 2.2em; text-align: right; }
+  .lbcard li .sp { font-size: 12px; opacity: .7; text-align: right; white-space: nowrap; }
+  #lbMini li .sp { display: none; }
+  .lbcard li .del { width: 22px; padding: 0; font-size: 12px; background: transparent; border-color: #5a6680; }
+  .lbcard li .del.sure { width: auto; padding: 0 6px; background: #d9443f; border-color: #d9443f; color: #fff; }
+  .lbcard li .delGap { width: 22px; flex: none; }
+  .lbcard li.hd { padding-top: 0; padding-bottom: 0; }
+  .lbcard li.hd span { font: 11px sans-serif; color: #b9c2d6; opacity: 1; }
+  #lbMini li.hd { display: none; }
+  .lbcard .muted { color: #b9c2d6; font-size: 13px; }
+  #lbMini { position: absolute; right: 18px; bottom: 18px; width: 230px; padding: 12px 12px 10px; display: none; z-index: 5; }
+  #lbMini .row2 { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
+  #board { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 9; pointer-events: none; }
+  #board.modal { display: flex; background: rgba(10, 14, 24, .55); pointer-events: auto; }
+  #board.side { display: flex; justify-content: flex-end; align-items: flex-start; padding: 126px 3% 12px 0; box-sizing: border-box; }   /* starts below the mute button */
+  #boardCard { width: min(380px, 40%); max-height: 100%; box-sizing: border-box; overflow-y: auto; padding: 16px 16px 12px; pointer-events: auto; }
+  #board.modal #boardCard { width: min(420px, 92%); max-height: 92%; }
+  #boardCard .tabs { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+  #boardCard .tabs .x { margin-left: auto; background: transparent; color: #b9c2d6; }
+  #lbPlace { font: 20px/1.15 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #fff; margin: 0 0 10px; }
+  #lbPlace .y { color: #ffd23f; }
+  #lbName { margin: 0 0 12px; padding: 10px; border-radius: 10px; background: #2c3650; }
+  #lbName input {
+    width: 6.2em; font: 22px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 2px; text-transform: uppercase;
+    background: #1b1b26; color: #ffd23f; border: 2px solid #5a6680; border-radius: 8px; padding: 5px 8px 2px; margin-right: 6px;
+  }
+  #lbName label { display: inline-flex; flex-direction: column; font-size: 12px; color: #b9c2d6; margin-right: 6px; }
+  #lbName input.pin { width: 3.2em; }
+  #lbName { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 2px; }
+  #lbName h3, #lbName p { flex-basis: 100%; }
+  #lbName .go { font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; background: #3fbf5a; padding: 7px 14px 4px; }
+  #lbFoot { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #center.withBoard { padding-right: 44%; box-sizing: border-box; }
+  #ghostPtr svg { position: absolute; left: 14px; top: 12px; width: 36px; height: 40px;
+                  filter: drop-shadow(0 3px 0 #1b1b26); }
+</style>
+</head>
+<body>
+<div id="game">
+<div id="score" class="hud">0</div>
+<div id="best" class="hud"></div>
+<div id="coins" class="hud">0</div>
+<div id="lap" class="pop"></div>
+<div id="bonus" class="pop"></div>
+<button id="testBtn" type="button">Test mode</button>
+<button id="muteBtn" type="button" aria-label="Sound on or off (M)" title="Sound (M)"></button>
+<div id="testTag"></div>
+<div id="testPanel" role="dialog" aria-label="Test mode">
+  <div class="card">
+    <h2>Test mode</h2>
+    <p class="note">The obstacle you pick comes first, then about every third obstacle after that, always the difficult version. Nothing else is difficult. Test scores don't count toward your best and never go on the leaderboard.</p>
+    <h3>Obstacle</h3>
+    <div class="opts" data-group="only">
+      <button type="button" data-v="park">Graveyard + ghost</button>
+      <button type="button" data-v="rail">Red train</button>
+      <button type="button" data-v="road">Conveyor road</button>
+      <button type="button" data-v="jam">Gridlock</button>
+      <button type="button" data-v="crumble">Boulder field</button>
+      <button type="button" data-v="river">Cracked logs</button>
+      <button type="button" data-v="sink">Sinking logs</button>
+      <button type="button" data-v="roller">Steamroller</button>
+      <button type="button" data-v="dark">Darkness</button>
+      <button type="button" data-v="">Nothing difficult</button>
+    </div>
+    <div class="pair"><div>
+    <h3>Speed</h3>
+    <div class="opts" data-group="speed">
+      <button type="button" data-v="0">Grows with distance</button>
+      <button type="button" data-v="200">1.3x</button>
+      <button type="button" data-v="1000">1.8x (max)</button>
+    </div>
+    </div><div>
+    <h3>Getting hit</h3>
+    <div class="opts" data-group="god">
+      <button type="button" data-v="0">Game over</button>
+      <button type="button" data-v="1">Keep going, show the hit</button>
+    </div>
+    </div></div>
+    <div class="actions">
+      <button type="button" id="testStart">Start test</button>
+      <button type="button" id="testExit">Exit test mode</button>
+    </div>
+  </div>
+</div>
+<div id="lbMini" class="lbcard"></div>
+<div id="board"><div id="boardCard" class="lbcard" role="dialog" aria-label="Leaderboard"></div></div>
+<div id="ghostPtr"><div class="arrow"></div><svg viewBox="0 0 36 40"><path d="M3 38V17a15 15 0 0 1 30 0v21l-5-4-5 4-5-4-5 4-5-4z" fill="#f4f6ff" stroke="#1b1b26" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="13" width="5" height="8" fill="#1b1b26"/><rect x="21" y="13" width="5" height="8" fill="#1b1b26"/></svg></div>
+<div id="center"><h1 id="title" class="logo">CROSSY RD<span class="sq">²</span></h1><p id="sub"></p><p id="sub2"></p></div>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+// =====================================================================
+// Crossy Road inside a square tube. Every lane is a ring around all four
+// inner faces. Walking off the side of a face carries you onto the next
+// face, and the camera rolls 90 degrees so that face becomes the floor
+// (Run 3 style), while keeping Crossy's high third-person view.
+// =====================================================================
+
+// ---------------- tuning ----------------
+const W = 11;                    // tiles per face
+const P = W * 4;                 // tiles around the tube
+const H = W / 2;                 // half the tube width (tiles are 1 unit)
+const HOP_TIME = 0.12;           // seconds per hop
+const HOP_HEIGHT = 0.6;
+const LAND_TIME = 0.1;
+// Crumble zone (a difficult obstacle): 20 rows where the ground is grey and cracked. Each cracked tile
+// falls away 2 seconds after you first step on it, whether or not you're still there. Inside the zone
+// there are only cracked ground, roads and rails: no trees, rivers, logs, jams or other hard obstacles.
+// A boulder drops from the far side of the tube to announce it as you approach.
+// Hard crumble zone: boulders fall onto flashing red landing zones near you. Shapes are grid "circles":
+// r = 0 is one tile, r = 1 adds every tile next to it in a straight line (a plus), r = 2 grows it once more
+// (a diamond of 13). Bigger ones warn for longer. A boulder only kills if you're on a marked tile when it
+// lands; it doesn't break the ground. Every landing zone is checked to leave you a way out in time.
+const BOULDERS = {
+  sizes: [
+    { r: 0, warn: 1.0, weight: 0.5,  scale: 0.32 },
+    { r: 1, warn: 1.4, weight: 0.35, scale: 0.62 },
+    { r: 2, warn: 1.9, weight: 0.15, scale: 0.95 }
+  ],
+  interval: [0.9, 1.6],   // seconds between drops
+  maxActive: 2,
+  rowsAhead: [-1, 4],     // where they land relative to you
+  tilesAround: 6,
+  fallTime: 0.55,         // the boulder is visible for the last part of the warning
+  hopTime: 0.18           // assumed time per hop when checking you can escape
+};
+const ZONE = {
+  rows: 20, fromRow: 40, minSpacing: 30,   // the hard variant (falling boulders) comes from the difficulty roll
+  fuse: 2.0,          // seconds from stepping on a tile until it falls
+  warnAhead: 7,       // the boulder drops when the zone is this many rows ahead of you
+  rockFall: 1.1       // seconds for the boulder to fall
+};
+// Spacing, so there aren't too many different things on screen at once:
+//   grassAfter: rows of grass after every hazard block (was 1-2)
+//   repeat: chance a road, river or tracks block is followed by the same kind again instead of something new
+const SPACING = { grassAfter: [2, 3], repeat: 0.45 };
+const AHEAD = 26, BEHIND = 12;   // rows kept around the player
+const START_SAFE = 5;            // rows 0..4 have no traffic
+
+// ---------------- difficulty ----------------
+// Driven by distance (rows travelled). Up to row 100 it is calm: speeds rise from 0.85x to 1x and no
+// difficult obstacles appear. After that one progress value k = 1 - e^(-(row-100)/200) drives both:
+//   speed multiplier   1 + 0.8k   (1.31x at 200, 1.51x at 300, 1.69x at 500, max 1.8x)
+//   difficult share    0.6k       (24% at 200, 38% at 300, 52% at 500, max 60%)
+// Each lane's speed is set from its own row when it is built, so nothing changes speed mid-lane.
+const DIFF = { start: 100, scale: 200, calmSpeed: 0.85, maxSpeedUp: 0.8, minHardShare: 0.05, maxHardShare: 0.6 };
+// Test mode: `only` is the obstacle family being tested (it comes first, then about every third pick, always
+// difficult; nothing else is difficult). speedRow fixes the speed to at least that row's. god: hits don't end
+// the run, they show a label instead.
+const test = { on: false, only: 'park', speedRow: 0, god: false, first: false, hitT: {} };
+const TEST_NAMES = { park: 'Graveyard + ghost', rail: 'Red train', road: 'Conveyor road', jam: 'Gridlock', crumble: 'Boulder field',
+                     river: 'Cracked logs', sink: 'Sinking logs', roller: 'Steamroller (1 face, then 2)', dark: 'Darkness (dusk, then dark)', '': 'Nothing difficult' };
+const testFam = () => test.only === 'sink' ? 'river' : test.only === 'roller' || test.only === 'dark' ? '' : test.only;   // the obstacle family a test choice belongs to
+function progressAt(v) { return v <= DIFF.start ? 0 : 1 - Math.exp(-(v - DIFF.start) / DIFF.scale); }
+function speedMul(v) {
+  if (test.on && test.speedRow) v = Math.max(v, test.speedRow);
+  if (v <= DIFF.start) return DIFF.calmSpeed + (1 - DIFF.calmSpeed) * Math.max(0, v) / DIFF.start;
+  return 1 + DIFF.maxSpeedUp * progressAt(v);
+}
+// the graveyard and its ghost chase: from the graveyard's first row to 40 rows past its end
+const inCalm = v => v >= gen.calmFrom && v <= gen.calmTo;
+function hardShare(v) {
+  if (test.on) return 0;                                  // test mode: only the tested obstacle is difficult
+  // 5% from the start; after row 100 it climbs toward 60%
+  return DIFF.minHardShare + (DIFF.maxHardShare - DIFF.minHardShare) * progressAt(v);
+}
+
+// Obstacle families. Each pick chooses a family by weight, then rolls hardShare to decide whether it is
+// the normal or the difficult variant, so the total amount of obstacles stays the same.
+const FAMILY = { road: 34, river: 20, rail: 14, park: 8, jam: 8, crumble: 5 };
+const PARK = { rows: [6, 12], coins: [4, 8], treeChance: 0.05 };
+const BONUS = { lap: 20, lapRows: 10, log: 1, dark: 8,  /* lapRows: rows to climb on EACH face */ jam: 5, crumble: 5, rail: 4, grave: 8, ghost: 5, belt: 3, roller: 5 };   // lap bonus, rows a lap must climb, and difficult-obstacle bonuses
+const MIN_V = -2;                // how far back you can walk
+const LOG_TOP = 0.14;            // standing height on a log
+// Logs: each river row has its own speed, clearly different from the river row before it.
+// LOG.lenience: a hop that would just miss a log's end (by up to this much) lands on that end instead.
+const LOG = { speed: [0.8, 2.6], minDiff: 0.5, lenience: 0.2 };
+// River sections run 1 to 12 rows; each extra row is less likely (decay per row).
+const RIVER = { maxRows: 12, decay: 0.72 };
+// Cracked logs (the difficult river variant): each log rolls the difficult share. A cracked log usually has
+// one crack; each extra crack is rarer. Every log keeps at least one safe spot. Land on a crack: you fall in.
+const CRACK = { extraChance: 0.15, gash: 0x24140a, splinter: 0xe8c08a };
+// Sinking logs (the other difficult log): half of difficult logs are cracked, half sink. A sinking log has holes
+// in it. Land on it and it starts going down: 1.5 s later it's under and anyone still on it sinks with it.
+// It stays under for 2.5 s, then floats back up. (Tested: with good timing, 98% of next hops line up within
+// 1.5 s, and you can always hop back a row.)
+const SINK = { time: 1.5, under: 2.5, rise: 0.6, hole: 0x1c120a, rim: 0x6e4527 };
+// Lily pads: about 1 in 4 river rows is a row of stationary pads (never two pad rows in a row),
+// with at least 2 pads on every face. Miss a pad and you're in the water.
+const LILY = { chance: 0.25, density: 0.28, perFace: 2 };
+// Red train (the difficult rail variant): each rail row rolls the difficult share. Its lights flash much
+// faster for a shorter warning, then a red train nearly as long as the ring goes round 3 times, covering
+// almost the whole row for 2.5 s (fixed, not scaled by difficulty).
+// Conveyor road (the difficult road variant): each road lane rolls the difficult share on its own. A conveyor
+// lane drags you sideways, against its traffic, at 1.5 tiles/s x the speed multiplier while you stand on it, so
+// waiting carries you toward the oncoming cars. Riding it doesn't count as standing still for the hand.
+// Never inside crumble zones or jams. +3 for each conveyor lane you cross.
+const BELT = { speed: 1.5, base: 0x2f3139, rail: 0x9ba2ae, bolt: 0x5c626d, back: [47, 49, 57], chevron: [246, 184, 46] };
+// Steamroller: rolls down the tube toward you over a stretch of at least 12 rows of grass and road (crumble
+// zones and boulder fields included; tracks and any river end a stretch). When it reaches water it rolls a
+// little way in and sinks, and it never breaks logs or lily pads, so a river is always still crossable. It starts
+// on land at the far end and covers the face you're on: two rollers 4 tiles wide with a gap at each edge and
+// in the middle, and the rubble it kicks up kills you in the gaps too, so the whole face is deadly as it
+// passes. Get onto another face. Difficult version: your face and one next to it (+5 when it passes you).
+// It moves at 2 rows/s x the speed multiplier, crushes cars, trees, headstones, skeletons and boulders in its
+// way. Crumbling ground in its faces breaks away and falls, leaving holes.
+// Rivers of 1 or 2 rows it drives straight across. At a river of 3 or more rows it rolls in and sinks over
+// 1.2 s. Either way it takes the logs and lily pads in its faces with it (never the last ones on a row, so the
+// river can still be crossed). At tracks it just stops and sinks away.
+// 20% chance on each new row you reach while there's a long enough stretch ahead, at least 25 rows apart,
+// from row 20. Whether it's difficult uses the usual difficult share.
+const ROLLER = { minRun: 12, maxAhead: 20, speed: 2, chance: 0.2, cooldown: 25, fromRow: 20,
+                 front: 0.5, back: 1.6, body: 0xf2b632, bodyDark: 0xc98d1c, drum: 0x8c929c, drumDark: 0x5d626c,
+                 dark: 0x23252c, glass: 0x9fd4ef, warn: 0xff5a2a, sinkTime: 1.2, maxCross: 0 };
+// Darkness: stretches of 25 rows, roughly every 80 to 140 rows from row 40. The normal version is dusk (you
+// see about 6 tiles); the difficult one is dark (about 3 tiles, +8 when you get through). It sits on top of
+// whatever is there (dusk: you see about 4 tiles; dark: pitch black but for lights and your own tile, with a
+// flash every 2 s that lights up about 7 tiles; rivers are pure memory), but a dark stretch that overlaps a boulder field or a graveyard drops to dusk.
+// Whether it's dark is settled once every row it covers exists (about 2 rows before you reach it).
+// Anything that warns you of danger shows through: car headlights, train and gridlock lights, skeleton eyes,
+// the ghost, steamroller beacons and their path, boulder landing marks.
+const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2,
+  dusk: { see: 4, fog: 0x2c2443, ambient: 0.2, sun: 0.14 },
+  // dark: pitch black except lights and your own tile, with a flash every 2 s that shows about 7 tiles
+  dark: { see: 0.6, fog: 0x000000, ambient: 0.03, sun: 0, flashSee: 7, flashFog: 0x18203a, flashAmbient: 0.42, flashSun: 0.3 },
+  blink: { period: 2, rise: 0.05, hold: 0.3, fade: 0.3 } };
+const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5 };
+// Graveyard (the difficult park): 9 rows of dark grass. Gravestones sit on 15% of tiles and block you like
+// trees; every graveyard is checked to have a way through. Each face has one skeleton per 2 rows. A skeleton
+// on the face you're on, from 1 row behind you to 3 ahead, wakes up: its eyes glow for 0.6 s, then it dashes
+// up to 4 tiles along its row toward you at 10 tiles/s (a gravestone stops it) and rests for 1.5 s.
+// Touching a skeleton kills you. Skeletons on faces you can't see stay still.
+// Stepping into the graveyard wakes the ghost. He appears on the face to your left or right, level with you,
+// and floats straight at you through everything, the short way round the tube, at 3 tiles/s x the speed
+// multiplier (never above 4.5; your hop is about 6.7). Over a river or lily-pad row he moves at 0.75x.
+// Get 40 rows past the end of the graveyard and he gives up.
+// During the chase (GRAVE.calm): no train tracks at all, no second graveyard, and gridlocks only if allowed.
+// Every other difficult obstacle can still appear.
+const GRAVE = {
+  rows: 9, stoneChance: 0.15, coins: [2, 4],
+  skel: { perRows: 2, glow: 0.6, dash: 4, dashSpeed: 10, rest: 1.5, rowsBehind: 1, rowsAhead: 3, reach: 6, hit: 0.62 },
+  // calm: what can't appear during the chase. noRails: no train tracks at all; noGridlock: no difficult jams
+  calm: { noRails: true, noGridlock: true },
+  ghost: { behind: 6, speed: 3, maxSpeed: 4.5, chaseRows: 40, hit: 0.6, height: 0.5, water: 0.75 },
+  grass: [0x6f7c5d, 0x687556], grassAlt: [0x6a7758, 0x637052], stone: [0xa3a8b4, 0x8e94a1, 0x7c8290],
+  engrave: 0x50545e, dirt: 0x5b4733, bone: 0xe6e1d1
+};
+// The hand has two jobs (it replaces Crossy's eagle):
+//   grab: fall CAM.eagleGap rows behind the camera and it pulls you off the screen.
+//   slap: stand still for 6 s divided by the speed multiplier (6 s at row 100, 4 s at row 300) and it comes
+//         down on you. It takes 1.2 s divided by the speed multiplier to arrive; any hop sends it away.
+// The camera's forward creep (CAM.creep) is also multiplied by the speed multiplier.
+const HAND = { idle: 6, approach: 1.2, startHeight: 6.2 };
+const CAM = { aspect: 16 / 9,
+  height: 7.4,     // above the floor you're on
+  back: 7.2,       // behind the camera's row
+  lookAhead: 2.2,  // rows ahead of the camera row it looks at
+  fov: 42,
+  rollTime: 0.2,   // seconds to settle the Run 3 roll
+  followTime: 0.16,
+  creep: 0.3,      // rows per second the camera drifts forward once you start
+  eagleGap: 4      // fall this many rows behind the camera and the hand grabs you off the screen
+};
+
+// Gravity: car speed depends only on height in the tube. Fastest on the floor (the bottom),
+// slowest on the ceiling, changing smoothly up and down the walls. Because speed depends only on
+// position, every car in a lane follows the same timetable and can never catch the one in front.
+const GRAVITY = { floor: 1.4, ceiling: 0.7, carGap: 0.6 };
+// Traffic jams: a lane packed bumper to bumper all the way round, with a few gaps, crawling at a fixed
+// fraction of the lane's normal speed (no gravity). You go round the tube to reach a gap.
+//   normal:    3 gaps, 2 tiles wide, 0.5x.  Fully clear grass before it, sparse grass after it.
+//   difficult: 2 gaps, 2 tiles wide, 0.35x. A car lane on each side runs the opposite way at the same
+//              speed. When the jam is generated, a full lap is simulated to check that every gap becomes
+//              crossable again within maxBlocked seconds; if no arrangement passes, the escort lanes fall
+//              back to moving with the jam, with corridors lined up with the gaps (always crossable).
+const JAM = {
+  normal:    { gaps: 3, gapWidth: 2, speed: 0.5,  fromRow: 12, light: 0xffa21f },
+  difficult: { gaps: 2, gapWidth: 2, speed: 0.35, light: 0xff3030, escortCars: 6,
+               escortOpposite: true,   // the lanes either side run the other way
+               maxBlocked: 2.5,        // no jam gap may stay uncrossable for longer than this (seconds)
+               planTries: 60 },
+  bumper: 0.3,           // min space between jammed cars
+  corridorPad: 0.5       // escort lanes keep this much extra room either side of each gap
+};
+
+const COLORS = {
+  grass: [0xa6df5f, 0x9cd657], grassAlt: [0x9fdb59, 0x95d151],
+  leaf: [0x7cbb3e, 0x6fae35, 0x86c547], trunk: 0x7b5638, rock: 0x9da3ad, rockTop: 0xb7bdc6,
+  road: [0x585b66, 0x51545f], line: 0xe9ebef,
+  water: 0x5cc6ff, waterDeep: 0x48b4f0,
+  log: 0x8f5d36, logTop: 0xa66d40, logEnd: 0xc89462,
+  gravel: [0x7d7c86, 0x75747e], tie: 0x6b4a33, rail: 0xc8ccd4,
+  coin: 0xffd23f, sky: 0x9cd8ff,
+  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, crackHard: 0x6a1010, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a]
+};
+const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 0x2bb3b3];
+
+// ---------------- small helpers ----------------
+const wrapP = p => ((p % P) + P) % P;
+const ringDist = (a, b) => { const d = wrapP(a - b); return Math.min(d, P - d); };
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const smooth = (dt, time) => 1 - Math.exp(-dt / time);
+
+// Position on the tube wall. pf is a tile coordinate around the tube (tile
+// centers at whole numbers, may be fractional and does not need wrapping),
+// h is the height above the surface. Near corners the "up" direction blends
+// between the two faces so anything moving round a corner turns smoothly.
+function ringFrame(pf, h) {
+  const s = pf + 0.5;
+  const k = Math.floor(s / W);
+  const d = s - k * W;
+  let b = 0;
+  if (d < 0.5) b = d - 0.5; else if (d > W - 0.5) b = d - (W - 0.5);
+  const roll = (k + b) * Math.PI / 2;
+  const a = k * Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a);
+  const lx = d - H;
+  const sx = lx * ca + H * sa, sy = lx * sa - H * ca;   // Rz(a) * (lx, -H)
+  return { x: sx - Math.sin(roll) * h, y: sy + Math.cos(roll) * h, roll, face: ((k % 4) + 4) % 4 };
+}
+// face-local (lx across, h up) -> world, for a given roll
+function toWorld(roll, lx, h) {
+  const c = Math.cos(roll), s = Math.sin(roll), y = -H + h;
+  return [lx * c - y * s, lx * s + y * c];
+}
+
+// ---------------- gravity timetable ----------------
+function heightFactor(pf) {
+  const y = ringFrame(pf, 0).y;                       // -H on the floor, +H on the ceiling
+  return GRAVITY.floor + (GRAVITY.ceiling - GRAVITY.floor) * (y + H) / (2 * H);
+}
+const TT_STEP = 0.05;
+const TT_N = Math.round(P / TT_STEP);
+// table[dir][i] = time (at unit speed) to travel i*TT_STEP tiles from p = 0 in that direction
+const TIMETABLE = { 1: new Float64Array(TT_N + 1), '-1': new Float64Array(TT_N + 1) };
+for (const d of [1, -1]) {
+  const t = TIMETABLE[d];
+  for (let i = 1; i <= TT_N; i++) t[i] = t[i - 1] + TT_STEP / heightFactor(d * (i - 0.5) * TT_STEP);
+}
+const LAP_TIME = TIMETABLE[1][TT_N];                  // same both ways
+const MIN_FACTOR = Math.min(GRAVITY.floor, GRAVITY.ceiling);
+// unit-speed time u (any value) -> position around the tube for a car travelling in dir
+function ringPosAt(u, dir) {
+  const t = TIMETABLE[dir];
+  const uu = ((u % LAP_TIME) + LAP_TIME) % LAP_TIME;
+  let lo = 0, hi = TT_N;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (t[mid] <= uu) lo = mid; else hi = mid; }
+  const q = (lo + (uu - t[lo]) / (t[hi] - t[lo])) * TT_STEP;
+  return wrapP(dir * q);
+}
+
+// ---------------- renderer ----------------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+const gameBox = document.getElementById('game');
+// the game area: the largest 16:9 box that fits the window, centred
+const view = { w: window.innerWidth, h: window.innerHeight };
+function fitView() {
+  const W0 = window.innerWidth, H0 = window.innerHeight, aspect = CAM.aspect;
+  view.w = Math.min(W0, H0 * aspect); view.h = view.w / aspect;
+  gameBox.style.width = view.w + 'px'; gameBox.style.height = view.h + 'px';
+  gameBox.style.left = (W0 - view.w) / 2 + 'px'; gameBox.style.top = (H0 - view.h) / 2 + 'px';
+}
+fitView();
+renderer.setSize(view.w, view.h);
+gameBox.insertBefore(renderer.domElement, gameBox.firstChild);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(COLORS.sky);
+scene.fog = new THREE.Fog(COLORS.sky, 18, 34);
+
+const camera = new THREE.PerspectiveCamera(CAM.fov, CAM.aspect, 0.1, 120);
+// Same view in every window: the picture is always 16:9 with the same field of view; a bigger or smaller
+// window only changes how large it's drawn, never how much of the tube you can see.
+function resize() {
+  fitView();
+  renderer.setSize(view.w, view.h);
+  camera.aspect = CAM.aspect;
+  camera.fov = CAM.fov;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambient);
+const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+scene.add(sun);
+scene.add(sun.target);
+// a faint lantern glow around the spy, only on in the dark (always in the scene so nothing recompiles)
+const lantern = new THREE.PointLight(0xffe2b0, 0, 4.2, 1.6);
+scene.add(lantern);
+
+// ---------------- geometry merging ----------------
+// Every lane's static scenery is merged into one mesh, so the whole tube is a
+// few hundred draw calls instead of thousands.
+const UNIT = new THREE.BoxGeometry(1, 1, 1).toNonIndexed();
+const UP = UNIT.attributes.position.array, UN = UNIT.attributes.normal.array;
+const VCOL = new THREE.MeshLambertMaterial({ vertexColors: true });
+const _c = new THREE.Color();
+
+class Merge {
+  constructor() { this.p = []; this.n = []; this.c = []; }
+  // box in face-local coordinates (x across, y up from the surface, z along), turned onto face rotZ
+  box(color, x, y, z, sx, sy, sz, rotZ = 0) {
+    _c.setHex(color);
+    const cs = Math.cos(rotZ), sn = Math.sin(rotZ);
+    const yb = y - H;   // surface of the floor face is at y = -H
+    for (let i = 0; i < UP.length; i += 3) {
+      const lx = UP[i] * sx + x, ly = UP[i + 1] * sy + yb, lz = UP[i + 2] * sz + z;
+      this.p.push(lx * cs - ly * sn, lx * sn + ly * cs, lz);
+      const nx = UN[i], ny = UN[i + 1];
+      this.n.push(nx * cs - ny * sn, nx * sn + ny * cs, UN[i + 2]);
+      this.c.push(_c.r, _c.g, _c.b);
+    }
+  }
+  // box for a moveable object, built standing on y = 0 with no face rotation
+  part(color, x, y, z, sx, sy, sz) { this.box(color, x, y + H, z, sx, sy, sz, 0); }
+  geometry() {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.p, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(this.n, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(this.c, 3));
+    return g;
+  }
+  mesh() { return new THREE.Mesh(this.geometry(), VCOL); }
+}
+
+// ---------------- models ----------------
+function buildSpy() {
+  const m = new Merge();
+  const C = { coat: 0xc9a57a, coatDark: 0xa6835a, belt: 0x6b4a2e, buckle: 0xffd23f,
+              mask: 0x26263a, wisp: 0xe4f55a, shoe: 0x1b1b26, hat: 0xc9a57a };
+  const s = 0.74;   // whole figure about 1.4 tiles tall, chunky like Crossy's characters
+  const b = (c, x, y, z, sx, sy, sz) => m.part(c, x * s, y * s, z * s, sx * s, sy * s, sz * s);
+  b(C.coatDark, -0.16, 0.18, 0, 0.22, 0.36, 0.26);
+  b(C.coatDark,  0.16, 0.18, 0, 0.22, 0.36, 0.26);
+  b(C.shoe, -0.16, 0.05, -0.05, 0.24, 0.1, 0.32);
+  b(C.shoe,  0.16, 0.05, -0.05, 0.24, 0.1, 0.32);
+  b(C.coat, 0, 0.62, 0, 0.8, 0.6, 0.5);
+  b(C.belt, 0, 0.5, 0, 0.84, 0.1, 0.54);
+  b(C.buckle, 0, 0.5, -0.28, 0.14, 0.1, 0.03);
+  b(C.coatDark, -0.5, 0.6, 0, 0.2, 0.5, 0.26);
+  b(C.coatDark,  0.5, 0.6, 0, 0.2, 0.5, 0.26);
+  b(C.mask, 0, 1.2, 0, 0.66, 0.5, 0.56);
+  b(C.wisp, -0.16, 1.22, -0.29, 0.2, 0.1, 0.04);
+  b(C.wisp,  0.16, 1.22, -0.29, 0.2, 0.1, 0.04);
+  b(C.coatDark, 0, 1.5, 0, 0.9, 0.08, 0.9);
+  b(C.belt, 0, 1.56, 0, 0.58, 0.07, 0.58);
+  b(C.hat, 0, 1.7, 0, 0.56, 0.3, 0.56);
+  return m.geometry();
+}
+
+function carGeometry(color) {
+  const m = new Merge();
+  m.part(color, 0, 0.36, 0, 1.5, 0.42, 0.8);
+  m.part(0xf4f4f4, -0.08, 0.72, 0, 0.82, 0.32, 0.72);
+  m.part(0x2c3442, 0.34, 0.72, 0, 0.04, 0.24, 0.62);    // windscreen
+  m.part(0x2c3442, -0.08, 0.72, 0.37, 0.66, 0.2, 0.02);
+  m.part(0x2c3442, -0.08, 0.72, -0.37, 0.66, 0.2, 0.02);
+  for (const x of [-0.48, 0.48]) for (const z of [-0.4, 0.4]) m.part(0x1d1d22, x, 0.14, z, 0.3, 0.28, 0.1);
+  m.part(0xfff2a8, 0.76, 0.4, 0.26, 0.02, 0.1, 0.14);
+  m.part(0xfff2a8, 0.76, 0.4, -0.26, 0.02, 0.1, 0.14);
+  return m.geometry();
+}
+// glowing headlights and a faint beam, added to every car and truck cab; they show through the dark
+const HEADLIGHT_GEO = (() => {
+  const out = new Merge();
+  for (const z of [-0.26, 0.26]) out.part(0xffffff, 0.78, 0.4, z, 0.04, 0.12, 0.16);
+  return out.geometry();
+})();
+// the beam: a flat fan on the road that widens away from the car and fades out, softest at its edges
+const BEAM_TEX = (() => {
+  const w = 64, h = 32, d = new Uint8Array(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const u = x / (w - 1), v = y / (h - 1);
+    const along = Math.pow(1 - u, 1.7) * Math.min(1, u * 12 + 0.35);   // bright near the lamps, gone by the end
+    const across = Math.max(0, 1 - Math.pow(Math.abs(2 * v - 1), 1.8)); // soft sides
+    d.set([255, 236, 170, Math.round(255 * along * across)], (y * w + x) * 4);
+  }
+  const t = new THREE.DataTexture(d, w, h, THREE.RGBAFormat);
+  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+  return t;
+})();
+const BEAM_GEO = (() => {
+  const pos = [], uv = [], idx = [], N = 12, LEN = 2.8;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, x = 0.78 + t * LEN, half = 0.3 + t * 1.15;    // fans out as it goes
+    pos.push(x, 0.035, -half, x, 0.035, half);
+    uv.push(t, 0, t, 1);
+    if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  return g;
+})();
+const headlightMat = new THREE.MeshBasicMaterial({ color: 0xfff2a8, fog: false });
+const beamMat = new THREE.MeshBasicMaterial({ map: BEAM_TEX, transparent: true, opacity: 0, depthWrite: false, fog: false,
+                                             side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+// red taillights on the back of every car and truck trailer; like headlights they show through the dark
+const TAILLIGHT_GEO = (() => {
+  const m = new Merge();
+  for (const z of [-0.26, 0.26]) m.part(0xffffff, 0.02, 0.46, z, 0.14, 0.16, 0.24);   // deep enough to see from above
+  return m.geometry();
+})();
+const taillightMat = new THREE.MeshBasicMaterial({ color: 0xff2a1a, fog: false });
+function addTaillights(mesh, x) { const t = new THREE.Mesh(TAILLIGHT_GEO, taillightMat); t.position.x = x; mesh.add(t); }
+function addHeadlights(mesh, x) {
+  const hl = new THREE.Mesh(HEADLIGHT_GEO, headlightMat); hl.position.x = x; mesh.add(hl);
+  const beam = new THREE.Mesh(BEAM_GEO, beamMat); beam.position.x = x; mesh.add(beam);
+}
+function truckCabGeometry(color) {
+  const m = new Merge();
+  m.part(color, 0, 0.5, 0, 0.9, 0.7, 0.84);
+  m.part(0x2c3442, 0.46, 0.66, 0, 0.02, 0.26, 0.7);
+  for (const z of [-0.42, 0.42]) m.part(0x1d1d22, 0.1, 0.15, z, 0.34, 0.3, 0.1);
+  return m.geometry();
+}
+function truckBoxGeometry() {
+  const m = new Merge();
+  m.part(0xe9edf2, 0, 0.66, 0, 1.76, 1.0, 0.86);
+  m.part(0x3a3f4a, 0, 0.12, 0, 1.6, 0.12, 0.6);
+  for (const x of [-0.55, 0.45]) for (const z of [-0.42, 0.42]) m.part(0x1d1d22, x, 0.15, z, 0.34, 0.3, 0.1);
+  return m.geometry();
+}
+function trainGeometry(front, red = false) {
+  const m = new Merge();
+  m.part(red ? (front ? 0xb3201a : 0xd8302a) : (front ? 0xd8433b : 0x3d6fd6), 0, 0.6, 0, 0.96, 0.9, 0.86);
+  m.part(0xf2f2f2, 0, 0.92, 0, 0.98, 0.14, 0.88);
+  m.part(0x2c3442, 0, 0.72, 0.44, 0.7, 0.22, 0.02);
+  m.part(0x2c3442, 0, 0.72, -0.44, 0.7, 0.22, 0.02);
+  if (front) m.part(0xfff2a8, 0.49, 0.5, 0, 0.02, 0.16, 0.5);
+  m.part(0x26262c, 0, 0.1, 0, 0.8, 0.2, 0.7);
+  return m.geometry();
+}
+const LOG_GEO = (() => {
+  const m = new Merge();
+  m.part(COLORS.log, 0, -0.04, 0, 1.0, 0.34, 0.7);
+  m.part(COLORS.logTop, 0, 0.14, 0, 1.0, 0.02, 0.5);
+  return m.geometry();
+})();
+// cracked log: ordinary wood with a big X-shaped gash on top, pale splinters along its edges
+const CRACK_GEO = (() => {
+  const m = new Merge();
+  m.part(COLORS.log, 0, -0.04, 0, 1.0, 0.34, 0.7);
+  m.part(COLORS.logTop, 0, 0.14, 0, 1.0, 0.02, 0.5);
+  for (let i = 0; i <= 6; i++) {
+    const t = -1 + i / 3, x = t * 0.32;
+    for (const z of [t * 0.2, -t * 0.2]) {
+      m.part(CRACK.gash, x, 0.153, z, 0.11, 0.014, 0.1);
+      if (i % 2 === 0 && i !== 3) m.part(CRACK.splinter, x + 0.07, 0.158, z, 0.05, 0.016, 0.04);
+    }
+  }
+  m.part(CRACK.gash, 0, 0.04, 0.352, 0.14, 0.18, 0.012);              // the gash shows on both sides too
+  m.part(CRACK.gash, 0, 0.04, -0.352, 0.14, 0.18, 0.012);
+  return m.geometry();
+})();
+// sinking log: ordinary wood with two round-ish holes you can see the water through
+const SINK_GEO = (() => {
+  const m = new Merge();
+  m.part(COLORS.log, 0, -0.04, 0, 1.0, 0.34, 0.7);
+  m.part(COLORS.logTop, 0, 0.14, 0, 1.0, 0.02, 0.5);
+  for (const [x, z] of [[-0.24, -0.06], [0.22, 0.08]]) {
+    m.part(SINK.rim, x, 0.152, z, 0.27, 0.012, 0.25);
+    m.part(SINK.hole, x, 0.156, z, 0.19, 0.014, 0.17);
+    m.part(0x3d8fc0, x, 0.157, z, 0.1, 0.014, 0.09);                // water showing at the bottom
+  }
+  return m.geometry();
+})();
+const LOG_END_GEO = (() => {
+  const m = new Merge();
+  m.part(COLORS.logEnd, 0, -0.04, 0, 0.04, 0.3, 0.62);
+  return m.geometry();
+})();
+// steamrollers for one face: two machines 4 tiles wide (tiles 1-4 and 6-9), facing +z (toward you)
+const ROLLER_GEO = (() => {
+  const m = new Merge(), R = ROLLER;
+  for (const cx of [-2.5, 2.5]) {
+    m.part(R.drum, cx, 0.45, 0.05, 3.8, 0.9, 0.9);                       // the big front drum
+    for (const dx of [-1.4, -0.47, 0.47, 1.4]) m.part(R.drumDark, cx + dx, 0.45, 0.05, 0.08, 0.92, 0.92);
+    m.part(R.body, cx, 0.95, 0.05, 3.9, 0.14, 1.0);                       // drum cover
+    m.part(R.body, cx, 0.62, -0.9, 3.4, 0.64, 1.4);                       // body
+    m.part(R.bodyDark, cx, 0.32, -0.9, 3.42, 0.08, 1.42);
+    for (const dx of [-1.55, 1.55]) m.part(R.dark, cx + dx, 0.32, -1.15, 0.36, 0.64, 0.7);   // rear wheels
+    m.part(R.body, cx, 1.28, -1.0, 1.4, 0.7, 0.9);                        // cab
+    m.part(R.glass, cx, 1.33, -0.54, 1.2, 0.42, 0.02);                    // windscreen
+    for (const dx of [-0.71, 0.71]) m.part(R.glass, cx + dx, 1.33, -1.0, 0.02, 0.42, 0.7);
+    m.part(R.dark, cx, 1.68, -1.0, 1.7, 0.1, 1.15);                       // roof
+    m.part(R.dark, cx + 1.25, 1.35, -1.35, 0.16, 0.8, 0.16);              // exhaust
+    for (const dx of [-1.2, -0.4, 0.4, 1.2]) m.part(R.dark, cx + dx, 0.82, -0.19, 0.36, 0.1, 0.02); // hazard stripes
+  }
+  return m.geometry();
+})();
+const ROLLER_BEACON_GEO = (() => {
+  const m = new Merge();
+  for (const cx of [-2.5, 2.5]) m.part(0xffffff, cx, 1.83, -1.0, 0.24, 0.2, 0.24);
+  return m.geometry();
+})();
+const ROLLER_PATH_GEO = new THREE.BoxGeometry(W, 0.01, 1);
+const rollerBeaconMat = new THREE.MeshBasicMaterial({ color: 0xffa21f, fog: false });
+const rollerPathMat = new THREE.MeshBasicMaterial({ color: ROLLER.warn, transparent: true, opacity: 0.15, depthWrite: false, fog: false });
+
+// skeleton: faces you (+z), about the spy's height
+const SKEL_GEO = (() => {
+  const m = new Merge(), b = GRAVE.bone, sh = 0xc4bea9, dark = 0x22222c;
+  for (const x of [-0.12, 0.12]) { m.part(b, x, 0.18, 0, 0.1, 0.36, 0.1); m.part(sh, x, 0.03, 0.04, 0.14, 0.06, 0.2); }
+  m.part(b, 0, 0.4, 0, 0.36, 0.09, 0.18);                               // pelvis
+  m.part(sh, 0, 0.58, -0.04, 0.08, 0.36, 0.08);                          // spine
+  for (const y of [0.5, 0.6, 0.7]) m.part(b, 0, y, 0, 0.42, 0.05, 0.26); // ribs
+  m.part(b, 0, 0.8, 0, 0.5, 0.07, 0.2);                                  // shoulders
+  for (const x of [-0.29, 0.29]) { m.part(b, x, 0.6, 0, 0.08, 0.36, 0.08); m.part(sh, x, 0.4, 0.02, 0.11, 0.08, 0.11); }
+  m.part(b, 0, 1.06, 0, 0.46, 0.4, 0.42);                                // skull
+  m.part(b, 0, 0.84, 0.04, 0.32, 0.08, 0.3);                             // jaw
+  m.part(dark, 0, 0.95, 0.215, 0.07, 0.07, 0.012);                       // nose
+  for (const x of [-0.09, -0.03, 0.03, 0.09]) m.part(dark, x, 0.865, 0.195, 0.03, 0.05, 0.012);  // teeth gaps
+  return m.geometry();
+})();
+const SKEL_EYE_GEO = (() => {
+  const m = new Merge();
+  for (const x of [-0.11, 0.11]) m.part(0xffffff, x, 1.08, 0.216, 0.13, 0.12, 0.012);
+  return m.geometry();
+})();
+// ghost: a floating sheet that always faces the camera
+const GHOST_GEO = (() => {
+  const m = new Merge(), c = 0xffffff;
+  m.part(c, 0, 0.62, 0, 0.78, 0.76, 0.66);
+  m.part(c, 0, 1.06, 0, 0.6, 0.14, 0.52);
+  m.part(c, 0, 1.16, 0, 0.36, 0.08, 0.34);
+  for (const [x, h] of [[-0.27, 0.22], [0, 0.3], [0.27, 0.18]]) m.part(c, x, 0.24 - h / 2 + 0.1, 0, 0.24, h, 0.6);
+  for (const x of [-0.46, 0.46]) m.part(c, x, 0.68, 0.06, 0.16, 0.22, 0.24);
+  return m.geometry();
+})();
+const GHOST_FACE_GEO = (() => {
+  const m = new Merge();
+  for (const x of [-0.15, 0.15]) m.part(0x1b1b26, x, 0.82, 0.335, 0.13, 0.2, 0.012);
+  m.part(0x1b1b26, 0, 0.56, 0.335, 0.16, 0.16, 0.012);
+  return m.geometry();
+})();
+// conveyor belt surface: one box per face with an animated chevron texture (one chevron per tile)
+const BELT_GEO = new THREE.BoxGeometry(W, 0.02, 0.84);
+const BELT_TEX = (() => {
+  const n = 16, data = new Uint8Array(n * n * 4);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const k = x + Math.abs(y - 7.5) * 0.8;                 // a '>' shape pointing toward +x
+    const c = k >= 10 && k < 15 && y > 1 && y < 14 ? BELT.chevron : BELT.back;
+    data.set([c[0], c[1], c[2], 255], (y * n + x) * 4);
+  }
+  const t = new THREE.DataTexture(data, n, n, THREE.RGBAFormat);
+  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.needsUpdate = true;
+  return t;
+})();
+const COIN_GEO = new THREE.BoxGeometry(0.4, 0.4, 0.12);
+const COIN_MAT = new THREE.MeshLambertMaterial({ color: COLORS.coin, emissive: 0x6b4a00 });
+
+// ---------------- lanes ----------------
+const lanes = new Map();
+const gen = { type: 'grass', left: 0, lastRiverDir: 1, queue: [], lastJam: false, zone: null, lastZoneEnd: -999,
+              calmFrom: -1, calmTo: -2, nextDarkAt: 0, darkFlip: false };
+
+// A jam pattern: direction, speed and gap centres, shared by the jam and (for difficult jams) its escort lanes.
+function makeJamPattern(tier, v) {
+  const cfg = JAM[tier];
+  const base = Math.random() * P, spacing = P / cfg.gaps;
+  const gaps = [];
+  for (let i = 0; i < cfg.gaps; i++) gaps.push(wrapP(base + i * spacing + rand(-1.5, 1.5)));
+  gaps.sort((x, y) => x - y);
+  return { tier, gaps, width: cfg.gapWidth, dir: Math.random() < 0.5 ? 1 : -1,
+           speed: rand(2.2, 4.0) * speedMul(v) * cfg.speed };
+}
+
+// Car centres for a jam (at clock 0): bumper to bumper between the gaps, the end cars exactly at each gap edge.
+function jamCenters(pat) {
+  const len = 1.5, half = pat.width / 2, k = pat.gaps.length, out = [];
+  for (let i = 0; i < k; i++) {
+    const start = pat.gaps[i] + half;
+    const end = pat.gaps[(i + 1) % k] + (i + 1 === k ? P : 0) - half;
+    const L = end - start;
+    const n = Math.max(1, Math.floor((L + JAM.bumper) / (len + JAM.bumper)));
+    const step = n > 1 ? (L - len) / (n - 1) : 0;
+    for (let j = 0; j < n; j++) out.push(start + len / 2 + j * step);
+  }
+  return out;
+}
+
+// Escort cars that move with the jam, leaving a padded corridor at each gap. Always crossable.
+function alignedEscorts(pat) {
+  const half = pat.width / 2, pad = JAM.corridorPad, k = pat.gaps.length, out = [];
+  for (let i = 0; i < k; i++) {
+    const start = pat.gaps[i] + half + pad;
+    const end = pat.gaps[(i + 1) % k] + (i + 1 === k ? P : 0) - half - pad;
+    const n = Math.round(JAM.difficult.escortCars / k), step = (end - start) / n;
+    for (let j = 0; j < n; j++) out.push(start + (j + 0.5) * step);
+  }
+  return out;
+}
+
+// Six escort cars spread round the ring at random, at least 3 tiles apart.
+function randomEscorts() {
+  const n = JAM.difficult.escortCars, minGap = 3;
+  const w = Array.from({ length: n }, () => Math.random());
+  const sum = w.reduce((a, b) => a + b, 0), spare = P - n * minGap;
+  let pos = Math.random() * P;
+  return w.map(x => { const c = pos; pos += minGap + spare * x / sum; return c; });
+}
+
+// The jam and both escort lanes move at the same speed, so the three rows repeat exactly once per lap.
+// Simulate one lap: a player hops escort -> jam -> escort at a human pace (0.2 s per hop). For each jam gap,
+// find the longest stretch of time when no tile at that gap can be crossed. Returns that worst stretch.
+function worstBlocked(pat, escortDir, carsA, carsB, limit = Infinity, cache = {}) {
+  const v = pat.speed, T = P / v, N = Math.max(40, Math.round(T / 0.05)), dt = T / N;
+  const rows = [{ c: carsA, d: escortDir }, { c: jamCenters(pat), d: pat.dir }, { c: carsB, d: escortDir }];
+  const reach = 0.75 + 0.3;    // a car blocks a tile when its centre is closer than this
+  const S = 2 * N;             // two laps, so time windows never need to wrap
+  const build = row => {
+    const b = new Uint8Array(S * P);
+    for (let s = 0; s < S; s++) {
+      for (const c0 of row.c) {
+        const c = wrapP(c0 + row.d * v * s * dt);
+        for (let x = Math.round(c) - 2; x <= Math.round(c) + 2; x++) {
+          const xx = wrapP(x);
+          if (ringDist(c, xx) < reach) b[s * P + xx] = 1;
+        }
+      }
+    }
+    // prefix sums over time for each tile
+    const pre = new Uint16Array((S + 1) * P);
+    for (let s = 0; s < S; s++) for (let x = 0; x < P; x++) pre[(s + 1) * P + x] = pre[s * P + x] + b[s * P + x];
+    return pre;
+  };
+  // the jam row is the same on every try, so it is built once and reused
+  if (!cache.jam) cache.jam = build(rows[1]);
+  const blocked = [build(rows[0]), cache.jam, build(rows[2])];
+  const clearOver = (r, x, s0, s1) => rows[r] && (blocked[r][(s1 + 1) * P + x] - blocked[r][s0 * P + x]) === 0;
+  // seconds each row is occupied, from the moment you start: mid-hop in, to mid-hop out, plus a margin
+  const occ = [[0.0, 0.33], [0.2, 0.53], [0.4, 0.73]].map(([a, b]) => [Math.floor(a / dt), Math.ceil(b / dt)]);
+  const feasible = (s, x) => occ.every(([a, b], r) => clearOver(r, x, s + a, s + b));
+  let worst = 0;
+  for (const g0 of pat.gaps) {
+    let run = 0, longest = 0, first = -1;
+    for (let s = 0; s < N; s++) {
+      const centre = g0 + pat.dir * v * (s * dt + 0.2);    // where the gap is as you enter it
+      let ok = false;
+      for (let x = Math.floor(centre) - 1; x <= Math.ceil(centre) + 1 && !ok; x++) {
+        if (ringDist(x, centre) <= 1 && feasible(s, wrapP(x))) ok = true;
+      }
+      if (ok) { if (first < 0) first = run; run = 0; } else { run++; longest = Math.max(longest, run); }
+      if (longest * dt > limit) return Infinity;           // already failed: stop early
+    }
+    if (first < 0) return Infinity;                        // never crossable
+    longest = Math.max(longest, run + first);              // a blocked stretch can wrap round the lap
+    worst = Math.max(worst, longest * dt);
+  }
+  return worst;
+}
+
+function planEscorts(pat) {
+  const cfg = JAM.difficult;
+  if (cfg.escortOpposite) {
+    let best = null;
+    const cache = {};
+    for (let i = 0; i < cfg.planTries; i++) {
+      const cars = [randomEscorts(), randomEscorts()];
+      const worst = worstBlocked(pat, -pat.dir, cars[0], cars[1], cfg.maxBlocked, cache);
+      if (!best || worst < best.worst) best = { cars, worst };
+      if (worst <= cfg.maxBlocked) break;
+    }
+    if (best.worst <= cfg.maxBlocked) return { dir: -pat.dir, cars: best.cars, worst: best.worst, fallback: false };
+  }
+  const al = alignedEscorts(pat);
+  return { dir: pat.dir, cars: [al, al], worst: 0, fallback: true };
+}
+
+// One row of a crumble zone: starts and ends on cracked ground, with road and rail blocks in between.
+function zoneSpec(v) {
+  const z = gen.zone;
+  z.left--;
+  const first = z.left === ZONE.rows - 1, last = z.left === 0;
+  let kind;
+  if (first || last) kind = 'ground';
+  else if (z.blockLeft > 0) { z.blockLeft--; kind = z.block; }
+  else if (z.block !== 'ground') { z.block = 'ground'; z.blockLeft = randInt(0, 1); kind = 'ground'; }
+  else if (Math.random() < 0.7) { z.block = 'road'; z.blockLeft = randInt(0, 2); kind = 'road'; }
+  else if (!(GRAVE.calm.noRails && inCalm(v))) { z.block = 'rail'; z.blockLeft = 0; kind = 'rail'; }
+  else { z.block = 'road'; z.blockLeft = 0; kind = 'road'; }
+  if (last) { gen.zone = null; gen.lastZoneEnd = v; gen.type = 'zone'; gen.left = 0; }
+  return { type: kind === 'ground' ? 'grass' : kind, cracked: kind === 'ground', inZone: true, zoneFirst: first, zoneTier: z.tier };
+}
+
+// Can you get from the first row of a graveyard to its last, going round gravestones?
+function graveyardPassable(stones) {
+  const n = stones.length, seen = new Set(), queue = [];
+  for (let p = 0; p < P; p++) if (!stones[0].has(p)) { seen.add(p); queue.push([0, p]); }
+  while (queue.length) {
+    const [r, p] = queue.shift();
+    if (r === n - 1) return true;
+    for (const [dr, dp] of [[1, 0], [0, 1], [0, -1], [-1, 0]]) {
+      const nr = r + dr, np = wrapP(p + dp);
+      if (nr < 0 || nr >= n || stones[nr].has(np) || seen.has(nr * P + np)) continue;
+      seen.add(nr * P + np); queue.push([nr, np]);
+    }
+  }
+  return false;
+}
+function graveyardSpec(v) {
+  const n = GRAVE.rows;
+  const roll = () => Array.from({ length: n }, () => {
+    const st = new Set();
+    for (let p = 0; p < P; p++) if (Math.random() < GRAVE.stoneChance) st.add(p);
+    return st;
+  });
+  let stones = roll();
+  for (let i = 0; i < 40 && !graveyardPassable(stones); i++) stones = roll();
+  if (!graveyardPassable(stones)) { const c = randInt(0, P - 1); stones.forEach(st => st.delete(c)); }
+  const rows = stones.map(st => ({ type: 'grass', grave: true, stones: st, coinTiles: [], skeletons: [] }));
+  const taken = new Set();
+  const openTile = (r, lo, hi) => {
+    for (let i = 0; i < 30; i++) {
+      const p = randInt(lo, hi);
+      if (!rows[r].stones.has(p) && !taken.has(r * P + p)) { taken.add(r * P + p); return p; }
+    }
+    return -1;
+  };
+  // one skeleton per 2 rows on every face
+  for (let r0 = 0; r0 < n; r0 += GRAVE.skel.perRows) {
+    for (let f = 0; f < 4; f++) {
+      const r = Math.min(n - 1, r0 + randInt(0, GRAVE.skel.perRows - 1));
+      const p = openTile(r, f * W, f * W + W - 1);
+      if (p >= 0) rows[r].skeletons.push(p);
+    }
+  }
+  const coins = randInt(GRAVE.coins[0], GRAVE.coins[1]);
+  for (let i = 0; i < coins; i++) {
+    const r = randInt(0, n - 1), p = openTile(r, 0, P - 1);
+    if (p >= 0) rows[r].coinTiles.push(p);
+  }
+  gen.queue.push(...rows.slice(1));
+  gen.type = 'grass'; gen.left = 0; gen.lastPark = true;
+  gen.calmFrom = v; gen.calmTo = v + n + GRAVE.ghost.chaseRows;
+  graveyards.push({ start: v, exit: v + n, woke: false });
+  bonuses.push({ row: v + n, points: BONUS.grave, label: 'GRAVEYARD' });
+  return rows[0];
+}
+
+function nextSpec(v) {
+  if (v < START_SAFE) return { type: 'grass' };
+  if (gen.zone) return zoneSpec(v);
+  if (gen.queue.length) return gen.queue.shift();
+  if (gen.left > 0) { gen.left--; return { type: gen.type, hard: gen.blockHard }; }
+  if (gen.type !== 'grass') {               // a strip of grass after every hazard block
+    gen.type = 'grass'; gen.left = randInt(SPACING.grassAfter[0], SPACING.grassAfter[1]) - 1; gen.blockHard = false; return { type: 'grass' };
+  }
+  const prog = progressAt(v);
+  const jamAllowed = !gen.lastJam;
+  gen.lastJam = false;
+  let hard = Math.random() < hardShare(v);
+  // families that can't appear here are left out of this pick
+  const parkAllowed = !gen.lastPark;
+  gen.lastPark = false;
+  const weights = Object.entries(FAMILY).filter(([f]) =>
+    !(f === 'park' && !parkAllowed) &&
+    !(f === 'rail' && GRAVE.calm.noRails && inCalm(v)) &&
+    !(f === 'jam' && (!jamAllowed || v < JAM.normal.fromRow)) &&
+    !(f === 'crumble' && (v < ZONE.fromRow || v - gen.lastZoneEnd < ZONE.minSpacing)));
+  if (test.on && test.only === 'roller') {
+    // testing steamrollers: long stretches of land, so one can come along every few rows
+    const keep = weights.filter(([f]) => f !== 'rail');
+    weights.length = 0; weights.push(...(keep.length ? keep : [['road', 1]]));
+    test.first = false;
+  } else if (test.on && test.only === 'dark') {
+    test.first = false;                                   // darkness sits on top of ordinary rows
+  } else if (test.on && test.only) {
+    // the tested family comes first, then about a third of the time, ignoring its usual row limits
+    const tf = testFam();
+    const others = weights.filter(([f]) => f !== tf);
+    const total = others.reduce((t, [, w]) => t + w, 0);
+    const blocked = (tf === 'park' && !parkAllowed) || (tf === 'jam' && !jamAllowed);
+    weights.length = 0;
+    if (!test.first) weights.push(...others);
+    if (!blocked) weights.push([tf, test.first ? 1 : total / 2]);
+    if (!weights.length) weights.push(['road', 1]);
+    test.first = false;
+  }
+  let roll = Math.random() * weights.reduce((t, [, w]) => t + w, 0), fam = weights[0][0];
+  for (const [f, w] of weights) { if ((roll -= w) <= 0) { fam = f; break; } }
+  // stick with the same kind of block for a bit, so fewer different things are mixed together
+  if (!test.on && ['road', 'river', 'rail'].includes(gen.lastFam) && weights.some(([f]) => f === gen.lastFam) &&
+      Math.random() < SPACING.repeat) fam = gen.lastFam;
+  gen.lastFam = fam;
+  if (test.on) hard = fam === testFam();
+  // during a ghost chase: never a second graveyard, and gridlocks only if allowed
+  if (inCalm(v) && (fam === 'park' || (fam === 'jam' && GRAVE.calm.noGridlock))) hard = false;
+  gen.blockHard = hard;
+
+  if (fam === 'crumble') {
+    gen.zone = { left: ZONE.rows, block: 'ground', blockLeft: 0, tier: hard ? 'difficult' : 'normal' };
+    return zoneSpec(v);
+  }
+  if (fam === 'jam') {
+    gen.lastJam = true;
+    gen.type = 'jam'; gen.left = 0;          // anything but grass, so a grass strip follows
+    const tier = hard ? 'difficult' : 'normal';
+    const pattern = makeJamPattern(tier, v + 1);
+    if (tier === 'normal') {
+      gen.queue.push({ type: 'road', jam: pattern }, { type: 'grass', sparse: true });
+    } else {
+      pattern.escorts = planEscorts(pattern);
+      gen.queue.push({ type: 'road', escort: pattern, side: 0 }, { type: 'road', jam: pattern },
+                     { type: 'road', escort: pattern, side: 1 }, { type: 'grass', sparse: true });
+    }
+    return { type: 'grass', clear: true };   // the row you line up on: nothing in the way
+  }
+  if (fam === 'park' && hard) return graveyardSpec(v);
+  if (fam === 'park') {
+    // a long stretch of open grass with a few coins
+    const n = randInt(PARK.rows[0], PARK.rows[1]);
+    const rows = Array.from({ length: n }, () => ({ type: 'grass', park: true, coinTiles: [] }));
+    const coins = randInt(PARK.coins[0], PARK.coins[1]);
+    for (let i = 0; i < coins; i++) rows[randInt(0, n - 1)].coinTiles.push(randInt(0, P - 1));
+    gen.queue.push(...rows.slice(1));
+    gen.type = 'grass'; gen.left = 0; gen.lastPark = true;   // never two parks in a row
+    return rows[0];
+  }
+  if (fam === 'road')       { gen.type = 'road';  gen.left = randInt(0, 2 + Math.round(prog * 2)); }
+  else if (fam === 'river') {
+    let n = 1;                                             // 1..12 rows, longer ones rarer
+    while (n < RIVER.maxRows && Math.random() < RIVER.decay) n++;
+    gen.type = 'river'; gen.left = n - 1;
+  }
+  else                      { gen.type = 'rail';  gen.left = randInt(0, 1); }
+  return { type: gen.type, hard };
+}
+
+function makeLane(v) {
+  const spec = nextSpec(v);
+  const type = spec.type;
+  const prev = lanes.get(v - 1);
+  const mul = speedMul(v);
+  const lane = {
+    v, type, blocked: new Set(), holes: new Set(), coins: new Map(),
+    trees: new Map(), vehicles: [], logs: [], dir: 1, speed: 0,
+    group: new THREE.Group(), staticMesh: null,
+    cracked: !!spec.cracked, inZone: !!spec.inZone,
+    fuse: new Map(),        // cracked tile -> clock time it falls
+    fuseMeshes: new Map(),  // cracked tile -> its warning overlay
+    park: !!spec.park, grave: !!spec.grave
+  };
+  lane.zoneTier = spec.zoneTier || null;
+  if (spec.zoneFirst) zones.push({ start: v, end: v + ZONE.rows - 1, tier: spec.zoneTier,
+                                  triggered: false, t: 0, roll: 0, done: false, nextDrop: 0 });
+  if (spec.zoneFirst && spec.zoneTier === 'difficult')
+    bonuses.push({ row: v + ZONE.rows, points: BONUS.crumble, label: 'BOULDER FIELD' });
+  if (spec.jam && spec.jam.tier === 'difficult')
+    bonuses.push({ row: v + 2, points: BONUS.jam, label: 'GRIDLOCK' });   // past the far escort lane
+  lane.group.position.z = -v;
+  if (spec.grave) lane.skels = spec.skeletons.map(p => ({ pos: p, state: 'idle', t: 0, dir: 1, from: p, to: p, dur: 1 }));
+
+  if (type === 'grass') {
+    const deco = v < MIN_V;                  // rows behind where you can walk: thick trees
+    for (let p = 0; p < P; p++) {
+      const face = Math.floor(p / W), u = p % W;
+      const nearStart = v <= START_SAFE && face === 0 && Math.abs(u - Math.floor(W / 2)) <= 2;
+      if (nearStart && !deco) continue;
+      if (spec.grave && !deco) {
+        if (spec.stones.has(p)) { lane.blocked.add(p); lane.trees.set(p, -1 - randInt(0, 2)); }   // -1..-3: gravestones
+        else if (spec.coinTiles.includes(p)) lane.coins.set(p, null);
+        continue;
+      }
+      let chance = deco ? 0.7 : (v < START_SAFE ? 0.1 : 0.17);
+      if ((spec.clear || spec.cracked) && !deco) chance = 0;
+      if (spec.park && !deco) chance = spec.coinTiles.includes(p) ? 0 : PARK.treeChance;
+      if (spec.sparse && !deco) chance = lane.blocked.has(wrapP(p - 1)) || (p === P - 1 && lane.blocked.has(0)) ? 0 : 0.08;
+      if (Math.random() < chance) {
+        lane.blocked.add(p);
+        lane.trees.set(p, Math.random() < 0.82 ? randInt(1, 3) : 0);   // 0 = rock
+      } else if (spec.park ? spec.coinTiles.includes(p) : (!deco && v >= 1 && Math.random() < 0.035)) {
+        lane.coins.set(p, null);
+      }
+    }
+  } else if (type === 'road' && (spec.jam || spec.escort)) {
+    const pat = spec.jam || spec.escort;
+    lane.kind = spec.jam ? 'jam' : 'escort';
+    lane.tier = pat.tier;
+    lane.uniform = true;                      // fixed speed all the way round, no gravity
+    lane.dir = pat.dir;
+    lane.speed = pat.speed;
+    const len = 1.5;
+    if (spec.jam) {
+      for (const o of jamCenters(pat)) lane.vehicles.push({ o, len, color: pick(CAR_COLORS), parts: [] });
+    } else {
+      lane.dir = pat.escorts.dir;
+      for (const o of pat.escorts.cars[spec.side]) lane.vehicles.push({ o, len, color: pick(CAR_COLORS), parts: [] });
+    }
+  } else if (type === 'road') {
+    const truck = Math.random() < 0.3;
+    lane.kind = truck ? 'truck' : 'car';
+    lane.dir = Math.random() < 0.5 ? 1 : -1;
+    lane.speed = (truck ? rand(1.6, 2.6) : rand(2.2, 4.0)) * mul;
+    // difficult variant: this lane is a conveyor that drags you against the traffic
+    lane.belt = !spec.inZone && (test.on ? !!spec.hard : Math.random() < hardShare(v));
+    if (lane.belt) {
+      lane.beltDir = -lane.dir;
+      lane.beltSpeed = BELT.speed * mul;
+      bonuses.push({ row: v + 1, points: BONUS.belt, label: 'CONVEYOR' });
+    }
+    const len = truck ? 2.7 : 1.5;
+    // space cars by time, so even on the slowest stretch (the ceiling) there's a car-and-a-bit between them
+    const minDt = (len + GRAVITY.carGap) / MIN_FACTOR;
+    const n = Math.min(truck ? randInt(3, 4) : randInt(4, 6), Math.floor(LAP_TIME / minDt));
+    const slot = LAP_TIME / n, slack = slot - minDt;
+    const base = Math.random() * LAP_TIME;
+    for (let i = 0; i < n; i++) {
+      lane.vehicles.push({ u: base + i * slot + Math.random() * slack, len, color: pick(CAR_COLORS), parts: [] });
+    }
+    for (let p = 0; p < P; p++) if (Math.random() < 0.02) lane.coins.set(p, null);
+  } else if (type === 'river' && !(prev && prev.type === 'pads') && Math.random() < LILY.chance) {
+    // a row of stationary lily pads
+    lane.type = 'pads';
+    lane.pads = new Set();
+    for (let f = 0; f < 4; f++) {
+      const onFace = [];
+      for (let u = 0; u < W; u++) if (Math.random() < LILY.density) onFace.push(f * W + u);
+      while (onFace.length < LILY.perFace) {
+        const p = f * W + randInt(0, W - 1);
+        if (!onFace.includes(p)) onFace.push(p);
+      }
+      onFace.forEach(p => lane.pads.add(p));
+    }
+  } else if (type === 'river') {
+    lane.dir = prev && prev.type === 'river' ? -prev.dir : (Math.random() < 0.5 ? 1 : -1);
+    let base = rand(LOG.speed[0], LOG.speed[1]);
+    if (prev && prev.type === 'river') {
+      for (let i = 0; i < 20 && Math.abs(base - prev.logBase) < LOG.minDiff; i++) base = rand(LOG.speed[0], LOG.speed[1]);
+    }
+    lane.logBase = base;
+    lane.speed = base * mul;
+    let pos = randInt(0, 2);
+    while (pos < P - 3) {
+      const len = randInt(2, 4);
+      if (pos + len > P - 1) break;
+      // difficult variant: a cracked log (one crack usually, more is rare, always one safe spot left)
+      const cracks = new Set();
+      let sink = false;
+      if (Math.random() < (test.on ? (spec.hard ? 1 : 0) : hardShare(v))) {      // test mode: every log in a tested river
+        // difficult log: cracked or sinking, half and half (test mode picks the one being tested)
+        sink = test.on ? test.only === 'sink' : Math.random() < 0.5;
+        if (!sink) {
+          cracks.add(randInt(0, len - 1));
+          while (cracks.size < len - 1 && Math.random() < CRACK.extraChance) cracks.add(randInt(0, len - 1));
+        }
+      }
+      lane.logs.push({ o: pos, len, parts: [], cracks, sink, sinkStart: null });
+      pos += len + randInt(1, 3);
+    }
+  } else {   // rail
+    lane.dir = Math.random() < 0.5 ? 1 : -1;
+    lane.idle = rand(2.5, 5.5);
+    lane.hard = !spec.inZone && (test.on ? !!spec.hard : Math.random() < hardShare(v));
+    if (lane.hard) {
+      lane.warn = RED_TRAIN.warn;
+      lane.trainLen = P - RED_TRAIN.gap;
+      lane.laps = RED_TRAIN.laps;
+      // the row is almost fully covered from when the whole train is on it until its head finishes lap 3
+      lane.trainSpeed = (lane.laps * P - lane.trainLen) / RED_TRAIN.coverSeconds;
+      bonuses.push({ row: v + 1, points: BONUS.rail, label: 'RED LINE' });
+    } else {
+      lane.warn = 1.3;
+      lane.trainLen = 9;
+      lane.laps = 1;
+      lane.trainSpeed = 26 * mul;
+    }
+    lane.pass = (lane.laps * P + lane.trainLen + 2) / lane.trainSpeed;
+    lane.period = lane.idle + lane.warn + lane.pass;
+    lane.phase = Math.random() * lane.period;
+    lane.cycle = -1;
+    lane.trainStart = 0;
+  }
+
+  buildLaneStatic(lane);
+  buildLaneDynamic(lane);
+  scene.add(lane.group);
+  lanes.set(v, lane);
+  scheduleDark(v);
+  return lane;
+}
+
+// ---------------- darkness ----------------
+const darkZones = [];          // { from, to, hard, decided }
+function scheduleDark(v) {
+  const testing = test.on && test.only === 'dark';
+  if (v === gen.nextDarkAt && (!test.on || testing)) {
+    let hard = Math.random() < hardShare(v);
+    if (testing) { hard = gen.darkFlip; gen.darkFlip = !gen.darkFlip; }     // test mode: dusk, then dark, ...
+    darkZones.push({ from: v, to: v + DARK.len - 1, hard, decided: false });
+    gen.nextDarkAt = v + DARK.len + (testing ? randInt(12, 20) : randInt(DARK.gap[0], DARK.gap[1]));
+  }
+  for (const z of darkZones) {
+    if (z.decided || v < z.to) continue;
+    z.decided = true;
+    // over a boulder field or a graveyard it can only be dusk
+    for (let r = z.from; r <= z.to && z.hard; r++) {
+      const l = lanes.get(r);
+      if (l && (l.grave || l.zoneTier === 'difficult')) z.hard = false;
+    }
+    if (z.hard) bonuses.push({ row: z.to + 1, points: BONUS.dark, label: 'DARKNESS' });
+  }
+}
+// how dark it is at row v: 0 = daylight, 1 = fully inside; and which kind
+function darknessAt(v) {
+  let amt = 0, hard = false;
+  for (const z of darkZones) {
+    const k = Math.min(clamp01((v - (z.from - DARK.ramp)) / DARK.ramp), clamp01((z.to + DARK.ramp - v) / DARK.ramp));
+    if (k > amt) { amt = k; hard = z.decided && z.hard; }
+  }
+  return { amt, hard };
+}
+const DAY = { fogNear: 18, fogFar: 34, ambient: 0.5, sun: 0.6 };
+const _sky = new THREE.Color(), _night = new THREE.Color();
+const darkLook = { amt: 0, hardK: 0 };
+const _dusk = new THREE.Color(), _fog = new THREE.Color();
+// how lit the dark is right now: 1 during a flash, 0 between them (a steady beat you can time hops to)
+function blinkLevel() {
+  const B = DARK.blink, t = ((clock % B.period) + B.period) % B.period;
+  if (t < B.rise) return t / B.rise;
+  if (t < B.rise + B.hold) return 1;
+  if (t < B.rise + B.hold + B.fade) return 1 - (t - B.rise - B.hold) / B.fade;
+  return 0;
+}
+function updateDarkness(dt) {
+  const { amt, hard } = darknessAt(camState.v);
+  // ease into and out of darkness, and between dusk and dark, so nothing snaps
+  const e = 1 - Math.exp(-dt * 3);
+  darkLook.amt += (amt - darkLook.amt) * e;
+  darkLook.hardK += ((hard ? 1 : 0) - darkLook.hardK) * e;
+  const k = darkLook.amt, h = darkLook.hardK, D = DARK.dark, U = DARK.dusk;
+  // the dark's look this frame: black, or flashing; then mixed with dusk by how far into dark you are
+  const b = blinkLevel();
+  const beat = Math.floor(clock / DARK.blink.period);
+  if (beat !== darkLook.beat) { darkLook.beat = beat; if (game.mode === 'play' && k * h > 0.3) SFX.pulse(k * h); }
+  const see = lerp(U.see, lerp(D.see, D.flashSee, b), h);
+  const amb = lerp(U.ambient, lerp(D.ambient, D.flashAmbient, b), h);
+  const sunI = lerp(U.sun, lerp(D.sun, D.flashSun, b), h);
+  _fog.setHex(D.fog).lerp(_dusk.setHex(D.flashFog), b);
+  _fog.lerp(_dusk.setHex(U.fog), 1 - h);
+  // fog distance is from the camera, so "see N tiles" means the camera-to-you distance plus N
+  const pf0 = ringFrame(player.pf, 0);
+  const camDist = camera.position.distanceTo(_gv.set(pf0.x, pf0.y, -player.v));
+  // you're always clear; things fade out quickly past `see` tiles
+  const far = camDist + see + 0.8, near = camDist + see * 0.25 - 0.2;
+  scene.fog.near = lerp(DAY.fogNear, near, k);
+  scene.fog.far = lerp(DAY.fogFar, far, k);
+  _sky.setHex(COLORS.sky).lerp(_fog, k);
+  scene.fog.color.copy(_sky);
+  scene.background.copy(_sky);
+  ambient.intensity = lerp(DAY.ambient, amb, k);
+  sun.intensity = lerp(DAY.sun, sunI, k);
+  beamMat.opacity = 0.85 * k;
+  const lf = ringFrame(player.pf, 1.4);
+  lantern.position.set(lf.x, lf.y, -player.v + 0.4);
+  lantern.intensity = 1.3 * k;
+  lantern.distance = lerp(4.2, 2, h);                     // in the dark it only lights your own tile
+  headlightMat.color.setHex(k > 0.3 ? 0xfffbe0 : 0xfff2a8);
+}
+
+function buildLaneStatic(lane) {
+  if (lane.staticMesh) {
+    lane.group.remove(lane.staticMesh);
+    lane.staticMesh.geometry.dispose();
+  }
+  const m = new Merge();
+  const v = lane.v;
+  const nextRoad = lane.type === 'road' && lanes.get(v + 1) && lanes.get(v + 1).type === 'road';
+  for (let p = 0; p < P; p++) {
+    if (lane.holes.has(p)) continue;
+    const face = Math.floor(p / W), u = p % W, rot = face * Math.PI / 2;
+    const x = u - H + 0.5;
+    const alt = (u + face) % 2;
+    if (lane.type === 'grass' && lane.cracked) {
+      m.box(COLORS.cracked[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      // black cracks: a few short zigzag segments per tile, the same every time for this tile
+      let seed = (v * 131 + p * 977) >>> 0;
+      const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
+      let cx = x - 0.32 + rnd() * 0.2, cz = -0.3 + rnd() * 0.2;
+      for (let k = 0; k < 4; k++) {
+        const lenX = 0.12 + rnd() * 0.22, lenZ = 0.1 + rnd() * 0.2;
+        m.box(lane.zoneTier === 'difficult' ? COLORS.crackHard : COLORS.crack, cx + lenX / 2, 0.006, cz, lenX, 0.012, 0.045, rot);
+        cx += lenX;
+        m.box(lane.zoneTier === 'difficult' ? COLORS.crackHard : COLORS.crack, cx, 0.006, cz + lenZ / 2, 0.045, 0.012, lenZ, rot);
+        cz += lenZ;
+        if (cx > x + 0.4 || cz > 0.4) break;
+      }
+    } else if (lane.type === 'grass') {
+      const pal = lane.grave ? (v % 2 ? GRAVE.grass : GRAVE.grassAlt) : (v % 2 ? COLORS.grass : COLORS.grassAlt);
+      m.box(pal[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      const t = lane.trees.get(p);
+      if (lane.grave && t === undefined && ((v * 53 + p * 29) % 23) === 0) {
+        // a few scattered bones (just decoration)
+        m.box(GRAVE.bone, x - 0.15, 0.03, 0.2, 0.34, 0.06, 0.07, rot);
+        m.box(GRAVE.bone, x - 0.32, 0.03, 0.2, 0.08, 0.08, 0.14, rot);
+        m.box(GRAVE.bone, x + 0.02, 0.03, 0.2, 0.08, 0.08, 0.14, rot);
+      }
+      if (t !== undefined && t < 0) {
+        const c = GRAVE.stone[(p + v) % 3];
+        m.box(GRAVE.dirt, x, 0.04, 0.14, 0.62, 0.08, 0.62, rot);              // the grave mound, on your side
+        if (t === -2) {                                                     // a stone cross
+          m.box(c, x, 0.46, -0.22, 0.2, 0.92, 0.2, rot);
+          m.box(c, x, 0.66, -0.22, 0.62, 0.18, 0.2, rot);
+        } else {                                                            // a headstone with a rounded top
+          const wide = t === -3 ? 0.72 : 0.6;
+          m.box(c, x, 0.36, -0.22, wide, 0.72, 0.22, rot);
+          m.box(c, x, 0.76, -0.22, wide - 0.2, 0.1, 0.22, rot);
+          m.box(GRAVE.engrave, x, 0.5, -0.105, wide - 0.32, 0.05, 0.012, rot);
+          m.box(GRAVE.engrave, x, 0.38, -0.105, wide - 0.4, 0.05, 0.012, rot);
+          m.box(GRAVE.engrave, x, 0.26, -0.105, wide - 0.32, 0.05, 0.012, rot);
+        }
+      } else if (t !== undefined) {
+        if (t === 0) {
+          m.box(COLORS.rock, x, 0.2, 0, 0.72, 0.4, 0.66, rot);
+          m.box(COLORS.rockTop, x, 0.42, 0, 0.5, 0.06, 0.46, rot);
+        } else {
+          m.box(COLORS.trunk, x, 0.17, 0, 0.32, 0.34, 0.32, rot);
+          for (let i = 0; i < t; i++) {
+            const w = 0.76 - i * 0.06;
+            m.box(COLORS.leaf[(p + i) % 3], x, 0.6 + i * 0.5, 0, w, 0.5, w, rot);
+          }
+        }
+      }
+    } else if (lane.type === 'road') {
+      if (lane.belt) {
+        m.box(BELT.base, x, -0.2, 0, 1, 0.4, 1, rot);
+        for (const z of [-0.455, 0.455]) {                   // steel side rails with bolts
+          m.box(BELT.rail, x, 0.03, z, 1, 0.06, 0.07, rot);
+          m.box(BELT.bolt, x - 0.3, 0.064, z, 0.08, 0.012, 0.04, rot);
+        }
+      } else m.box(COLORS.road[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      if (nextRoad && u % 2 === 0) m.box(COLORS.line, x, 0.005, -0.5, 0.55, 0.02, 0.07, rot);
+    } else if (lane.type === 'pads') {
+      m.box(alt ? COLORS.water : COLORS.waterDeep, x, -0.42, 0, 1, 0.44, 1, rot);
+      if (lane.pads.has(p)) {
+        m.box(0x4fae37, x, -0.05, 0, 0.84, 0.1, 0.84, rot);
+        m.box(0x67c94a, x - 0.08, 0.004, 0.05, 0.5, 0.012, 0.5, rot);
+      }
+    } else if (lane.type === 'river') {
+      m.box(alt ? COLORS.water : COLORS.waterDeep, x, -0.42, 0, 1, 0.44, 1, rot);
+    } else {
+      m.box(COLORS.gravel[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      for (const tz of [-0.25, 0.25]) m.box(COLORS.tie, x + tz * 0.6, 0.02, 0, 0.16, 0.05, 0.82, rot);
+      for (const rz of [-0.24, 0.24]) m.box(COLORS.rail, x, 0.07, rz, 1, 0.07, 0.07, rot);
+    }
+  }
+  lane.staticMesh = m.mesh();
+  lane.group.add(lane.staticMesh);
+}
+
+function buildLaneDynamic(lane) {
+  if (lane.kind === 'jam') {
+    lane.hazardMat = new THREE.MeshBasicMaterial({ color: JAM[lane.tier].light, fog: false });
+    lane.hazardOn = JAM[lane.tier].light;
+    const hm = new Merge();
+    for (const x of [-0.62, 0.62]) for (const z of [-0.33, 0.33]) hm.part(0xffffff, x, 0.6, z, 0.18, 0.08, 0.16);
+    lane.hazardGeo = hm.geometry();
+  }
+  for (const veh of lane.vehicles) {
+    if (lane.kind === 'truck') {
+      const cab = new THREE.Mesh(truckCabGeometry(veh.color), VCOL);
+      addHeadlights(cab, -0.3);
+      veh.parts.push({ mesh: cab, off: 0.9 });
+      const trailer = new THREE.Mesh(truckBoxGeometry(), VCOL);
+      addTaillights(trailer, -0.9);
+      veh.parts.push({ mesh: trailer, off: -0.45 });
+    } else {
+      const mesh = new THREE.Mesh(carGeometry(veh.color), VCOL);
+      addHeadlights(mesh, 0);
+      addTaillights(mesh, -0.77);
+      if (lane.kind === 'jam') mesh.add(new THREE.Mesh(lane.hazardGeo, lane.hazardMat));
+      veh.parts.push({ mesh, off: 0 });
+    }
+    for (const part of veh.parts) { part.mesh.rotation.order = 'ZYX'; lane.group.add(part.mesh); }
+  }
+  for (const log of lane.logs) {
+    for (let i = 0; i < log.len; i++) {
+      const mesh = new THREE.Mesh(log.sink ? SINK_GEO : log.cracks && log.cracks.has(i) ? CRACK_GEO : LOG_GEO, VCOL);
+      mesh.rotation.order = 'ZYX';
+      if (i === 0 || i === log.len - 1) {
+        const end = new THREE.Mesh(LOG_END_GEO, VCOL);
+        end.position.x = i === 0 ? -0.5 : 0.5;
+        mesh.add(end);
+      }
+      log.parts.push(mesh);
+      lane.group.add(mesh);
+    }
+  }
+  if (lane.type === 'rail') {
+    lane.wagons = [];
+    for (let i = 0; i < lane.trainLen; i++) {
+      const mesh = new THREE.Mesh(trainGeometry(i === 0, lane.hard), VCOL);
+      mesh.rotation.order = 'ZYX';
+      mesh.visible = false;
+      lane.wagons.push(mesh);
+      lane.group.add(mesh);
+    }
+    // warning lamps along both edges of the line, on every face
+    lane.lampMat = new THREE.MeshBasicMaterial({ color: 0x4a1210, fog: false });
+    const lm = new Merge();
+    for (let f = 0; f < 4; f++) {
+      for (const u of [1, Math.floor(W / 2), W - 2]) {
+        for (const z of [-0.47, 0.47]) lm.box(0xffffff, u - H + 0.5, 0.03, z, 0.34, 0.06, 0.06, f * Math.PI / 2);
+      }
+    }
+    const lamps = new THREE.Mesh(lm.geometry(), lane.lampMat);
+    lane.group.add(lamps);
+    lane.alertMat = new THREE.MeshBasicMaterial({ color: 0xff2a1f, transparent: true, opacity: 0, depthWrite: false, fog: false });
+    const am = new Merge();
+    for (let f = 0; f < 4; f++) am.box(0xffffff, 0, 0.12, 0, W, 0.02, 0.96, f * Math.PI / 2);
+    lane.group.add(new THREE.Mesh(am.geometry(), lane.alertMat));
+  }
+  if (lane.belt) {
+    lane.beltTex = BELT_TEX.clone();
+    lane.beltTex.needsUpdate = true;
+    lane.beltTex.repeat.set(lane.beltDir, 1);               // a mirrored texture points the other way
+    lane.beltMat = new THREE.MeshLambertMaterial({ map: lane.beltTex });
+    for (let f = 0; f < 4; f++) {
+      const belt = new THREE.Mesh(BELT_GEO, lane.beltMat);
+      const [bx, by] = toWorld(f * Math.PI / 2, 0, 0.01);
+      belt.position.set(bx, by, 0);
+      belt.rotation.z = f * Math.PI / 2;
+      lane.group.add(belt);
+    }
+    // the box spans W tiles, so repeat W times along it
+    lane.beltTex.repeat.x *= W;
+  }
+  for (const sk of lane.skels || []) {
+    sk.mesh = new THREE.Mesh(SKEL_GEO, VCOL);
+    sk.mesh.rotation.order = 'ZYX';
+    sk.mesh.scale.setScalar(0.92);
+    sk.eyeMat = new THREE.MeshBasicMaterial({ color: 0x1a1a22, fog: false });
+    sk.mesh.add(new THREE.Mesh(SKEL_EYE_GEO, sk.eyeMat));
+    lane.group.add(sk.mesh);
+  }
+  for (const p of lane.coins.keys()) {
+    const coin = new THREE.Mesh(COIN_GEO, COIN_MAT);
+    coin.rotation.order = 'ZYX';
+    const f = ringFrame(p, 0.45);
+    coin.position.set(f.x, f.y, 0);
+    coin.rotation.z = f.roll;
+    lane.coins.set(p, coin);
+    lane.group.add(coin);
+  }
+}
+
+function removeLane(lane) {
+  scene.remove(lane.group);
+  lane.group.traverse(o => {
+    if (o.isMesh && o.geometry !== LOG_GEO && o.geometry !== LOG_END_GEO && o.geometry !== COIN_GEO && o.geometry !== CRACK_GEO && o.geometry !== SINK_GEO &&
+        o.geometry !== SKEL_GEO && o.geometry !== SKEL_EYE_GEO && o.geometry !== BELT_GEO &&
+        o.geometry !== HEADLIGHT_GEO && o.geometry !== BEAM_GEO && o.geometry !== TAILLIGHT_GEO) o.geometry.dispose();
+  });
+  for (const sk of lane.skels || []) sk.eyeMat.dispose();
+  if (lane.beltMat) { lane.beltMat.dispose(); lane.beltTex.dispose(); }
+  lanes.delete(lane.v);
+}
+
+function ensureLanes() {
+  const lo = Math.floor(Math.min(player.v, camState.v)) - BEHIND;
+  const hi = Math.ceil(Math.max(player.v, camState.v)) + AHEAD;
+  for (const lane of [...lanes.values()]) if (lane.v < lo) removeLane(lane);
+  let top = lanes.size ? Math.max(...lanes.keys()) : lo - 1;
+  while (top < hi) makeLane(++top);
+}
+
+// ---------------- moving things ----------------
+function vehicleCenter(lane, veh) {
+  if (lane.uniform) return wrapP(veh.o + lane.dir * lane.speed * clock);
+  return ringPosAt(veh.u + lane.speed * clock, lane.dir);
+}
+const logStart = (lane, log) => wrapP(log.o + lane.dir * lane.speed * clock);
+
+function nearCopy(x, ref) { let d = wrapP(x - ref); if (d > P / 2) d -= P; return ref + d; }
+function spotPos(lane, log, slot, ref) { return nearCopy(logStart(lane, log) + slot, ref); }
+// a log end just beyond where you landed (within LOG.lenience of the log's edge)
+function logEndNear(lane, pf) {
+  let best = null;
+  for (const log of lane.logs) {
+    if (isSunk(log)) continue;
+    const a = logStart(lane, log);
+    for (const slot of [0, log.len - 1]) {
+      const d = ringDist(a + slot, pf);
+      if (d <= 0.5 + LOG.lenience && (!best || d < best.d)) best = { log, slot, d };
+    }
+  }
+  return best;
+}
+
+function hopEnds(h) {
+  if (!h.along) return [h.fp, h.tp];
+  const fp = spotPos(h.along.lane, h.along.log, h.along.from, h.fp);
+  return [fp, nearCopy(logStart(h.along.lane, h.along.log) + h.along.slot, fp + h.dp)];
+}
+
+// sinking logs: how far down the log is (0 = floating) and whether it's under the water
+function sinkPhase(log) {
+  if (!log || log.sinkStart === null || log.sinkStart === undefined) return null;
+  return clock - log.sinkStart;
+}
+function isSunk(log) {
+  const t = sinkPhase(log);
+  return t !== null && t >= SINK.time && t < SINK.time + SINK.under + SINK.rise * 0.5;
+}
+function logDepth(log) {
+  const t = sinkPhase(log);
+  if (t === null) return 0;
+  if (t < SINK.time) return 0.3 * Math.pow(t / SINK.time, 1.6);           // slowly at first, then faster
+  if (t < SINK.time + 0.15) return lerp(0.3, 0.62, (t - SINK.time) / 0.15);
+  if (t < SINK.time + SINK.under) return 0.62;
+  return lerp(0.62, 0, clamp01((t - SINK.time - SINK.under) / SINK.rise));
+}
+// +1 the first time you land on each cracked or sinking log
+function payLog(log) {
+  if (!log || log.paid || !(log.sink || (log.cracks && log.cracks.size))) return;
+  log.paid = true;
+  addBonus(BONUS.log, 'RISKY LOG');
+}
+function startSinking(log) { if (log && log.sink && log.sinkStart === null) log.sinkStart = clock; }
+function logUnder(lane, pf) {
+  for (const log of lane.logs) if (!log.cracks) log.cracks = new Set();
+  for (const log of lane.logs) {
+    if (isSunk(log)) continue;
+    const r = wrapP(pf - logStart(lane, log));
+    if (r <= log.len - 0.5 || r >= P - 0.5) return log;
+  }
+  return null;
+}
+function vehicleHits(lane, pf) {
+  return lane.vehicles.some(veh => ringDist(vehicleCenter(lane, veh), pf) < veh.len / 2 + 0.3);
+}
+// A car honks when you're standing (or landing) in its path and it's about to reach you. Each car honks
+// at most once every 2 s, so a gridlock doesn't become one long noise.
+const HONK = { warnTime: 0.8, minGap: 0.15, every: 2 };
+function carHonks() {
+  if (game.mode !== 'play' || !game.started) return;
+  const [pp, pv] = playerNow();
+  const lane = lanes.get(Math.round(pv));
+  if (!lane || lane.type !== 'road' || !lane.speed) return;
+  for (const veh of lane.vehicles) {
+    const ahead = wrapP((pp - vehicleCenter(lane, veh)) * lane.dir);      // how far you are in front of its centre
+    const gap = ahead - veh.len / 2;
+    if (gap < HONK.minGap || gap > lane.speed * HONK.warnTime + 0.4) continue;
+    if (veh.honkAt !== undefined && clock - veh.honkAt < HONK.every) continue;
+    veh.honkAt = clock;
+    SFX.honk(veh.len >= 2);
+  }
+}
+function trainState(lane) {
+  const tau = ((clock + lane.phase) % lane.period + lane.period) % lane.period;
+  const cycle = Math.floor((clock + lane.phase) / lane.period);
+  const warn = tau >= lane.idle && tau < lane.idle + lane.warn;
+  const run = tau >= lane.idle + lane.warn;
+  if ((warn || run) && cycle !== lane.cycle) {
+    // chosen when the lights come on: the train enters on the far side from where you are now
+    lane.cycle = cycle;
+    lane.trainStart = Math.round(player.pf) + P / 2;
+  }
+  const travelled = run ? (tau - lane.idle - lane.warn) * lane.trainSpeed : -1;
+  return { warn, run, travelled };
+}
+// Where car i of the train is right now, or null if it isn't on the track. Used both to draw the train
+// and to check if it hits you, so anything that can hit you is always visible.
+function wagonPos(lane, st, i) {
+  if (!st.run) return null;
+  const along = st.travelled - 0.5 - i;
+  if (along < -0.5 || along > (lane.laps || 1) * P + 0.5) return null;
+  return lane.trainStart + lane.dir * along;
+}
+function trainHits(lane, pf) {
+  const st = trainState(lane);
+  if (!st.run) return false;
+  for (let i = 0; i < lane.trainLen; i++) {
+    const pos = wagonPos(lane, st, i);
+    if (pos !== null && ringDist(pos, pf) < 0.48 + 0.4) return true;
+  }
+  return false;
+}
+
+const faceOf = pf => ((Math.floor((pf + 0.5) / W) % 4) + 4) % 4;
+function skelHits(lane, pf) {
+  return !!lane.skels && lane.skels.some(sk => ringDist(sk.pos, pf) < GRAVE.skel.hit);
+}
+function updateSkeletons(dt) {
+  const S = GRAVE.skel, youFace = faceOf(player.pf);
+  for (const lane of lanes.values()) {
+    if (!lane.skels) continue;
+    for (const sk of lane.skels) {
+      sk.t += dt;
+      if (sk.state === 'idle') {
+        const rel = lane.v - player.v;
+        let d = wrapP(player.pf - sk.pos); if (d > P / 2) d -= P;
+        // only skeletons you can see (on your face, near your row) wake up
+        if (game.mode === 'play' && game.started && rel >= -S.rowsBehind && rel <= S.rowsAhead &&
+            faceOf(sk.pos) === youFace && Math.abs(d) >= 0.5 && Math.abs(d) <= S.reach) {
+          sk.state = 'glow'; sk.t = 0; sk.dir = Math.sign(d);
+          SFX.rattle();
+        }
+      } else if (sk.state === 'glow' && sk.t >= S.glow) {
+        let tiles = 0;
+        const at = Math.round(sk.pos);
+        while (tiles < S.dash && !lane.blocked.has(wrapP(at + sk.dir * (tiles + 1)))) tiles++;
+        sk.t = 0;
+        if (tiles === 0) sk.state = 'rest';
+        else { sk.state = 'dash'; sk.from = at; sk.to = at + sk.dir * tiles; sk.dur = tiles / S.dashSpeed; }
+      } else if (sk.state === 'dash') {
+        const k = clamp01(sk.t / sk.dur);
+        sk.pos = lerp(sk.from, sk.to, k);
+        if (k >= 1) { sk.pos = wrapP(sk.to); sk.state = 'rest'; sk.t = 0; }
+      } else if (sk.state === 'rest' && sk.t >= S.rest) {
+        sk.state = 'idle'; sk.t = 0;
+      }
+      // drawing: glowing eyes, a crouch before the dash, a lean while dashing
+      let h = 0, yaw = 0;
+      if (sk.state === 'glow') {
+        sk.eyeMat.color.setHex(Math.floor(sk.t * 14) % 2 ? 0x8dff5a : 0xe9ff9a);
+        h = -0.06 * clamp01(sk.t / S.glow);
+        yaw = sk.dir * 0.5 * clamp01(sk.t / S.glow);
+      } else if (sk.state === 'dash') {
+        sk.eyeMat.color.setHex(0x8dff5a);
+        h = Math.abs(Math.sin(sk.t * 40)) * 0.12;
+        yaw = sk.dir * Math.PI / 2;
+      } else {
+        // in the dark their eyes always glow faintly, so you can see where they stand
+        const dim = darkLook.amt > 0.25;
+        sk.eyeMat.color.setHex(sk.state === 'rest' ? (dim ? 0x4f8f3a : 0x3c5a2a) : (dim ? 0x3f9a34 : 0x1a1a22));
+        h = sk.state === 'idle' ? Math.max(0, Math.sin(clock * 2.2 + sk.from)) * 0.03 : 0;
+      }
+      place(sk.mesh, sk.pos, h, yaw);
+    }
+  }
+}
+
+const ghostMat = new THREE.MeshLambertMaterial({ color: 0xf2f4ff, emissive: 0x7a84b8, transparent: true, opacity: 0, depthWrite: false, fog: false });
+const ghostFaceMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity: 0, fog: false });
+const ghostMesh = new THREE.Mesh(GHOST_GEO, ghostMat);
+ghostMesh.add(new THREE.Mesh(GHOST_FACE_GEO, ghostFaceMat));
+ghostMesh.rotation.order = 'ZYX';
+ghostMesh.visible = false;
+scene.add(ghostMesh);
+const ghost = { active: false, leaving: false, gpf: 0, gv: 0, until: 0, fade: 0 };
+const graveyards = [];       // { start, exit, woke }
+
+// where you are right now, including part way through a hop
+function playerNow() {
+  if (!player.hop) return [player.pf, player.v];
+  const t = clamp01(player.hop.t), [hf, ht] = hopEnds(player.hop);
+  return [lerp(hf, ht, t), lerp(player.hop.fv, player.hop.tv, t)];
+}
+function ghostDist() {
+  const [pp, pv] = playerNow();
+  let dp = wrapP(pp - ghost.gpf); if (dp > P / 2) dp -= P;
+  return { dp, dv: pv - ghost.gv, d: Math.hypot(dp, pv - ghost.gv) };
+}
+function updateGhost(dt) {
+  const G = GRAVE.ghost;
+  if (game.mode === 'play') {
+    for (const g of graveyards) {
+      if (g.woke || player.v < g.start) continue;
+      g.woke = true;
+      // he appears on the face to your left or right, level with you, and comes across at you
+      const side = Math.random() < 0.5 ? -1 : 1;
+      Object.assign(ghost, { active: true, leaving: false, gpf: player.pf + side * W, gv: player.v,
+                             until: g.exit + G.chaseRows, fade: 0 });
+      SFX.ghost();
+      SFX.graveTune(false);
+    }
+  }
+  if (game.mode === 'play') {
+    for (const g of graveyards) {
+      if (!g.woke || g.left || player.v < g.exit) continue;
+      g.left = true;
+      SFX.graveTune(true, 0.35);     // starts just after the GRAVEYARD bonus jingle, not on top of it
+    }
+  }
+  if (!ghost.active) return;
+  if (ghost.leaving) {
+    ghost.fade -= dt * 1.4;
+    if (ghost.fade <= 0) { ghost.active = false; ghost.fade = 0; }
+    return;
+  }
+  ghost.fade = Math.min(1, ghost.fade + dt * 2);
+  if (game.mode !== 'play') return;
+  const over = lanes.get(Math.round(ghost.gv));
+  const wet = !!over && (over.type === 'river' || over.type === 'pads');
+  const speed = Math.min(G.maxSpeed, G.speed * speedMul(game.dist)) * (wet ? G.water : 1);
+  const { dp, dv, d } = ghostDist();
+  const step = Math.min(d, speed * dt);
+  if (d > 1e-6) { ghost.gpf += dp / d * step; ghost.gv += dv / d * step; }
+  if (ghostDist().d < G.hit) {
+    die('ghost');
+    if (game.mode === 'play') { ghost.gv = playerNow()[1] - G.behind; ghost.gpf = player.pf; }   // test mode: knocked back
+    return;
+  }
+  if (player.v >= ghost.until) { ghost.leaving = true; addBonus(BONUS.ghost, 'GHOST ESCAPED'); }
+}
+
+// ---------------- steamrollers ----------------
+const rollers = [];
+const rollerGen = { lastRow: 0, lastEnd: -999, flip: false };
+const rollable = l => !!l && (l.type === 'grass' || l.type === 'road');
+const isWater = l => !!l && (l.type === 'river' || l.type === 'pads');
+// how many water rows in a row (river or lily pads) this water row is part of
+function waterRunAt(v) {
+  if (!isWater(lanes.get(v))) return 0;
+  let n = 1;
+  for (let k = v - 1; isWater(lanes.get(k)); k--) n++;
+  for (let k = v + 1; isWater(lanes.get(k)); k++) n++;
+  return n;
+}
+// rivers of up to ROLLER.maxCross rows it drives across (0: none, it sinks in any river)
+const shortWater = v => { const n = waterRunAt(v); return n > 0 && n <= ROLLER.maxCross; };
+const rollerPath = v => rollable(lanes.get(v)) || shortWater(v);
+const rollerDeadly = r => !r.stopped && !(r.sinking && r.sinkT > r.R.sinkTime * 0.5);
+function rollerFaces(r) { return r.faces.map(f => ((f % 4) + 4) % 4); }
+function rollerCovers(r, pf, v) {
+  return rollerFaces(r).includes(faceOf(pf)) && v >= r.v - r.R.front - 0.05 && v <= r.v + r.R.back;
+}
+function rollerHits(pf, v) { return rollers.some(r => rollerDeadly(r) && rollerCovers(r, pf, v)); }
+// small cubes thrown up: rubble from the rollers, or what's left of something they crushed
+function debris(pf, v, color, n, up) {
+  const f = ringFrame(pf, 0.2);
+  const ux = -Math.sin(f.roll), uy = Math.cos(f.roll);
+  for (let i = 0; i < n; i++) {
+    const sz = rand(0.08, 0.16);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(sz, sz, sz), new THREE.MeshLambertMaterial({ color }));
+    const side = rand(-1, 1);
+    mesh.position.set(f.x, f.y, -v);
+    scene.add(mesh);
+    particles.push({ mesh, life: rand(0.35, 0.7), ux, uy,
+      vel: [ux * rand(1.5, up) + uy * side * 1.8, uy * rand(1.5, up) - ux * side * 1.8, rand(-0.6, 1.8)] });
+  }
+}
+function trySpawnRoller() {
+  const R = test.on && test.only === 'roller' ? { ...ROLLER, chance: 1, cooldown: 8, fromRow: 6 } : ROLLER;
+  if (rollers.length || player.v < R.fromRow || player.v - rollerGen.lastEnd < R.cooldown) return;
+  if (test.on && test.only !== 'roller') return;           // test mode: only when testing steamrollers
+  if (Math.random() >= R.chance) return;
+  let run = 0;
+  while (run < R.maxAhead && rollerPath(player.v + run)) run++;
+  while (run > 0 && !rollable(lanes.get(player.v + run - 1))) run--;     // it starts on land, not in water
+  if (run < R.minRun) return;
+  // one big thing at a time: no steamroller during a ghost chase, in the dark, or through a boulder field
+  if (!test.on) {
+    if (ghost.active) return;
+    for (let k = -4; k < run; k++) { const l = lanes.get(player.v + k); if ((l && l.inZone) || darknessAt(player.v + k).amt > 0) return; }
+  }
+  const f0 = faceOf(player.pf);
+  let hard = Math.random() < hardShare(player.v);
+  if (test.on) { hard = rollerGen.flip; rollerGen.flip = !rollerGen.flip; }   // test mode: alternate 1 and 2 faces
+  const faces = hard ? [f0, f0 + (Math.random() < 0.5 ? 1 : -1)] : [f0];
+  const r = { faces, hard, R, v: player.v + run - 1 + R.front, paid: false, stopped: false, fade: 1, meshes: [], paths: [], dustT: 0 };
+  for (const f of faces) {
+    const mesh = new THREE.Mesh(ROLLER_GEO, VCOL);
+    mesh.add(new THREE.Mesh(ROLLER_BEACON_GEO, rollerBeaconMat));
+    mesh.rotation.order = 'ZYX';
+    scene.add(mesh); r.meshes.push(mesh);
+    const path = new THREE.Mesh(ROLLER_PATH_GEO, rollerPathMat);
+    path.rotation.order = 'ZYX';
+    scene.add(path); r.paths.push(path);
+  }
+  rollers.push(r);
+  SFX.rollerHorn();
+}
+function removeRoller(r) {
+  for (const m of [...r.meshes, ...r.paths]) scene.remove(m);
+  rollers.splice(rollers.indexOf(r), 1);
+  rollerGen.lastEnd = player.v;
+}
+// everything inside a roller on row v gets flattened
+function crushRow(r, lane) {
+  const faces = rollerFaces(r);
+  const inside = pf => faces.includes(faceOf(pf));
+  if (isWater(lane)) return;           // logs and lily pads are left alone: it just sinks
+  let rebuild = false;
+  // crumbling ground in its faces breaks away under it and falls, leaving holes
+  if (lane.cracked) {
+    for (let p = 0; p < P; p++) {
+      if (!inside(p) || lane.holes.has(p)) continue;
+      if (lane.fuse.has(p)) {
+        lane.fuse.delete(p);
+        const warn = lane.fuseMeshes.get(p);
+        if (warn) { lane.group.remove(warn); warn.material.dispose(); lane.fuseMeshes.delete(p); }
+      }
+      lane.holes.add(p); rebuild = true;
+      const mesh = new THREE.Mesh(FALL_GEO, new THREE.MeshLambertMaterial({ color: COLORS.cracked[p % 2] }));
+      mesh.rotation.order = 'ZYX';
+      scene.add(mesh);
+      fallingPieces.push({ mesh, tile: p, v: lane.v, t: rand(-0.15, 0), spin: rand(-3, 3) });
+    }
+  }
+  for (const [p, t] of [...lane.trees]) {
+    if (!inside(p)) continue;
+    lane.trees.delete(p); lane.blocked.delete(p); rebuild = true;
+    debris(p, lane.v, t < 0 ? GRAVE.stone[0] : 0x5aa83c, 6, 4);
+  }
+  if (rebuild) buildLaneStatic(lane);
+  for (let i = lane.vehicles.length - 1; i >= 0; i--) {
+    const veh = lane.vehicles[i], c = vehicleCenter(lane, veh);
+    if (!inside(c) && !inside(c - veh.len / 2 + 0.2) && !inside(c + veh.len / 2 - 0.2)) continue;
+    for (const part of veh.parts) { lane.group.remove(part.mesh); part.mesh.geometry.dispose(); }
+    lane.vehicles.splice(i, 1);
+    debris(c, lane.v, veh.color || 0xdddddd, 10, 5);
+  }
+  if (lane.skels) {
+    for (let i = lane.skels.length - 1; i >= 0; i--) {
+      const sk = lane.skels[i];
+      if (!inside(sk.pos)) continue;
+      lane.group.remove(sk.mesh); sk.eyeMat.dispose(); lane.skels.splice(i, 1);
+      debris(sk.pos, lane.v, GRAVE.bone, 8, 4);
+    }
+  }
+}
+function crushBoulders(r) {
+  const faces = rollerFaces(r);
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i];
+    if (!faces.includes(faceOf(d.p)) || d.row < r.v - r.R.front - 0.5 || d.row > r.v + r.R.back) continue;
+    debris(d.p, d.row, 0x7d7c86, 10, 5);
+    clearDrop(d); drops.splice(i, 1);
+  }
+}
+function updateRollers(dt) {
+  let near = 0;
+  for (const r of rollers) if (!r.stopped && !r.sinking) near = Math.max(near, 1 - Math.abs(r.v - r.R.front - player.v) / 16);
+  SFX.engine(game.mode === 'play' ? Math.max(0, near) : 0);
+  if (game.mode === 'play' && game.started && player.v > rollerGen.lastRow) { rollerGen.lastRow = player.v; trySpawnRoller(); }
+  rollerBeaconMat.color.setHex(Math.floor(clock * 6) % 2 ? 0xffa21f : 0x5a3200);
+  rollerPathMat.opacity = 0.1 + 0.08 * (0.5 + 0.5 * Math.sin(clock * 8));
+  for (const r of [...rollers]) {
+    const R = r.R;
+    if (!r.stopped && !r.sinking && game.mode === 'play') {
+      const next = r.v - R.speed * speedMul(player.v) * dt;
+      const ahead = Math.floor(next - R.front + 0.5), al = lanes.get(ahead);
+      if (isWater(al) && shortWater(ahead)) {
+        // a river of 1 or 2 rows: it drives straight across, taking the logs and pads in its faces with it
+        r.v = next;
+        if (r.lastSplash !== ahead) {
+          r.lastSplash = ahead;
+          for (const f of rollerFaces(r)) for (const u of [0, 2.5, 5, 7.5, 10]) splash(f * W + u, ahead);
+        }
+      } else if (isWater(al)) {
+        // a river of 3 or more rows: it rolls a little way in, then goes under
+        r.sinking = true; r.sinkRow = ahead; r.sinkT = 0; r.v = next;
+        for (const f of rollerFaces(r)) for (const u of [0, 2.5, 5, 7.5, 10]) splash(f * W + u, ahead);
+        camState.shake = Math.max(camState.shake, 0.12);
+      } else if (!rollable(al)) { r.v = ahead + 0.5 + R.front; r.stopped = true; }   // tracks: stop and sink away
+      else r.v = next;
+    } else if (r.sinking && game.mode === 'play') {
+      const stopV = r.sinkRow - 0.2 + R.front;
+      if (r.v > stopV) r.v = Math.max(stopV, r.v - R.speed * speedMul(player.v) * dt * 0.5);
+      r.sinkT += dt;
+      if (Math.random() < dt * 10) { const f = r.faces[Math.floor(Math.random() * r.faces.length)]; splash(((f % 4) + 4) % 4 * W + rand(0, 10), r.sinkRow); }
+      if (r.sinkT >= R.sinkTime) { removeRoller(r); continue; }
+    }
+    if (r.stopped) { r.fade -= dt * 1.2; if (r.fade <= 0) { removeRoller(r); continue; } }
+    if (r.v + R.back < player.v - 9) { removeRoller(r); continue; }
+    // flatten what's under it
+    if (rollerDeadly(r)) {
+      for (let v = Math.ceil(r.v - R.front - 0.5); v <= Math.floor(r.v + R.back); v++) {
+        const lane = lanes.get(v);
+        if (lane) crushRow(r, lane);
+      }
+      crushBoulders(r);
+    }
+    // rubble in the gaps between and beside the machines
+    r.dustT -= dt;
+    const wading = isWater(lanes.get(Math.floor(r.v - R.front + 0.5))) || isWater(lanes.get(Math.round(r.v)));
+    if (wading && !r.sinking && Math.random() < dt * 14) {
+      const f = r.faces[Math.floor(Math.random() * r.faces.length)];
+      splash(((f % 4) + 4) % 4 * W + rand(0, 10), Math.round(r.v - R.front + 0.3));
+    }
+    if (!r.stopped && !r.sinking && !wading && r.dustT <= 0) {
+      r.dustT = 0.05;
+      for (const f of rollerFaces(r)) for (const u of [0, 5, 10]) debris(f * W + u, r.v - R.front + 0.2, Math.random() < 0.5 ? 0x8a7a66 : 0x6b6e75, 1, 3);
+    }
+    if (r.hard && !r.paid && game.mode === 'play' && r.v + R.back < player.v - 0.5) { r.paid = true; addBonus(BONUS.roller, 'STEAMROLLER'); }
+    // drawing: the machines, sinking away when stopped, and a red path down to the end of the land
+    let end = Math.floor(r.v - R.front - 0.5);
+    while (end > r.v - 40 && rollerPath(end)) end--;
+    const pathFrom = r.v - R.front, pathTo = end + 0.5, len = Math.max(0, pathFrom - pathTo);
+    r.meshes.forEach((mesh, i) => {
+      const f = r.faces[i];
+      const sink = r.sinking ? Math.pow(clamp01(r.sinkT / R.sinkTime), 1.4) * 2.4 + Math.sin(clock * 25) * 0.03
+                 : wading ? 0.28 + Math.sin(clock * 9) * 0.04 : 0;          // lower in the water while crossing
+      place(mesh, ((f % 4) + 4) % 4 * W + 5, -(1 - r.fade) * 1.8 - sink, 0);
+      mesh.position.z = -r.v;
+    });
+    r.paths.forEach((path, i) => {
+      const f = r.faces[i];
+      path.visible = !r.stopped && !r.sinking && len > 0.1;
+      place(path, ((f % 4) + 4) % 4 * W + 5, 0.035, 0);
+      path.scale.z = Math.max(0.01, len);
+      path.position.z = -(pathTo + pathFrom) / 2;
+    });
+  }
+}
+
+function place(mesh, pf, h, yaw) {
+  const f = ringFrame(pf, h);
+  mesh.position.set(f.x, f.y, mesh.position.z);
+  mesh.rotation.set(0, yaw, f.roll);
+}
+
+function updateLanes(dt) {
+  const flash = Math.floor(clock * 7) % 2 === 0;
+  for (const lane of lanes.values()) {
+    if (lane.type === 'road') {
+      if (lane.beltTex) lane.beltTex.offset.x = -((lane.beltSpeed * clock) % 1);
+      if (lane.hazardMat) lane.hazardMat.color.setHex(Math.floor(clock * 3) % 2 ? lane.hazardOn : 0x3a2010);
+      const yaw = lane.dir > 0 ? 0 : Math.PI;
+      for (const veh of lane.vehicles) {
+        const c = vehicleCenter(lane, veh);
+        for (const part of veh.parts) place(part.mesh, c + lane.dir * part.off, 0, yaw);
+      }
+    } else if (lane.type === 'river') {
+      for (const log of lane.logs) {
+        const a = logStart(lane, log);
+        const t = sinkPhase(log);
+        if (t !== null && t >= SINK.time + SINK.under + SINK.rise) log.sinkStart = null;   // back up: ready again
+        const depth = logDepth(log);
+        // a little wobble while it goes down
+        const wob = t !== null && t < SINK.time ? Math.sin(clock * 30) * 0.02 * (t / SINK.time) : 0;
+        log.parts.forEach((mesh, i) => place(mesh, a + i, -depth + wob, 0));
+      }
+    } else if (lane.type === 'rail') {
+      const st = trainState(lane);
+      const on = lane.hard ? Math.floor(clock * RED_TRAIN.flashRate) % 2 === 0 : flash;
+      const rel = lane.v - player.v;
+      if (game.mode === 'play' && rel >= -2 && rel <= 7) {
+        const vol = rel <= 1 ? 1 : 1 - (rel - 1) / 8;
+        const ding = Math.floor(clock * (lane.hard ? 16 : 7));            // red train: a faster, more urgent bell
+        if (st.warn && ding % 2 === 0 && ding !== lane.dingAt) { lane.dingAt = ding; SFX.bell(vol); }
+        if (st.run && !lane.wasRunning) SFX.horn(vol, lane.hard);
+      }
+      lane.wasRunning = st.run;
+      lane.lampMat.color.setHex((st.warn || st.run) && on ? 0xff2a1f : 0x4a1210);
+      lane.alertMat.opacity = st.warn ? (on ? (lane.hard ? 0.5 : 0.38) : 0.12) : 0;
+      const yaw = lane.dir > 0 ? 0 : Math.PI;
+      lane.wagons.forEach((mesh, i) => {
+        const pos = wagonPos(lane, st, i);
+        mesh.visible = pos !== null;
+        if (mesh.visible) place(mesh, pos, 0, yaw);
+      });
+    }
+    for (const coin of lane.coins.values()) if (coin) coin.rotation.y = clock * 3;
+  }
+}
+
+// ---------------- player ----------------
+const spyMesh = new THREE.Mesh(buildSpy(), VCOL);
+spyMesh.rotation.order = 'ZYX';
+scene.add(spyMesh);
+const blob = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.01, 18),
+  new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false }));
+blob.rotation.order = 'ZYX';
+scene.add(blob);
+const marker = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.012, 0.9),
+  new THREE.MeshBasicMaterial({ color: 0xfff27a, transparent: true, opacity: 0.45, depthWrite: false }));
+marker.rotation.order = 'ZYX';
+scene.add(marker);
+const HAND_GEO = (() => {
+  const m = new Merge(), skin = 0xf0c08a, shade = 0xd9a46e;
+  m.part(skin, 0, 0, 0, 1.2, 0.32, 1.3);                          // palm, fingers point toward -z
+  for (const [x, len] of [[-0.42, 0.85], [-0.14, 1.0], [0.14, 0.95], [0.42, 0.75]])
+    m.part(shade, x, 0, -0.65 - len / 2, 0.24, 0.28, len);
+  m.part(shade, 0.78, 0, 0.1, 0.5, 0.28, 0.26);                   // thumb
+  m.part(0x3a5a8c, 0, 0, 1.05, 1.1, 0.5, 0.9);                     // cuff
+  return m.geometry();
+})();
+const hand = new THREE.Mesh(HAND_GEO, VCOL);
+hand.rotation.order = 'ZYX';
+hand.visible = false;
+scene.add(hand);
+const handState = { phase: 'idle', t: 0, dur: 1, roll: 0 };   // idle | coming | leaving | struck
+
+
+const player = {
+  pf: Math.floor(W / 2), v: 0, hop: null, queued: null, bump: 0,
+  yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0
+};
+const camState = { v: 0, want: 0, roll: 0, lean: 0, shake: 0 };
+let clock = 0;
+const game = { mode: 'ready', score: 0, dist: 0, bonus: 0, best: 0, coins: 0, started: false, death: null, deathT: 0 };
+const particles = [];
+const bonuses = [];          // difficult obstacles waiting to be cleared: { row, points, label, done }
+const lap = { face: 0, dir: 0, steps: 0, startRow: 0, entryRow: 0 };   // entryRow: row where you arrived on your current face
+const pops = { lap: 0, bonus: 0 };
+const run = { ranked: false, secs: 0, hops: 0, b: {} };   // what this run measured, for the leaderboard
+
+function addBonus(points, label) {
+  game.bonus += points;
+  run.b[points] = (run.b[points] || 0) + 1;            // the leaderboard checks bonuses against these counts
+  game.score = game.dist + game.bonus;
+  document.getElementById('bonus').textContent = label + '  +' + points;
+  document.getElementById('bonus').dataset.hit = '';
+  pops.bonus = 1.6;
+  SFX.bonus(label === 'FULL LAP');
+}
+
+// Lap bonus (spiral rule): go round all 4 faces in one direction, climbing at least BONUS.lapRows rows on
+// each face before you step onto the next one. Each face you leave with enough rows climbed on it counts
+// toward the 4; leaving a face too early, or turning back, starts the lap again. A flat circle earns nothing.
+function trackLap() {
+  const f = Math.floor((player.pf + 0.5) / W);
+  if (f === lap.face) return;
+  const d = Math.sign(f - lap.face);
+  const climbed = player.v - lap.entryRow;            // rows climbed on the face you're leaving
+  lap.face = f;
+  lap.entryRow = player.v;
+  let msg;
+  if (climbed < BONUS.lapRows) {
+    // only worth a message if this broke a lap you'd started; casual face changes stay quiet
+    const broke = lap.steps > 0;
+    lap.steps = 0; lap.dir = 0;
+    if (!broke) return;
+    msg = 'LAP: ' + BONUS.lapRows + ' ROWS ON EACH FACE';
+  } else if (lap.dir !== 0 && d !== lap.dir) {
+    lap.dir = d; lap.steps = 1;                         // turned back: this face starts a new lap
+    msg = '1/4';
+  } else {
+    lap.dir = d; lap.steps++;
+    msg = lap.steps + '/4';
+  }
+  if (lap.steps >= 4) {
+    lap.steps = 0; lap.dir = 0;
+    addBonus(BONUS.lap, 'FULL LAP');
+    msg = '4/4';
+  } else SFX.lapTick();
+  document.getElementById('lap').textContent = msg;
+  pops.lap = 1.4;
+}
+
+function laneAt(v) { return lanes.get(v) || makeLane(v); }
+function surfaceHeight(lane) { return lane && lane.type === 'river' ? LOG_TOP : 0; }
+
+function yawFor(dp, dv) {
+  if (dv > 0) return 0;
+  if (dv < 0) return Math.PI;
+  return dp > 0 ? -Math.PI / 2 : Math.PI / 2;
+}
+
+function onBelt() { const l = lanes.get(player.v); return !!l && !!l.belt && !player.hop; }
+function calmHand() {
+  player.idleT = 0;
+  if (handState.phase === 'coming') { handState.phase = 'leaving'; handState.t = 0; SFX.handStop(); }
+}
+
+function updateHand(dt) {
+  // riding a log while you wait for the right moment doesn't count as standing still
+  if (game.mode === 'play' && game.started && !player.hop && !player.onLog && !onBelt()) player.idleT += dt;
+  if (handState.phase === 'idle' && game.mode === 'play' && player.idleT >= HAND.idle / speedMul(game.dist)) {
+    handState.phase = 'coming';
+    handState.t = 0;
+    handState.dur = HAND.approach / speedMul(Math.max(0, player.v));   // faster as the game speeds up
+    SFX.handComing(handState.dur);
+  }
+  if (handState.phase === 'coming') {
+    handState.t += dt;
+    if (handState.t >= handState.dur && game.mode === 'play') { handState.phase = 'struck'; handState.t = 0; die('slap');
+      if (game.mode === 'play') { handState.phase = 'leaving'; handState.t = 0; player.idleT = 0; } }
+  } else if (handState.phase === 'leaving') {
+    handState.t += dt;
+    if (handState.t > 0.45) handState.phase = 'idle';
+  } else if (handState.phase === 'struck') {
+    handState.t += dt;
+  }
+}
+
+function tryMove(dp, dv) {
+  if (game.mode === 'ready') startGame();
+  if (game.mode !== 'play') return;
+  if (player.hop) { player.queued = [dp, dv]; return; }
+  player.yawTarget = yawFor(dp, dv);
+  const here = lanes.get(player.v);
+  if (player.onLog && dv === 0 && here && here.type === 'river') {
+    // sideways on a log: exactly one spot along it, whichever way it's moving (off the end is water)
+    player.hop = { fp: player.pf, fv: player.v, tp: player.pf + dp, tv: player.v, t: 0, dp, dv,
+                   along: { lane: here, log: player.onLog, from: player.slot, slot: player.slot + dp } };
+    calmHand();
+    player.onLog = null;
+    game.started = true;
+    SFX.hop();
+    return;
+  }
+  const tp = Math.round(player.pf) + dp;
+  const tv = player.v + dv;
+  if (tv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
+  const lane = laneAt(tv);
+  const tw = wrapP(tp);
+  if (lane.blocked.has(tw) || lane.holes.has(tw)) { player.bump = 0.14; SFX.bump(); return; }
+  player.hop = { fp: player.pf, fv: player.v, tp, tv, t: 0, dp, dv };
+  if (dv > 0) run.hops++;
+  calmHand();
+  player.onLog = null;
+  game.started = true;
+  SFX.hop();
+}
+
+function finishHop() {
+  const h = player.hop;
+  player.hop = null;
+  player.v = h.tv;
+  player.pf = hopEnds(h)[1];
+  player.landT = LAND_TIME;
+  const lane = laneAt(player.v);
+  if (lane.type === 'pads' && !lane.pads.has(wrapP(Math.round(player.pf)))) { die('water'); return; }
+  if (lane.type === 'river' && h.along) {
+    if (h.along.slot < 0 || h.along.slot >= h.along.log.len) { die('water'); return; }
+    if (isSunk(h.along.log)) { die('water'); return; }
+    if (h.along.log.cracks.has(h.along.slot)) { die('crack'); return; }
+    player.onLog = h.along.log;
+    SFX.log();
+    payLog(h.along.log);
+    startSinking(h.along.log);
+    player.slot = h.along.slot;
+  } else if (lane.type === 'river') {
+    let log = logUnder(lane, player.pf);
+    if (!log) {
+      const end = logEndNear(lane, player.pf);      // just missed a log's end: land on it
+      if (!end) { die('water'); return; }
+      log = end.log;
+    }
+    // snap onto the nearest slot of the log, like Crossy
+    const a = logStart(lane, log);
+    let slot = Math.round(wrapP(player.pf - a));
+    if (slot > P / 2) slot -= P;
+    slot = Math.max(0, Math.min(log.len - 1, slot));
+    let target = a + slot;
+    let diffP = wrapP(target - player.pf);
+    if (diffP > P / 2) diffP -= P;
+    player.pf += diffP;
+    if (log.cracks.has(slot)) { die('crack'); return; }   // landed on a crack: it gives way
+    player.onLog = log;
+    SFX.log();
+    payLog(log);
+    startSinking(log);
+    player.slot = slot;
+  }
+  const tile = wrapP(Math.round(player.pf));
+  if (lane.cracked) {
+    if (lane.holes.has(tile)) { die('crumble'); return; }       // it fell while you were in the air
+    if (!lane.fuse.has(tile)) lightFuse(lane, tile);
+  }
+  const coin = lane.coins.get(tile);
+  if (coin) { lane.group.remove(coin); lane.coins.delete(tile); game.coins++; SFX.coin(); }
+  if (player.v > game.dist) game.dist = player.v;
+  for (const b of bonuses) {
+    if (!b.done && player.v >= b.row) { b.done = true; addBonus(b.points, b.label); }
+  }
+  game.score = game.dist + game.bonus;
+}
+
+const HIT_NAMES = { car: 'CAR', train: 'TRAIN', water: 'WATER', crumble: 'FELL', boulder: 'BOULDER', crack: 'CRACKED LOG',
+                    grab: 'GRABBED', slap: 'SLAPPED', skeleton: 'SKELETON', ghost: 'GHOST', sink: 'SANK', roller: 'STEAMROLLER' };
+function testHit(cause) {
+  if (test.hitT[cause] && clock - test.hitT[cause] < 0.7) return;
+  test.hitT[cause] = clock;
+  SFX.death(cause);
+  const el = document.getElementById('bonus');
+  el.textContent = 'HIT: ' + (HIT_NAMES[cause] || cause);
+  el.dataset.hit = '1';
+  pops.bonus = 1.0;
+  camState.shake = Math.max(camState.shake, 0.12);
+}
+function die(cause) {
+  if (game.mode !== 'play') return;
+  if (test.on && test.god) { testHit(cause); return; }
+  SFX.handStop();
+  SFX.death(cause);
+  game.mode = 'dying';
+  game.death = cause;
+  game.deathT = 0;
+  player.hop = null;
+  player.queued = null;
+  if (!test.on && run.ranked && game.score > game.best) { game.best = game.score; lbStore('best', game.best); }
+  const f = ringFrame(player.pf, 0);
+  game.deathRoll = f.roll;
+  if (cause === 'water' || cause === 'crack' || cause === 'sink') splash(player.pf, player.v);
+}
+
+const zones = [];            // crumble zones generated so far, for the boulder announcement
+const fallingPieces = [];    // tiles that have given way, on their way down
+const FUSE_GEO = new THREE.BoxGeometry(0.98, 0.014, 0.98);
+const FALL_GEO = new THREE.BoxGeometry(0.98, 0.4, 0.98);
+const BOULDER_GEO = (() => {
+  const m = new Merge(), c = COLORS.boulder;
+  m.part(c[0], 0, 1.5, 0, 3.4, 2.7, 3.0);
+  m.part(c[1], 0.5, 3.0, -0.3, 2.4, 1.0, 2.2);
+  m.part(c[2], -1.2, 1.0, 0.8, 1.5, 1.5, 1.5);
+  m.part(c[1], 1.4, 0.9, 1.0, 1.3, 1.2, 1.2);
+  m.part(c[2], 0.2, 0.6, -1.4, 1.6, 1.0, 1.0);
+  return m.geometry();
+})();
+
+function lightFuse(lane, tile) {
+  lane.fuse.set(tile, clock + ZONE.fuse);
+  SFX.fuse();
+  const mesh = new THREE.Mesh(FUSE_GEO, new THREE.MeshBasicMaterial({ color: 0x1a0d08, transparent: true, opacity: 0.1, depthWrite: false }));
+  mesh.rotation.order = 'ZYX';
+  const f = ringFrame(tile, 0.012);
+  mesh.position.set(f.x, f.y, 0);
+  mesh.rotation.set(0, 0, f.roll);
+  mesh.userData.home = [f.x, f.y];
+  lane.group.add(mesh);
+  lane.fuseMeshes.set(tile, mesh);
+}
+
+function collapse(lane, tile) {
+  lane.fuse.delete(tile);
+  const warn = lane.fuseMeshes.get(tile);
+  if (warn) { lane.group.remove(warn); warn.material.dispose(); lane.fuseMeshes.delete(tile); }
+  lane.holes.add(tile);
+  buildLaneStatic(lane);
+  const mesh = new THREE.Mesh(FALL_GEO, new THREE.MeshLambertMaterial({ color: COLORS.cracked[0] }));
+  mesh.rotation.order = 'ZYX';
+  scene.add(mesh);
+  fallingPieces.push({ mesh, tile, v: lane.v, t: 0, spin: rand(-2, 2) });
+  if (Math.abs(lane.v - player.v) <= 6) SFX.crumble();
+  // standing on it (not mid-hop) means you go down with it
+  if (game.mode === 'play' && !player.hop && player.v === lane.v && wrapP(Math.round(player.pf)) === tile) die('crumble');
+}
+
+function updateCrumble(dt) {
+  for (const lane of lanes.values()) {
+    if (!lane.fuse.size) continue;
+    for (const [tile, at] of [...lane.fuse]) {
+      if (clock >= at) { collapse(lane, tile); continue; }
+      const mesh = lane.fuseMeshes.get(tile);
+      const k = 1 - (at - clock) / ZONE.fuse;              // 0 when stepped on, 1 when it falls
+      mesh.material.opacity = 0.12 + 0.55 * k;
+      const shake = k > 0.65 ? (k - 0.65) * 0.12 : 0;
+      mesh.position.x = mesh.userData.home[0] + Math.sin(clock * 70 + tile) * shake;
+      mesh.position.y = mesh.userData.home[1] + Math.cos(clock * 63 + tile) * shake;
+    }
+  }
+  for (let i = fallingPieces.length - 1; i >= 0; i--) {
+    const f = fallingPieces[i];
+    f.t += dt;
+    const fr = ringFrame(f.tile, -0.2 - 4.5 * f.t * f.t);
+    f.mesh.position.set(fr.x, fr.y, -f.v);
+    f.mesh.rotation.set(f.t * f.spin, 0, fr.roll);
+    if (f.t > 1.4) { scene.remove(f.mesh); f.mesh.material.dispose(); fallingPieces.splice(i, 1); }
+  }
+}
+
+// The boulder: drops from the side opposite you onto the first row of the zone as you approach it.
+function updateZones(dt) {
+  for (const z of zones) {
+    if (z.done) continue;
+    if (!z.triggered) {
+      if (game.mode !== 'play' || player.v < z.start - ZONE.warnAhead) continue;
+      z.triggered = true;
+      SFX.whistle(ZONE.rockFall);
+      z.roll = Math.floor((player.pf + 0.5) / W) * Math.PI / 2;   // onto the face you're looking at
+      z.mesh = new THREE.Mesh(BOULDER_GEO, VCOL);
+      z.mesh.rotation.order = 'ZYX';
+      scene.add(z.mesh);
+      // a shadow on the landing spot grows as the boulder comes down
+      z.shadow = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 0.02, 24),
+        new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0, depthWrite: false }));
+      z.shadow.rotation.order = 'ZYX';
+      const [sx, sy] = toWorld(z.roll, 0, 0.03);
+      z.shadow.position.set(sx, sy, -z.start);
+      z.shadow.rotation.set(0, 0, z.roll);
+      scene.add(z.shadow);
+    }
+    z.t += dt;
+    const k = clamp01(z.t / ZONE.rockFall);
+    const h = lerp(W - 2.5, 0, k * k);                    // falls from near the far wall, speeding up
+    z.shadow.material.opacity = 0.15 + 0.4 * k;
+    z.shadow.scale.setScalar(0.4 + 0.8 * k);
+    const [x, y] = toWorld(z.roll, 0, h);
+    z.mesh.position.set(x, y, -z.start);
+    z.mesh.rotation.set(z.t * 0.6, z.t * 0.9, z.roll);
+    if (k >= 1) {
+      z.done = true;
+      scene.remove(z.mesh);
+      scene.remove(z.shadow);
+      z.shadow.geometry.dispose(); z.shadow.material.dispose();
+      rubble(z.roll, z.start);
+      camState.shake = 0.55;
+      SFX.boom(2);
+    }
+  }
+}
+
+const drops = [];            // boulders with a landing zone, active in hard crumble zones
+// landing-zone tile: red fill with a white border, so it stays distinct from a flashing rail lane
+const MARK_GEO = (() => {
+  const m = new Merge();
+  m.part(0xff2a1f, 0, 0, 0, 0.8, 0.02, 0.8);
+  for (const [x, z, sx, sz] of [[0, -0.44, 0.96, 0.08], [0, 0.44, 0.96, 0.08], [-0.44, 0, 0.08, 0.8], [0.44, 0, 0.08, 0.8]])
+    m.part(0xffffff, x, 0.005, z, sx, 0.025, sz);
+  return m.geometry();
+})();
+const key = (v, p) => v + ':' + wrapP(p);
+
+function walkable(v, p) {
+  const lane = lanes.get(v);
+  return !!lane && !lane.blocked.has(wrapP(p)) && !lane.holes.has(wrapP(p)) && v >= MIN_V;
+}
+// Can you get from your tile to a tile outside every landing zone within `steps` hops?
+function canEscape(danger, steps) {
+  const sv = player.v, sp = Math.round(player.pf);
+  if (!danger.has(key(sv, sp))) return true;
+  const seen = new Set([key(sv, sp)]);
+  let frontier = [[sv, sp]];
+  for (let d = 0; d < steps; d++) {
+    const next = [];
+    for (const [v, p] of frontier) {
+      for (const [dv, dp] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nv = v + dv, np = p + dp, k = key(nv, np);
+        if (seen.has(k) || !walkable(nv, np)) continue;
+        if (!danger.has(k)) return true;
+        seen.add(k);
+        next.push([nv, np]);
+      }
+    }
+    frontier = next;
+  }
+  return false;
+}
+
+function pickSize() {
+  let r = Math.random();
+  for (const s of BOULDERS.sizes) { if ((r -= s.weight) <= 0) return s; }
+  return BOULDERS.sizes[0];
+}
+
+function trySpawnDrop(z) {
+  const size = pickSize();
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const row = Math.max(z.start, Math.min(z.end, player.v + randInt(BOULDERS.rowsAhead[0], BOULDERS.rowsAhead[1])));
+    const p = Math.round(player.pf) + randInt(-BOULDERS.tilesAround, BOULDERS.tilesAround);
+    const tiles = [];
+    for (let dv = -size.r; dv <= size.r; dv++) {
+      for (let dp = -(size.r - Math.abs(dv)); dp <= size.r - Math.abs(dv); dp++) {
+        const tv = row + dv;
+        if (tv < z.start || tv > z.end) continue;             // only inside the zone
+        tiles.push([tv, p + dp]);
+      }
+    }
+    // never box you in: with this drop and every other active one, you must be able to step clear in time
+    const danger = new Set(tiles.map(([v, q]) => key(v, q)));
+    for (const d of drops) for (const k of d.keys) danger.add(k);
+    const steps = Math.floor((size.warn - 0.45) / BOULDERS.hopTime);
+    if (!canEscape(danger, steps)) continue;
+    const mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.3, depthWrite: false, fog: false });
+    const markers = tiles.map(([v, q]) => {
+      const m = new THREE.Mesh(MARK_GEO, mat);
+      m.rotation.order = 'ZYX';
+      const f = ringFrame(q, 0.02);
+      m.position.set(f.x, f.y, -v);
+      m.rotation.set(0, 0, f.roll);
+      scene.add(m);
+      return m;
+    });
+    const mesh = new THREE.Mesh(BOULDER_GEO, VCOL);
+    mesh.rotation.order = 'ZYX';
+    mesh.scale.setScalar(size.scale);
+    mesh.visible = false;
+    scene.add(mesh);
+    drops.push({ size, row, p, t: 0, mat, markers, mesh, keys: new Set(tiles.map(([v, q]) => key(v, q))), spin: rand(-2, 2) });
+    return true;
+  }
+  return false;
+}
+
+function clearDrop(d) {
+  for (const m of d.markers) scene.remove(m);
+  d.mat.dispose();
+  scene.remove(d.mesh);
+}
+
+function updateDrops(dt) {
+  // spawn while you're inside a hard zone
+  if (game.mode === 'play') {
+    for (const z of zones) {
+      if (z.tier !== 'difficult' || player.v < z.start || player.v > z.end) continue;
+      z.nextDrop -= dt;
+      if (z.nextDrop <= 0 && drops.length < BOULDERS.maxActive) {
+        trySpawnDrop(z);
+        z.nextDrop = rand(BOULDERS.interval[0], BOULDERS.interval[1]);
+      }
+    }
+  }
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i];
+    d.t += dt;
+    const left = d.size.warn - d.t;
+    // flash faster as it gets closer
+    const rate = 3 + 9 * clamp01(d.t / d.size.warn);
+    d.mat.opacity = Math.sin(clock * rate * Math.PI * 2) > 0 ? 0.85 : 0.35;
+    if (left <= BOULDERS.fallTime) {
+      const k = clamp01(1 - left / BOULDERS.fallTime);
+      const f = ringFrame(d.p, lerp(W - 3, 0, k * k));
+      if (!d.mesh.visible) SFX.whistle(left);
+      d.mesh.visible = true;
+      d.mesh.position.set(f.x, f.y, -d.row);
+      d.mesh.rotation.set(d.t * d.spin, d.t * 1.3, f.roll);
+    }
+    if (left <= 0) {
+      // impact: anyone on a marked tile is crushed
+      if (game.mode === 'play') {
+        let pv = player.v, pp = player.pf;
+        if (player.hop) {
+          const t = clamp01(player.hop.t);
+          pv = t < 0.5 ? player.hop.fv : player.hop.tv;
+          const [hf, ht] = hopEnds(player.hop);
+          pp = lerp(hf, ht, t);
+        }
+        if (d.keys.has(key(pv, Math.round(pp)))) die('boulder');
+      }
+      const f = ringFrame(d.p, 0);
+      rubble(f.roll, d.row, ringLocalX(d.p), 0.3 + d.size.r * 0.35);
+      camState.shake = Math.max(camState.shake, 0.15 + d.size.r * 0.12);
+      SFX.boom(d.size.r);
+      clearDrop(d);
+      drops.splice(i, 1);
+    }
+  }
+}
+
+function rubble(roll, v, lx = 0, amount = 1) {
+  const ux = -Math.sin(roll), uy = Math.cos(roll), tx = Math.cos(roll), ty = Math.sin(roll);
+  const n = Math.round(34 * amount);
+  for (let i = 0; i < n; i++) {
+    const size = i < n * 0.4 ? rand(0.45, 0.8) * Math.min(1, amount + 0.3) : rand(0.18, 0.35);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(size, size, size),
+      new THREE.MeshLambertMaterial({ color: pick(COLORS.boulder) }));
+    const [x, y] = toWorld(roll, lx + rand(-1.4, 1.4) * Math.min(1, amount + 0.2), 0.8);
+    mesh.position.set(x, y, -v + rand(-1, 1));
+    scene.add(mesh);
+    const side = rand(-1, 1) * 5, up = rand(3, 7);
+    particles.push({ mesh, life: rand(0.8, 1.3), ux, uy,
+      vel: [ux * up + tx * side, uy * up + ty * side, rand(-2.5, 2.5)] });
+  }
+}
+
+function splash(pf, v) {
+  const f = ringFrame(pf, 0);
+  const ux = -Math.sin(f.roll), uy = Math.cos(f.roll);
+  for (let i = 0; i < 12; i++) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+    const side = rand(-1, 1);
+    mesh.position.set(f.x, f.y, -v);
+    scene.add(mesh);
+    particles.push({
+      mesh, life: rand(0.5, 0.8), ux, uy,
+      vel: [ux * rand(2, 4) + uy * side * 1.5, uy * rand(2, 4) - ux * side * 1.5, rand(-1.2, 1.2)]
+    });
+  }
+}
+
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const q = particles[i];
+    q.life -= dt;
+    q.vel[0] -= q.ux * 12 * dt; q.vel[1] -= q.uy * 12 * dt;
+    q.mesh.position.x += q.vel[0] * dt; q.mesh.position.y += q.vel[1] * dt; q.mesh.position.z += q.vel[2] * dt;
+    if (q.life <= 0) { scene.remove(q.mesh); q.mesh.geometry.dispose(); q.mesh.material.dispose(); particles.splice(i, 1); }
+  }
+}
+
+function update(dt) {
+  clock += dt;
+  if (game.mode === 'play' && game.started) run.secs += dt;
+  if (game.mode === 'play') {
+    if (player.bump > 0) player.bump = Math.max(0, player.bump - dt);
+    if (player.landT > 0) player.landT = Math.max(0, player.landT - dt);
+
+    if (player.hop) {
+      const h = player.hop;
+      h.t += dt / HOP_TIME;
+      // traffic can catch you mid-hop: check the lane you are over right now
+      const t = clamp01(h.t);
+      const lv = t < 0.5 ? h.fv : h.tv;
+      const [hf, ht] = hopEnds(h);
+      const lp = lerp(hf, ht, t);
+      const lane = lanes.get(lv);
+      if (lane && lane.type === 'road' && vehicleHits(lane, lp)) die('car');
+      else if (lane && lane.type === 'rail' && trainHits(lane, lp)) die('train');
+      else if (lane && lane.skels && skelHits(lane, lp)) die('skeleton');
+      else if (rollerHits(lp, lerp(h.fv, h.tv, t))) die('roller');
+      else if (h.t >= 1) finishHop();
+    } else {
+      const lane = laneAt(player.v);
+      if (lane.type === 'river') {
+        if (!player.onLog || !lane.logs.includes(player.onLog)) {
+          player.onLog = logUnder(lane, player.pf);
+          if (player.onLog) player.slot = Math.max(0, Math.min(player.onLog.len - 1,
+            Math.round(wrapP(player.pf - logStart(lane, player.onLog) + P / 2) - P / 2)));
+        }
+        if (!player.onLog) die('water');
+        else if (isSunk(player.onLog)) die('sink');               // stayed on a sinking log too long
+        else player.pf += lane.dir * lane.speed * dt;     // the log carries you, even round a corner
+      }
+      if (lane.belt) player.pf += lane.beltDir * lane.beltSpeed * dt;   // the conveyor drags you
+      if (lane.type === 'road' && vehicleHits(lane, player.pf)) die('car');
+      if (lane.type === 'rail' && trainHits(lane, player.pf)) die('train');
+      if (lane.skels && skelHits(lane, player.pf)) die('skeleton');
+      if (rollerHits(player.pf, player.v)) die('roller');
+      if (game.mode === 'play' && player.queued) {
+        const q = player.queued; player.queued = null; tryMove(q[0], q[1]);
+      }
+    }
+
+    if (game.mode === 'play' && !player.hop) trackLap();
+    carHonks();
+    updateHand(dt);
+
+    // Crossy-style camera: follows you forward, never back, and creeps once you've started
+    if (game.started) camState.want += CAM.creep * speedMul(game.dist) * dt;   // creeps faster the further you go
+    const pv = player.hop ? lerp(player.hop.fv, player.hop.tv, clamp01(player.hop.t)) : player.v;
+    camState.want = Math.max(camState.want, pv);
+    if (game.mode === 'play' && game.started && player.v < camState.want - CAM.eagleGap) {
+      handState.phase = 'idle';           // a slap on its way is replaced by the grab
+      die('grab');
+      camState.want = player.v + 1;       // swing the camera back so you see the hand take you
+    }
+  } else if (game.mode === 'dying') {
+    if (handState.phase === 'struck') handState.t += dt;
+    game.deathT += dt;
+    if (game.deathT > 1.5) gameOver();
+  }
+  camState.v += (camState.want - camState.v) * smooth(dt, CAM.followTime);
+  ensureLanes();
+  updateLanes(dt);
+  updateSkeletons(dt);
+  updateGhost(dt);
+  updateRollers(dt);
+  updateParticles(dt);
+  updateCrumble(dt);
+  updateZones(dt);
+  updateDrops(dt);
+}
+
+// ---------------- drawing the player and camera ----------------
+function updateVisuals(dt) {
+  let pf = player.pf, vz = player.v, h = 0;
+  let sx = 1, sy = 1, sz = 1;
+  const laneNow = lanes.get(player.v);
+  let base = player.onLog ? LOG_TOP - Math.min(0.3, logDepth(player.onLog)) : 0;
+
+  if (player.hop) {
+    const t = clamp01(player.hop.t);
+    const e = t * t * (3 - 2 * t);
+    const [hf, ht] = hopEnds(player.hop);
+    pf = lerp(hf, ht, e);
+    vz = lerp(player.hop.fv, player.hop.tv, e);
+    const fromBase = lanes.get(player.hop.fv) && lanes.get(player.hop.fv).type === 'river' ? LOG_TOP : 0;
+    const toBase = lanes.get(player.hop.tv) && lanes.get(player.hop.tv).type === 'river' ? LOG_TOP : 0;
+    base = lerp(fromBase, toBase, t);
+    h = Math.sin(Math.PI * t) * HOP_HEIGHT;
+    const takeoff = clamp01(1 - t / 0.3), air = Math.sin(Math.PI * t);
+    sy = 1 - 0.22 * takeoff + 0.12 * air;
+    sx = sz = 1 + 0.12 * takeoff - 0.06 * air;
+  }
+  if (player.landT > 0) {
+    const k = Math.sin((player.landT / LAND_TIME) * Math.PI);
+    sy = 1 - 0.25 * k; sx = sz = 1 + 0.15 * k;
+  }
+  if (player.bump > 0) h = Math.sin((player.bump / 0.14) * Math.PI) * 0.18;
+
+  // turn quickly toward the way you're moving
+  let dy = player.yawTarget - player.yaw;
+  dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+  player.yaw += dy * smooth(dt, 0.035);
+
+  let yaw = player.yaw, extraRoll = 0;
+  let z = -vz;
+  const fr = ringFrame(pf, base + h);
+  let px = fr.x, py = fr.y, roll = fr.roll;
+  let show = true;
+
+  let handGrab = null;
+  if (game.mode === 'dying' || game.mode === 'over') {
+    const t = game.deathT, r = game.deathRoll;
+    if (game.death === 'grab') {
+      // the hand reaches in from behind the camera, closes on you, and pulls you back off the screen
+      const lx = ringLocalX(player.pf);
+      const reach = clamp01(t / 0.4);
+      const pull = Math.max(0, t - 0.45);
+      const hz = lerp(-player.v + 9, -player.v, reach) + pull * 16;
+      const hh = lerp(5, 1.3, reach) + pull * 5;
+      const [hx, hy] = toWorld(r, lx, hh);
+      handGrab = { x: hx, y: hy, z: hz, roll: r };
+      if (t > 0.45) {
+        const [cx, cy] = toWorld(r, lx, hh - 0.95);
+        px = cx; py = cy; z = hz;
+      }
+    } else if (game.death === 'ghost') {
+      // lifted up and spun away
+      const f2 = ringFrame(player.pf, t * 1.8);
+      px = f2.x; py = f2.y;
+      yaw += t * 9;
+      show = t < 0.9;
+    } else if (game.death === 'car' || game.death === 'boulder' || game.death === 'slap' || game.death === 'skeleton' || game.death === 'roller') {
+      sy = 0.14; sx = 1.35; sz = 1.35;
+      const f2 = ringFrame(player.pf, 0.04);
+      px = f2.x; py = f2.y;
+    } else if (game.death === 'train') {
+      const lane = lanes.get(player.v);
+      const dir = lane ? lane.dir : 1;
+      const f2 = ringFrame(player.pf + dir * t * 9, 0.4 + t * 3 - t * t * 2);
+      px = f2.x; py = f2.y; roll = f2.roll;
+      extraRoll = t * 14;
+    } else if (game.death === 'water' || game.death === 'crack' || game.death === 'sink') {
+      const f2 = ringFrame(player.pf, -t * 1.2);
+      px = f2.x; py = f2.y;
+      show = t < 0.8;
+    } else if (game.death === 'crumble') {
+      const drop = -0.5 * 9 * t * t;
+      const f2 = ringFrame(player.pf, drop);
+      px = f2.x; py = f2.y;
+    }
+  }
+
+  spyMesh.visible = show;
+  spyMesh.position.set(px, py, z);
+  spyMesh.rotation.set(extraRoll, yaw, roll);
+  spyMesh.scale.set(sx, sy, sz);
+
+  const gb = ringFrame(pf, base + 0.015);
+  blob.visible = show && game.mode !== 'dying';
+  blob.position.set(gb.x, gb.y, -vz);
+  blob.rotation.set(0, 0, gb.roll);
+  blob.scale.setScalar(Math.max(0.5, 1 - h * 0.8));
+
+  // highlight the tile you're on; it reddens as the tile is about to give way
+  const standing = !player.hop && game.mode === 'play';
+  marker.visible = standing;
+  if (standing) {
+    const tile = Math.round(player.pf);
+    const mf = ringFrame(player.onLog || onBelt() ? player.pf : tile, base + 0.01);
+    marker.position.set(mf.x, mf.y, -player.v);
+    marker.rotation.set(0, 0, mf.roll);
+    const at = laneNow && laneNow.fuse.get(wrapP(tile));
+    const st = player.onLog ? sinkPhase(player.onLog) : null;
+    const k = at ? clamp01(1 - (at - clock) / ZONE.fuse) : st !== null ? clamp01(st / SINK.time) : 0;
+    marker.material.color.setRGB(1, lerp(0.95, 0.2, k), lerp(0.48, 0.15, k));
+    marker.material.opacity = 0.45 + 0.35 * k;
+    if (k > 0.6) marker.position.x += Math.sin(clock * 60) * 0.03;
+  }
+  // the hand comes straight down at you from above, along the face you're on
+  hand.visible = !!handGrab || (handState.phase !== 'idle' && (game.mode !== 'over' || game.death === 'slap'));
+  if (handGrab) {
+    hand.position.set(handGrab.x, handGrab.y, handGrab.z);
+    hand.rotation.set(0.6, Math.PI, handGrab.roll);        // fingers toward you, reaching forward
+    hand.scale.setScalar(game.deathT > 0.45 ? 0.85 : 1);
+  } else if (hand.visible) {
+    let h;
+    if (handState.phase === 'coming') { const k = clamp01(handState.t / handState.dur); h = lerp(HAND.startHeight, 1.15, k * k); }
+    else if (handState.phase === 'leaving') h = lerp(1.15 + (HAND.startHeight - 1.15) * 0.4, HAND.startHeight + 2, clamp01(handState.t / 0.45));
+    else h = 0.75;
+    const hf = ringFrame(player.pf, base + h);
+    hand.position.set(hf.x, hf.y, -player.v);
+    // slap: open palm flat; grab: tilted, fingers curling under
+    hand.rotation.set(0, 0, hf.roll);
+    hand.scale.setScalar(1);
+  }
+
+  updateCamera(dt);
+  updateDarkness(dt);
+  drawGhost();
+}
+
+const _gv = new THREE.Vector3();
+const _ghostGlow = new THREE.Color(0xdfe6ff);
+function drawGhost() {
+  const ptr = document.getElementById('ghostPtr');
+  ghostMesh.visible = ghost.active;
+  if (!ghost.active) { ptr.style.display = 'none'; return; }
+  const bob = Math.sin(clock * 3.2) * 0.12;
+  const f = ringFrame(ghost.gpf, GRAVE.ghost.height + bob + (ghost.leaving ? (1 - ghost.fade) * 3 : 0));
+  ghostMesh.position.set(f.x, f.y, -ghost.gv);
+  ghostMesh.rotation.set(0, Math.sin(clock * 1.7) * 0.25, f.roll + Math.sin(clock * 2.3) * 0.08);
+  ghostMat.opacity = 0.82 * ghost.fade;
+  ghostMat.emissive.setHex(0x7a84b8).lerp(_ghostGlow, darkLook.amt);   // he glows in the dark
+  ghostFaceMat.opacity = ghost.fade;
+  // off screen: an arrow on the screen edge points to him
+  _gv.set(f.x, f.y, -ghost.gv).project(camera);
+  let x = _gv.x, y = _gv.y;
+  const behind = _gv.z > 1;
+  if (behind) { x = -x; y = -y; if (Math.abs(x) < 1e-3 && Math.abs(y) < 1e-3) y = -1; }
+  const onScreen = !behind && Math.abs(x) < 0.98 && Math.abs(y) < 0.98;
+  if (onScreen || ghost.leaving || game.mode === 'over') { ptr.style.display = 'none'; return; }
+  const k = 1 / Math.max(Math.abs(x) / 0.86, Math.abs(y) / 0.8);
+  const sx = (x * k + 1) / 2 * view.w, sy = (1 - y * k) / 2 * view.h;
+  const ang = Math.atan2(-y, x);
+  const near = clamp01(1 - (ghostDist().d - 2) / 6);
+  ptr.style.display = 'block';
+  ptr.style.left = sx + 'px'; ptr.style.top = sy + 'px';
+  ptr.style.transform = 'scale(' + (1 + 0.25 * near * (0.5 + 0.5 * Math.sin(clock * 12))) + ')';
+  ptr.firstChild.style.transform = 'rotate(' + ang + 'rad)';
+}
+
+function ringLocalX(pf) {
+  const s = pf + 0.5, k = Math.floor(s / W);
+  return s - k * W - H;
+}
+
+function updateCamera(dt) {
+  // Run 3 roll: the face you're on is always the floor. Snaps by whole faces, eased.
+  const focus = player.hop ? hopEnds(player.hop)[1] : player.pf;
+  const face = Math.floor((focus + 0.5) / W);
+  const rollTarget = (game.mode === 'dying' || game.mode === 'over')
+    ? camState.roll : face * Math.PI / 2;
+  camState.roll += (rollTarget - camState.roll) * smooth(dt, CAM.rollTime);
+
+  // lean a little toward a sideways hop so you can see where you're going
+  const leanTarget = player.hop ? player.hop.dp * 0.7 : 0;
+  camState.lean += (leanTarget - camState.lean) * smooth(dt, 0.12);
+
+  const r = camState.roll, c = Math.cos(r), s = Math.sin(r);
+  const rot = (x, y) => [x * c - y * s, x * s + y * c];
+  const [cx, cy] = rot(camState.lean, -H + CAM.height);
+  const [tx, ty] = rot(camState.lean, -H);
+  camera.position.set(cx, cy, -camState.v + CAM.back);
+  if (camState.shake > 0) {
+    camState.shake = Math.max(0, camState.shake - dt);
+    const a = camState.shake * 0.7;
+    camera.position.x += (Math.random() - 0.5) * a;
+    camera.position.y += (Math.random() - 0.5) * a;
+  }
+  camera.up.set(-s, c, 0);
+  camera.lookAt(tx, ty, -camState.v - CAM.lookAhead);
+
+  // the sun turns with the camera, so whichever face is the floor is lit like Crossy's ground
+  const [lx, ly] = rot(3, 10);
+  sun.position.set(lx, ly, camera.position.z + 4);
+  sun.target.position.set(0, 0, camera.position.z - 4);
+}
+
+// ---------------- HUD ----------------
+const elScore = document.getElementById('score');
+const elBest = document.getElementById('best');
+const elCoins = document.getElementById('coins');
+const elCenter = document.getElementById('center');
+const elTitle = document.getElementById('title');
+const elSub = document.getElementById('sub');
+const elSub2 = document.getElementById('sub2');
+
+function showCenter(title, sub, sub2, dim) {
+  if (title === 'TITLE') { elTitle.innerHTML = 'CROSSY RD<span class="sq">²</span>'; elTitle.className = 'logo'; }
+  else { elTitle.textContent = title; elTitle.className = ''; }
+  elSub.textContent = sub; elSub2.textContent = sub2 || '';
+  elCenter.style.display = 'flex';
+  elCenter.className = dim ? 'dim' : '';
+}
+function updateHUD() {
+  elScore.textContent = game.score;
+  elCoins.textContent = game.coins;
+  elBest.textContent = game.best ? 'TOP ' + game.best : '';
+  const dt = 1 / 60;
+  pops.lap = Math.max(0, pops.lap - dt); pops.bonus = Math.max(0, pops.bonus - dt);
+  document.getElementById('lap').className = 'pop' + (pops.lap > 0 ? ' show' : '');
+  const bonusEl = document.getElementById('bonus');
+  bonusEl.className = 'pop' + (pops.bonus > 0 ? ' show' : '');
+  bonusEl.style.color = bonusEl.dataset && bonusEl.dataset.hit ? '#ff6a5a' : '';
+  document.getElementById('testBtn').style.display = game.mode === 'ready' || game.mode === 'over' ? 'block' : 'none';
+  syncMute();
+  const tag = document.getElementById('testTag');
+  tag.style.display = test.on && game.mode === 'play' ? 'block' : 'none';
+  tag.textContent = 'TEST: ' + TEST_NAMES[test.only] + (test.god ? '  (can\'t die)' : '');
+}
+
+function gameOver() {
+  game.mode = 'over';
+  SFX.gameOver();
+  const why = { car: 'Hit by a car', train: 'Hit by a train', water: 'Fell in the water',
+                crumble: 'The ground gave way', boulder: 'Crushed by a boulder', crack: 'The log cracked',
+                grab: 'Pulled off the screen', slap: 'Slapped for standing still',
+                skeleton: 'Caught by a skeleton', ghost: 'The ghost got you',
+                sink: 'Sank with the log', roller: 'Flattened by a steamroller' }[game.death] || '';
+  showCenter('GAME OVER', why + '  ·  Score ' + game.score,
+             test.on ? 'Press R or tap to retry the test  ·  T to change it' : 'Press R or tap to play again', true);
+  lbRunOver();
+}
+
+function startGame() {
+  game.mode = 'play';
+  elCenter.style.display = 'none';
+  lbShow('hidden');
+}
+
+function reset() {
+  for (const lane of [...lanes.values()]) removeLane(lane);
+  for (const q of particles) scene.remove(q.mesh);
+  particles.length = 0;
+  Object.assign(player, { pf: Math.floor(W / 2), v: 0, hop: null, queued: null, bump: 0,
+                          yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0 });
+  Object.assign(camState, { v: 0, want: 0, roll: 0, lean: 0 });
+  Object.assign(game, { mode: 'ready', score: 0, dist: 0, bonus: 0, coins: 0, started: false, death: null, deathT: 0 });
+  bonuses.length = 0;
+  Object.assign(lap, { face: 0, dir: 0, steps: 0, startRow: 0, entryRow: 0 });
+  Object.assign(handState, { phase: 'idle', t: 0, dur: 1 });
+  hand.visible = false;
+  pops.lap = 0; pops.bonus = 0;
+  gen.type = 'grass'; gen.left = 0; gen.queue = []; gen.lastFam = null; gen.lastJam = false; gen.lastPark = false; gen.zone = null; gen.lastZoneEnd = -999;
+  gen.calmFrom = -1; gen.calmTo = -2;
+  gen.blockHard = false;
+  darkZones.length = 0;
+  gen.darkFlip = false;
+  gen.nextDarkAt = test.on && test.only === 'dark' ? 8 : DARK.fromRow + randInt(0, 40);
+  test.first = test.on && !!test.only;
+  test.hitT = {};
+  graveyards.length = 0;
+  for (const r of [...rollers]) removeRoller(r);
+  Object.assign(rollerGen, { lastRow: 0, lastEnd: -999, flip: false });
+  Object.assign(ghost, { active: false, leaving: false, fade: 0 });
+  ghostMesh.visible = false;
+  clock = 0;
+  for (const z of zones) { if (z.mesh) scene.remove(z.mesh); if (z.shadow) scene.remove(z.shadow); }
+  zones.length = 0;
+  for (const d of drops) clearDrop(d);
+  drops.length = 0;
+  for (const f of fallingPieces) scene.remove(f.mesh);
+  fallingPieces.length = 0;
+  camState.shake = 0;
+  SFX.stopLoops();
+  ensureLanes();
+  Object.assign(run, { ranked: !test.on, secs: 0, hops: 0, b: {} });   // a run counts only if it started outside test mode
+  if (test.on) showCenter('TEST MODE', TEST_NAMES[test.only], 'Hop to start  ·  T to change the test', false);
+  else showCenter('TITLE', '', '', false);
+  lbShow('title');
+}
+
+// ---------------- leaderboard ----------------
+// ONLINE VERSION (GitHub Pages + Firebase). Scores: one row per player at scores/<NAME>, holding their all-time
+// best run and their best run this week (weeks start Monday). Players pick a name (1-6 letters/digits) and a
+// 4-digit PIN. A score is only ever posted from gameOver(), built from what the game measured during the run
+// (rows, bonuses by value, forward hops, seconds played), never from a number anyone types. Test runs never post.
+// Every row is checked again when the board is drawn, and rows that break the game's rules are not shown.
+
+// >>> Paste your Firebase web config here (Firebase console > Project settings > Your apps > Web app > Config).
+//     Left as null, the game runs fine with no leaderboard.
+const FIREBASE_CONFIG = null;
+// <<<
+const FB_VERSION = '10.12.2';
+const LBV = {
+  hopsPerSec: 8.6,       // a hop takes HOP_TIME (0.12 s): at most 8.3 forward hops a second (measured best: 7.0 at 240 fps)
+  values: [1, 3, 4, 5, 8, 20],
+  obsPerRow: 0.25,       // obstacle bonuses (3-8) per row: generation tops out at 0.18 incl. ghosts, rollers add <= 0.04
+  obsSlack: 6,
+  show: 10, fetch: 50, fetchWeek: 200
+};
+const LB = { state: 'loading', view: 'hidden', tab: 'all', db: null, uid: null, name: '', mine: null, all: [], week: [], wk: '',
+             last: null, pending: null, askName: false, editName: false, needPin: false, busy: false, err: '', unsub: [] };
+
+const lbLocal = (() => { try { return window.localStorage || null; } catch (e) { return null; } })();
+function lbStore(k, v) { try { if (lbLocal) lbLocal.setItem('crd2.' + k, String(v)); } catch (e) {} }
+function lbLoad(k) { try { return lbLocal ? lbLocal.getItem('crd2.' + k) : null; } catch (e) { return null; } }
+game.best = Math.max(0, Math.floor(+lbLoad('best') || 0));
+
+function weekKey(t = Date.now()) {
+  const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+const nameOk = n => typeof n === 'string' && /^[A-Z0-9]{1,6}$/.test(n);
+const isInt = x => Number.isInteger(x) && x >= 0;
+// does this run obey the game's rules?
+function runOk(r) {
+  if (!r || typeof r !== 'object') return false;
+  const { dist, bonus, secs, hops, b } = r;
+  if (!isInt(dist) || !isInt(bonus) || !isInt(hops) || !Number.isFinite(secs) || dist < 1 || dist > 1e6) return false;
+  if (hops < dist || secs < hops / LBV.hopsPerSec) return false;     // every row needs a forward hop, and hops take time
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return false;
+  let sum = 0, obs = 0;
+  for (const k of Object.keys(b)) {
+    const v = +k, c = b[k];
+    if (!LBV.values.includes(v) || !isInt(c)) return false;
+    sum += v * c;
+    if (v !== 1 && v !== 20) obs += c;
+  }
+  if (sum !== bonus) return false;
+  if ((b[20] || 0) > Math.floor(hops / (BONUS.lapRows * 4))) return false;   // a lap climbs 10 rows on all 4 faces
+  if ((b[1] || 0) > hops) return false;                                       // a risky log is landed on by a hop
+  return obs <= LBV.obsPerRow * dist + LBV.obsSlack;
+}
+const rowOk = d => d && nameOk(d.name) && isInt(d.best) && runOk(d.run) && d.best === d.run.dist + d.run.bonus;
+const weekOk = (d, wk) => rowOk(d) && d.week === wk && isInt(d.wBest) && runOk(d.wRun) && d.wBest === d.wRun.dist + d.wRun.bonus;
+
+function lbRows(tab) {
+  const wk = weekKey();
+  const src = tab === 'week' ? LB.week.filter(d => weekOk(d, wk)) : LB.all.filter(rowOk);
+  const sc = d => tab === 'week' ? d.wBest : d.best, at = d => (tab === 'week' ? d.wAt : d.at) || 0;
+  return src.slice().sort((a, b) => sc(b) - sc(a) || at(a) - at(b));
+}
+function lbPlace(tab, score) {
+  const rows = lbRows(tab).filter(d => d.id !== LB.name);
+  return rows.filter(d => (tab === 'week' ? d.wBest : d.best) >= score).length + 1;
+}
+
+
+// ---- talking to Firebase ----
+// The online version keeps scores in Firebase (Firestore), loaded only when the config above is filled in, and
+// after the game has started, so the game never waits for it. Each computer signs in anonymously (no account).
+// A name belongs to whoever claims it first, protected by a 4-digit PIN: names/<NAME> = { owner, pin hash } is
+// unreadable to players, and the database rules only let the owner write scores/<NAME>. Entering the right PIN
+// on another computer moves the name there. Rules: firestore.rules (they are the real protection, not this code).
+function lbScript(src) {
+  return new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
+}
+async function lbInit() {
+  const W8 = typeof window !== 'undefined' ? window : null;
+  if (!FIREBASE_CONFIG || !W8 || typeof document === 'undefined' || !document.head) { LB.state = 'off'; return lbRender(); }
+  try {
+    if (!W8.firebase) {
+      const u = 'https://www.gstatic.com/firebasejs/' + FB_VERSION + '/firebase-';
+      await lbScript(u + 'app-compat.js');
+      await Promise.all([lbScript(u + 'auth-compat.js'), lbScript(u + 'firestore-compat.js')]);
+    }
+    const fb = W8.firebase;
+    const app = fb.apps && fb.apps.length ? fb.app() : fb.initializeApp(FIREBASE_CONFIG);
+    const auth = app.auth();
+    let u = auth.currentUser || await new Promise(r => { const off = auth.onAuthStateChanged(x => { off(); r(x); }); });
+    if (!u) u = (await auth.signInAnonymously()).user;
+    LB.uid = u.uid;
+    LB.db = app.firestore();
+  } catch (e) { LB.state = 'off'; LB.err = ''; return lbRender(); }
+  LB.state = 'ok';
+  lbSubscribe();
+  const n = lbLoad('name');
+  if (nameOk(n)) { LB.name = n; await lbLoadMine(); }
+  if (LB.pending) lbPost(LB.pending);
+  lbShow(LB.view);
+}
+async function lbLoadMine() {
+  LB.mine = null;
+  try {
+    const s = await LB.db.doc('scores/' + LB.name).get();
+    if (s.exists) {
+      LB.mine = s.data();
+      if (rowOk(LB.mine)) { game.best = Math.max(game.best, LB.mine.best); lbStore('best', game.best); }
+    }
+  } catch (e) {}
+}
+function lbSubscribe() {
+  for (const u of LB.unsub) u();
+  LB.unsub = [];
+  LB.wk = weekKey();
+  const col = LB.db.collection('scores');
+  const take = key => snap => { LB[key] = snap.docs.map(d => Object.assign({}, d.data(), { id: d.id })); lbRender(); };
+  const fail = () => { LB.err = 'Leaderboard is offline right now.'; lbRender(); };
+  LB.unsub.push(col.orderBy('best', 'desc').limit(LBV.fetch).onSnapshot(take('all'), fail));
+  // equality only, sorted here: needs no extra database index
+  LB.unsub.push(col.where('week', '==', LB.wk).limit(LBV.fetchWeek).onSnapshot(take('week'), fail));
+}
+let lbWriting = Promise.resolve();
+function lbWrite(doc, run) {
+  const name = doc.name, ref = LB.db.doc('scores/' + name);
+  const attempt = () => ref.set(doc);
+  lbWriting = lbWriting.then(attempt)
+    .catch(e => e && e.code === 'unavailable' ? new Promise(r => setTimeout(r, 1500 + Math.random() * 1000)).then(attempt) : Promise.reject(e))
+    .then(() => { if (LB.name === name) LB.mine = doc; LB.err = ''; lbRender(); })
+    .catch(e => {
+      if (run) LB.pending = LB.pending && LB.pending.dist + LB.pending.bonus >= run.dist + run.bonus ? LB.pending : run;
+      if (e && e.code === 'permission-denied') { LB.needPin = true; LB.askName = true; LB.err = ''; }   // name isn't this computer's (yet)
+      else LB.err = 'Couldn\u2019t post that score. It\u2019ll go up with your next run.';
+      lbRender();
+    });
+  return lbWriting;
+}
+// the row this player should have after these runs (null when nothing changed). A run counts for this week only
+// if it was played this week.
+function lbMerge(runs) {
+  const wk = weekKey(), now = Date.now(), mine = LB.mine;
+  const d = mine && rowOk(mine) ? Object.assign({}, mine) : { v: 1, best: 0 };
+  delete d.id;
+  let changed = d.name !== LB.name;
+  d.name = LB.name;
+  if (d.week !== wk) { d.week = wk; d.wBest = 0; delete d.wRun; d.wAt = 0; }
+  for (const [r, thisWeek, at] of runs) {
+    if (!r || !runOk(r)) continue;
+    const s = r.dist + r.bonus;
+    if (!(d.best > 0) || s > d.best) { d.best = s; d.run = r; d.at = at || now; changed = true; }
+    if (thisWeek && s > d.wBest) { d.wBest = s; d.wRun = r; d.wAt = at || now; changed = true; }
+  }
+  if (!(d.wBest > 0)) return null;            // nothing played this week yet: wait for a run (the rules need one)
+  return changed ? d : null;
+}
+function lbPost(r) {
+  if (LB.state !== 'ok') { LB.pending = r; return; }
+  if (!LB.name || LB.needPin) { LB.pending = r; LB.askName = true; return; }
+  LB.pending = null;
+  const d = lbMerge([[r, true]]);
+  if (d) lbWrite(d, r);
+}
+function lbRunOver() {
+  const r = { dist: game.dist, bonus: game.bonus, secs: Math.round(run.secs * 100) / 100, hops: run.hops, b: Object.assign({}, run.b) };
+  const s = r.dist + r.bonus;
+  LB.last = { score: s, ranked: run.ranked && s > 0, failed: false, newBest: false, wkBest: false };
+  if (LB.last.ranked) {
+    if (!runOk(r)) { LB.last.ranked = false; LB.last.failed = true; }     // should never happen in honest play
+    else {
+      LB.last.newBest = !LB.mine || !rowOk(LB.mine) || s > LB.mine.best;
+      LB.last.wkBest = LB.last.newBest || !weekOk(LB.mine, weekKey()) || s > LB.mine.wBest;
+      if (LB.last.wkBest && !LB.last.newBest) LB.tab = 'week';           // show the board the news is about
+      if (LB.state === 'ok' && LB.wk !== weekKey()) lbSubscribe();
+      if (LB.state === 'loading' || LB.state === 'ok') {
+        if (!LB.pending || s > LB.pending.dist + LB.pending.bonus) LB.pending = r;
+        lbPost(LB.pending);
+      }
+    }
+  }
+  lbShow('side');
+}
+async function lbPinHash(name, pin) {
+  const data = new TextEncoder().encode('crossy-rd2:' + name + ':' + pin);
+  const h = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(h), b => b.toString(16).padStart(2, '0')).join('');
+}
+// claim a name, or take it back with its PIN: 'ok', 'taken' (someone else's, or wrong PIN) or 'error'
+async function lbClaim(name, pin) {
+  let h;
+  try { h = await lbPinHash(name, pin); } catch (e) { return 'error'; }
+  try { await LB.db.doc('names/' + name).set({ owner: LB.uid, pin: h }); return 'ok'; }
+  catch (e) { return e && e.code === 'permission-denied' ? 'taken' : 'error'; }
+}
+async function lbSaveName(rawName, rawPin) {
+  const n = String(rawName || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  if (!nameOk(n)) return 'Name: 1 to 6 letters or numbers.';
+  const pin = String(rawPin || '');
+  if (!/^[0-9]{4}$/.test(pin)) return 'PIN: 4 numbers.';
+  if (LB.state !== 'ok') return 'The leaderboard is offline right now.';
+  const res = await lbClaim(n, pin);
+  if (res === 'taken') return n + ' is taken, or that PIN is wrong.';
+  if (res === 'error') return 'Couldn\u2019t reach the leaderboard. Try again.';
+  const old = LB.name, oldMine = LB.mine, wk = weekKey();
+  LB.name = n; lbStore('name', n);
+  LB.askName = false; LB.editName = false; LB.needPin = false;
+  await lbLoadMine();                                                        // signing back in: your row comes back
+  const runs = [];
+  if (old && old !== n && oldMine && rowOk(oldMine)) {                      // renaming: bring your scores along
+    runs.push([oldMine.run, false, oldMine.at]);
+    if (weekOk(oldMine, wk)) runs.push([oldMine.wRun, true, oldMine.wAt]);
+  }
+  if (LB.pending) { runs.push([LB.pending, true]); LB.pending = null; }
+  const d = runs.length ? lbMerge(runs) : null;
+  if (d) await lbWrite(d);
+  if (old && old !== n) {                                                   // free the old name
+    try { await LB.db.doc('scores/' + old).delete(); } catch (e) {}
+    try { await LB.db.doc('names/' + old).delete(); } catch (e) {}
+  }
+  if (LB.mine && rowOk(LB.mine)) { game.best = Math.max(game.best, LB.mine.best); lbStore('best', game.best); }
+  lbRender();
+  return '';
+}
+
+// ---- drawing ----
+const elMini = document.getElementById('lbMini');
+const elBoard = document.getElementById('board');
+const elCard = document.getElementById('boardCard');
+function lbShow(view) {
+  LB.view = view;
+  if (LB.db && LB.wk && LB.wk !== weekKey()) lbSubscribe();
+  const usable = LB.state !== 'off' && LB.state !== 'loading';
+  elMini.style.display = view === 'title' && usable && !test.on ? 'block' : 'none';
+  elBoard.className = (view === 'side' || view === 'modal') && usable ? view : '';
+  if (view === 'side' && usable) elCenter.classList.add('withBoard'); else elCenter.classList.remove('withBoard');
+  lbRender();
+}
+function lbList(tab, n) {
+  const rows = lbRows(tab).slice(0, n);
+  if (!rows.length) return '<p class="muted">' + (tab === 'week' ? 'No scores this week yet.' : 'No scores yet. Be the first!') + '</p>';
+  return '<ol><li class="hd"><span class="rk"></span><span class="nm"></span><span class="sp">rows + bonus</span><span class="sc"></span></li>' +
+    rows.map((d, i) => {
+      const r = tab === 'week' ? d.wRun : d.run, sc = tab === 'week' ? d.wBest : d.best;
+      return '<li class="' + (LB.name && d.id === LB.name ? 'me' : '') + '"><span class="rk">' + (i + 1) + '</span><span class="nm">' + d.name +
+        '</span><span class="sp">' + r.dist + ' + ' + r.bonus + '</span><span class="sc">' + sc + '</span></li>';
+    }).join('') + '</ol>';
+}
+function lbRender() {
+  const usable = LB.state !== 'off' && LB.state !== 'loading';
+  if (LB.view === 'title' && !usable && elMini.style.display !== 'none') elMini.style.display = 'none';
+  if (LB.view === 'title' && usable && !test.on && elMini.style.display !== 'block') elMini.style.display = 'block';
+  if ((LB.view === 'side' || LB.view === 'modal') && usable && !elBoard.className) lbShow(LB.view);
+  if (LB.view === 'title' && usable) {
+    const me = LB.name ? lbRows('all').findIndex(d => d.id === LB.name) : -1;
+    elMini.innerHTML = '<h3>Top 3 \u00b7 all time</h3>' + lbList('all', 3, false) +
+      '<div class="row2"><span class="muted">' + (me >= 0 ? 'You: #' + (me + 1) : '') +
+      '</span><button type="button" data-act="open">Leaderboard</button></div>';
+  }
+  if (LB.view !== 'side' && LB.view !== 'modal') return;
+  if (!usable) return;
+  let place = '';
+  const L = LB.last;
+  if (LB.view === 'side' && L) {
+    if (test.on) place = 'Test run \u00b7 not posted';
+    else if (L.failed) place = 'This run didn\u2019t pass the score check, so it wasn\u2019t posted';
+    else if (!L.ranked) place = '';
+    else {
+      const rk = (n, when) => n <= LBV.show ? '<span class="y">#' + n + '</span> ' + when : 'outside the top ' + LBV.show + ' ' + when;
+      const a = rk(lbPlace('all', L.score), 'all time'), w = rk(lbPlace('week', L.score), 'this week');
+      // your numbers come from your row on the board itself (it can update before the save is confirmed)
+      const mine = d => LB.name && d.id === LB.name, ra = lbRows('all'), rw = lbRows('week');
+      const myAll = ra.findIndex(mine) + 1, myWk = rw.findIndex(mine) + 1;
+      const bestAll = myAll ? ra[myAll - 1].best : 0, bestWk = myWk ? rw[myWk - 1].wBest : 0;
+      if (L.newBest) place = '<span class="y">New best!</span> ' + L.score + ' \u00b7 ' + a + ' \u00b7 ' + w;
+      else if (L.wkBest)
+        place = '<span class="y">Best this week!</span> ' + L.score + ' \u00b7 ' + w +
+          (myAll ? '<br><span class="muted">All-time best: ' + bestAll + ' (#' + myAll + ')</span>' : '');
+      else
+        place = 'This run: ' + L.score +
+          (myAll ? '<br><span class="muted">Your best: ' + bestAll + ' \u00b7 #' + myAll + ' all time' +
+            (myWk ? ' \u00b7 this week ' + bestWk + ' (#' + myWk + ')' : '') + '</span>' : '');
+    }
+  }
+  const ask = LB.state === 'ok' && (LB.askName || LB.editName);
+  const keep = id => { const el = document.getElementById(id); return el && typeof el.value === 'string' && elCard.contains && elCard.contains(el) ? el.value : null; };
+  const typed = keep('lbNameIn'), typedPin = keep('lbPinIn');           // keep what's being typed across redraws
+  const act = document.activeElement, focusId = act && (act.id === 'lbNameIn' || act.id === 'lbPinIn') ? act.id : null;
+  const title = LB.needPin ? 'Enter your PIN for ' + LB.name : LB.askName ? 'Name your score' : 'Change name or sign in';
+  const help = LB.needPin ? 'This computer isn\u2019t signed in as ' + LB.name + ' yet.' :
+    'Pick a name (up to 6 letters or numbers) and a 4-number PIN. The PIN lets you use your name on any computer.';
+  elCard.innerHTML =
+    '<div class="tabs"><button type="button" data-tab="all" aria-pressed="' + (LB.tab === 'all') + '">All time</button>' +
+    '<button type="button" data-tab="week" aria-pressed="' + (LB.tab === 'week') + '">This week</button>' +
+    (LB.view === 'modal' ? '<button type="button" class="x" data-act="close">Close</button>' : '') + '</div>' +
+    (place ? '<p id="lbPlace">' + place + '</p>' : '') +
+    (ask ? '<div id="lbName"><h3>' + title + '</h3>' +
+      '<label>Name <input id="lbNameIn" maxlength="6" autocomplete="off" spellcheck="false" value="' + (LB.name || '') + '"></label>' +
+      '<label>PIN <input id="lbPinIn" class="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>' +
+      '<button type="button" class="go" data-act="name"' + (LB.busy ? ' disabled' : '') + '>' + (LB.busy ? '\u2026' : 'Post') + '</button>' +
+      '<p class="muted" id="lbNameMsg">' + help + (LB.askName ? ' Esc to skip.' : '') + '</p></div>' : '') +
+    lbList(LB.tab, LBV.show) +
+    '<div id="lbFoot"><span class="muted">' + (LB.err || (LB.name && !LB.needPin ? 'You\u2019re ' + LB.name : '')) + '</span>' +
+    (LB.state === 'ok' && !ask ? '<button type="button" data-act="rename">' + (LB.name ? 'Change name' : 'Sign in') + '</button>' : '') + '</div>';
+  if (ask) {
+    const inp = document.getElementById('lbNameIn'), pin = document.getElementById('lbPinIn');
+    if (inp && typed !== null) inp.value = typed;
+    if (pin && typedPin !== null) pin.value = typedPin;
+    const f = focusId ? document.getElementById(focusId) : (LB.name ? pin : inp);
+    if (f && f.focus && (focusId || typed === null)) f.focus();
+  }
+}
+function lbClick(e) {
+  const b = e.target && e.target.closest && e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.tab) { LB.tab = b.dataset.tab; lbRender(); }
+  else if (b.dataset.act === 'open') lbShow('modal');
+  else if (b.dataset.act === 'close') lbShow('title');
+  else if (b.dataset.act === 'rename') { LB.editName = true; lbRender(); }
+  else if (b.dataset.act === 'name') lbNameSubmit();
+}
+async function lbNameSubmit() {
+  if (LB.busy) return;
+  const inp = document.getElementById('lbNameIn'), pin = document.getElementById('lbPinIn');
+  LB.busy = true; lbRender();
+  let msg = '';
+  try { msg = await lbSaveName(inp ? inp.value : '', pin ? pin.value : ''); } catch (e) { msg = 'Something went wrong. Try again.'; }
+  LB.busy = false; lbRender();
+  const m = document.getElementById('lbNameMsg');
+  if (msg && m) m.textContent = msg;
+}
+elCard.addEventListener('click', lbClick);
+elMini.addEventListener('click', lbClick);
+elBoard.addEventListener('click', e => { if (e.target === elBoard && LB.view === 'modal') lbShow('title'); });
+elCard.addEventListener('keydown', e => {
+  if (e.target && (e.target.id === 'lbNameIn' || e.target.id === 'lbPinIn')) {
+    e.stopPropagation();
+    if (e.key === 'Enter') { e.preventDefault(); lbNameSubmit(); }
+    if (e.key === 'Escape') { LB.askName = false; LB.editName = false; LB.needPin = false; lbRender(); }
+  }
+});
+lbInit();
+
+// ---------------- sound effects ----------------
+// Every sound is made in code with Web Audio (no files to load), so the page stays self-contained and works on a
+// Chromebook. Browsers only allow sound after a key press or tap, so the first input unlocks it. M mutes.
+const SFX = (() => {
+  const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
+  let ac = null, out = null, noiseBuf = null, verb = null;
+  let muted = false;
+  try { muted = localStorage.getItem('crossyrd2-muted') === '1'; } catch (e) {}
+  const last = {};                       // when each sound last played, so piles of the same sound don't stack up
+  const played = {};                     // how many times each sound played (read by tests)
+  const loops = {};                      // sounds that keep going: steamroller engine, the hand's whoosh
+
+  function unlock() {
+    if (!AC) return;
+    if (!ac) {
+      try { ac = new AC(); } catch (e) { return; }
+      const comp = ac.createDynamicsCompressor();
+      comp.threshold.value = -14; comp.ratio.value = 4;
+      out = ac.createGain(); out.gain.value = muted ? 0 : 0.5;
+      out.connect(comp); comp.connect(ac.destination);
+      // a big echoey room (used by the graveyard): 3 s of fading noise as the reverb's impulse
+      try {
+        verb = ac.createConvolver();
+        const len = Math.floor(ac.sampleRate * 3), ir = ac.createBuffer(2, len, ac.sampleRate);
+        for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+        verb.buffer = ir; verb.connect(out);
+      } catch (e) { verb = null; }
+      noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if (ac.state !== 'running') { try { ac.resume(); } catch (e) {} }
+    // a silent blip inside the key press or tap: some browsers only open the audio once something plays then
+    try { const b = ac.createBufferSource(); b.buffer = ac.createBuffer(1, 1, ac.sampleRate); b.connect(ac.destination); b.start(); } catch (e) {}
+  }
+  // what's going on with sound, in words (shown on the soundboard)
+  function status() {
+    if (!AC) return { ok: false, text: "This browser can't play the game's sounds (no Web Audio)." };
+    if (!ac) return { ok: false, text: 'Sound starts after your first key press or tap.' };
+    if (ac.state !== 'running') return { ok: false, text: 'The browser is holding the sound back (' + ac.state + '). Tap anywhere to try again.' };
+    if (muted) return { ok: false, text: 'Sound is muted. Press M or the speaker button.' };
+    return { ok: true, text: "Sound is on. If you still hear nothing, check the volume and that this tab isn't muted." };
+  }
+  const ready = () => !!ac && ac.state !== 'closed';
+  // gate(name, gap): false if this sound played less than `gap` seconds ago
+  function gate(name, gap) {
+    played[name] = (played[name] || 0) + 1;
+    if (!ready()) return false;
+    const t = ac.currentTime;
+    if (last[name] !== undefined && t - last[name] < gap) return false;
+    last[name] = t;
+    return true;
+  }
+  // a quick envelope: up to vol in `a` seconds, then down to nothing by `dur`
+  function env(vol, dur, at, a = 0.005, wet = 0) {
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(vol, at + a);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    g.connect(out);
+    if (wet && verb) { const w = ac.createGain(); w.gain.value = wet; g.connect(w); w.connect(verb); }   // send to the echo
+    return g;
+  }
+  // tone(freq, dur, { type, vol, to: end freq, delay, a: attack, vib: [rate, depth] })
+  function tone(f, dur, o = {}) {
+    const at = ac.currentTime + (o.delay || 0);
+    const osc = ac.createOscillator();
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(f, at);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, at + dur);
+    if (o.vib) {
+      const lfo = ac.createOscillator(), lg = ac.createGain();
+      lfo.frequency.value = o.vib[0]; lg.gain.value = o.vib[1];
+      lfo.connect(lg); lg.connect(osc.frequency); lfo.start(at); lfo.stop(at + dur + 0.05);
+    }
+    let node = osc;
+    if (o.lp) { const flt = ac.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = o.lp; osc.connect(flt); node = flt; }
+    node.connect(env(o.vol || 0.2, dur, at, o.a, o.wet));
+    osc.start(at); osc.stop(at + dur + 0.05);
+  }
+  // noise(dur, { vol, type: filter type, f: filter freq, to: end freq, q, delay, a })
+  function noise(dur, o = {}) {
+    const at = ac.currentTime + (o.delay || 0);
+    const src = ac.createBufferSource();
+    src.buffer = noiseBuf;
+    src.playbackRate.value = o.rate || 1;
+    const flt = ac.createBiquadFilter();
+    flt.type = o.type || 'lowpass';
+    flt.frequency.setValueAtTime(o.f || 2000, at);
+    if (o.to) flt.frequency.exponentialRampToValueAtTime(o.to, at + dur);
+    flt.Q.value = o.q || 1;
+    src.connect(flt); flt.connect(env(o.vol || 0.2, dur, at, o.a, o.wet));
+    src.start(at, Math.random() * 0.5); src.stop(at + dur + 0.05);
+  }
+  const jit = (x, k = 0.06) => x * (1 + (Math.random() * 2 - 1) * k);   // a little variety so repeats don't grate
+
+  // ----- the sounds -----
+  const S = {
+    hop()  { if (!gate('hop', 0.03)) return; tone(jit(430), 0.07, { type: 'triangle', to: jit(720), vol: 0.22 }); },
+    bump() { if (!gate('bump', 0.1)) return; tone(150, 0.09, { to: 90, vol: 0.3 }); noise(0.05, { f: 600, vol: 0.12 }); },
+    coin() {
+      if (!gate('coin', 0.04)) return;
+      tone(1319, 0.07, { type: 'square', vol: 0.08 });
+      tone(1976, 0.22, { type: 'square', vol: 0.08, delay: 0.06 });
+    },
+    log()  { if (!gate('log', 0.05)) return; tone(jit(260), 0.08, { to: 180, vol: 0.25 }); noise(0.05, { type: 'bandpass', f: 900, q: 3, vol: 0.18 }); },
+    lapTick() { if (!gate('lapTick', 0.05)) return; tone(880, 0.08, { type: 'triangle', vol: 0.15 }); },
+    bonus(big) {
+      if (!gate('bonus', 0.15)) return;
+      const notes = big ? [784, 988, 1175, 1568, 1976] : [1047, 1319, 1568];
+      notes.forEach((f, i) => tone(f, 0.12, { type: 'square', vol: 0.07, delay: i * 0.065 }));
+    },
+    // the crossing bell; quieter the further the tracks are from you
+    bell(vol) { if (!gate('bell', 0.07)) return; tone(1568, 0.28, { vol: 0.14 * vol }); tone(2350, 0.2, { vol: 0.06 * vol }); },
+    horn(vol, red) {
+      if (!gate('horn', 0.3)) return;
+      const base = red ? 233 : 311;
+      for (const f of [base, base * 1.26, base * 1.5]) tone(f, 0.7, { type: 'sawtooth', vol: 0.06 * vol, lp: 1400, a: 0.03 });
+    },
+    fuse()    { if (!gate('fuse', 0.06)) return; noise(0.08, { type: 'highpass', f: 2500, vol: 0.08 }); },
+    crumble() { if (!gate('crumble', 0.08)) return; noise(0.45, { f: 900, to: 150, vol: 0.3 }); tone(110, 0.3, { to: 50, vol: 0.2 }); },
+    // a falling whistle that lasts as long as the fall
+    whistle(dur) { if (!gate('whistle', 0.2)) return; tone(1700, Math.max(0.2, dur), { to: 500, vol: 0.07, a: 0.08 }); },
+    boom(size) {
+      if (!gate('boom', 0.05)) return;
+      const k = Math.min(1, 0.45 + size * 0.25);
+      tone(95, 0.7, { to: 32, vol: 0.5 * k });
+      noise(0.6, { f: 1200, to: 120, vol: 0.4 * k });
+    },
+    handComing(dur) {
+      S.handStop();
+      if (!gate('handComing', 0.2) || dur < 0.15) return;
+      const at = ac.currentTime;
+      const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+      const flt = ac.createBiquadFilter(); flt.type = 'bandpass'; flt.Q.value = 2;
+      flt.frequency.setValueAtTime(300, at); flt.frequency.exponentialRampToValueAtTime(2200, at + dur);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.22, at + dur);
+      src.connect(flt); flt.connect(g); g.connect(out); src.start(at);
+      loops.hand = { src, g };
+    },
+    handStop() {
+      const l = loops.hand; if (!l || !ac) return;
+      loops.hand = null;
+      const at = ac.currentTime;
+      l.g.gain.cancelScheduledValues(at); l.g.gain.setValueAtTime(Math.max(0.0001, l.g.gain.value), at);
+      l.g.gain.exponentialRampToValueAtTime(0.0001, at + 0.12);
+      l.src.stop(at + 0.15);
+    },
+    rattle() {
+      if (!gate('rattle', 0.25)) return;
+      for (let i = 0; i < 6; i++) noise(0.03, { type: 'bandpass', f: jit(3200, 0.2), q: 6, vol: 0.2, delay: i * 0.055 });
+    },
+    ghost() { if (!gate('ghost', 1)) return; tone(330, 1.4, { to: 520, vol: 0.12, vib: [6, 18], a: 0.25, lp: 1500 }); tone(247, 1.4, { to: 392, vol: 0.06, vib: [5, 12], a: 0.3 }); },
+    // a car or truck honking at you; trucks are lower and longer
+    honk(truck, vol = 1) {
+      if (!gate('honk', 0.25)) return;
+      if (truck) for (const f of [196, 247]) tone(f, 0.45, { type: 'square', vol: 0.06 * vol, lp: 1500, a: 0.02 });
+      else for (const d of [0, 0.15]) for (const f of [440, 554]) tone(f, 0.11, { type: 'square', vol: 0.055 * vol, lp: 2200, delay: d });
+    },
+    // graveyard tunes: a wobbly organ in D minor over a low drone
+    // graveyard tunes: a church bell, wind, a wailing ghost voice that slides between notes, and a low
+    // drone on a tritone (the "devil's interval"), all in a big echoey room
+    graveTune(leaving, wait = 0) {
+      if (!gate(leaving ? 'graveOut' : 'graveIn', 2)) return;
+      const at0 = ac.currentTime + wait;
+      // a deep bell: out-of-tune partials that ring for a long time
+      const bell = (f, t, vol) => {
+        [[0.5, 1, 3.2], [1, 0.8, 2.6], [1.19, 0.5, 2], [1.5, 0.35, 1.6], [2, 0.3, 1.3], [2.74, 0.2, 1], [3.76, 0.12, 0.7]]
+          .forEach(([r, v, d]) => tone(f * r, d, { vol: vol * v, delay: wait + t, a: 0.004, wet: 0.6 }));
+      };
+      // the ghost voice: one sine that glides from note to note with a wide, slow wobble
+      const wail = (notes, vol) => {
+        const osc = ac.createOscillator(); osc.type = 'sine';
+        const lfo = ac.createOscillator(), lg = ac.createGain();
+        lfo.frequency.value = 5.2; lg.gain.value = notes[0][0] * 0.025; lfo.connect(lg); lg.connect(osc.frequency);
+        osc.frequency.setValueAtTime(notes[0][0], at0 + notes[0][1]);
+        for (const [f, t] of notes.slice(1)) osc.frequency.setTargetAtTime(f, at0 + t, 0.09);
+        const end = notes[notes.length - 1][1] + 0.9, start = notes[0][1];
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.0001, at0 + start);
+        g.gain.exponentialRampToValueAtTime(vol, at0 + start + 0.45);
+        g.gain.setValueAtTime(vol, at0 + end - 0.6);
+        g.gain.exponentialRampToValueAtTime(0.0001, at0 + end);
+        osc.connect(g); g.connect(out);
+        if (verb) { const w = ac.createGain(); w.gain.value = 0.7; g.connect(w); w.connect(verb); }
+        osc.start(at0 + start); lfo.start(at0 + start); osc.stop(at0 + end + 0.05); lfo.stop(at0 + end + 0.05);
+      };
+      const wind = (d, vol) => noise(d, { type: 'bandpass', f: 380, to: 900, q: 4, vol, delay: wait, a: d * 0.4, wet: 0.4, rate: 0.6 });
+      if (!leaving) {
+        bell(147, 0, 0.16);
+        bell(147, 1.7, 0.1);
+        wind(4.2, 0.07);
+        tone(73.4, 4.2, { type: 'sawtooth', vol: 0.05, lp: 280, a: 1.2, delay: wait, wet: 0.3 });     // D2
+        tone(103.8, 4.2, { type: 'sawtooth', vol: 0.035, lp: 280, a: 1.6, delay: wait + 0.4, wet: 0.3 }); // G#2: the tritone
+        // D5 ... slides down to Bb, A, falls to the tritone G#, sighs back up to A, sinks to D
+        wail([[587, 0.35], [466, 1.0], [440, 1.5], [415, 2.1], [440, 2.6], [294, 3.2]], 0.075);
+      } else {
+        bell(220, 0, 0.1);
+        wind(2.6, 0.05);
+        tone(73.4, 2.6, { type: 'sawtooth', vol: 0.035, lp: 280, a: 0.5, delay: wait, wet: 0.3 });
+        // a rising sigh that never resolves: A4 up to D5, then slips to C#5 and fades
+        wail([[440, 0.2], [587, 0.7], [554, 1.3]], 0.065);
+      }
+    },
+    rollerHorn() { if (!gate('rollerHorn', 1)) return; for (const d of [0, 0.22]) tone(392, 0.16, { type: 'square', vol: 0.07, delay: d, lp: 1800 }); },
+    // steamroller engine: a low chug whose volume follows how close the nearest roller is (0..1)
+    engine(level) {
+      if (!ready()) return;
+      if (!loops.engine && level > 0.01) {
+        const osc = ac.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 52;
+        const flt = ac.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 260;
+        const chug = ac.createGain(); chug.gain.value = 0.6;
+        const lfo = ac.createOscillator(), lg = ac.createGain();
+        lfo.frequency.value = 9; lg.gain.value = 0.4; lfo.connect(lg); lg.connect(chug.gain);
+        const g = ac.createGain(); g.gain.value = 0;
+        osc.connect(flt); flt.connect(chug); chug.connect(g); g.connect(out);
+        osc.start(); lfo.start();
+        loops.engine = { osc, lfo, g };
+      }
+      const l = loops.engine; if (!l) return;
+      l.g.gain.setTargetAtTime(0.35 * level, ac.currentTime, 0.15);
+      if (level <= 0.01 && l.g.gain.value < 0.005) { l.osc.stop(); l.lfo.stop(); loops.engine = null; }
+    },
+    // darkness: a soft low pulse on each flash, so you can feel the beat
+    pulse(vol) { if (!gate('pulse', 0.5)) return; tone(70, 0.35, { to: 45, vol: 0.4 * vol }); },
+    death(cause) {
+      if (!gate('death', 0.25)) return;
+      const splash = () => { noise(0.5, { f: 3500, to: 300, vol: 0.35 }); tone(700, 0.25, { to: 180, vol: 0.12, delay: 0.05 }); };
+      switch (cause) {
+        case 'car':
+          noise(0.18, { f: 1800, to: 300, vol: 0.45 }); tone(180, 0.2, { to: 60, vol: 0.4 });
+          for (const f of [370, 466]) tone(f, 0.28, { type: 'square', vol: 0.05, delay: 0.12, lp: 2000 });   // honk
+          break;
+        case 'train':
+          noise(0.5, { f: 2500, to: 200, vol: 0.5 }); tone(120, 0.4, { to: 40, vol: 0.45 });
+          for (const f of [311, 392, 466]) tone(f, 0.8, { type: 'sawtooth', vol: 0.05, lp: 1400, delay: 0.05 });
+          break;
+        case 'water': splash(); break;
+        case 'crack': noise(0.07, { type: 'bandpass', f: 1800, q: 2, vol: 0.4 }); tone(320, 0.08, { to: 140, vol: 0.25 }); splash(); break;
+        case 'sink':
+          splash();
+          for (let i = 0; i < 4; i++) tone(jit(500, 0.2), 0.09, { to: 220, vol: 0.12, delay: 0.15 + i * 0.12 });   // glug
+          break;
+        case 'crumble': tone(500, 0.9, { to: 90, vol: 0.18, type: 'triangle' }); noise(0.5, { f: 700, to: 120, vol: 0.25 }); break;
+        case 'boulder': case 'roller':
+          noise(0.35, { f: 1500, to: 150, vol: 0.45 }); tone(140, 0.35, { to: 45, vol: 0.45 });
+          tone(900, 0.25, { to: 1400, type: 'triangle', vol: 0.08, delay: 0.12 });   // squeak as you flatten
+          break;
+        case 'slap': noise(0.09, { type: 'highpass', f: 1400, vol: 0.55 }); tone(260, 0.1, { to: 120, vol: 0.3 }); break;
+        case 'grab': noise(0.35, { type: 'bandpass', f: 600, to: 2400, q: 1.5, vol: 0.3 }); tone(300, 0.4, { to: 1100, type: 'triangle', vol: 0.12 }); break;
+        case 'skeleton': for (let i = 0; i < 4; i++) noise(0.04, { type: 'bandpass', f: 2600, q: 5, vol: 0.35, delay: i * 0.04 }); tone(200, 0.15, { to: 80, vol: 0.3 }); break;
+        case 'ghost': tone(520, 1.0, { to: 160, vol: 0.14, vib: [7, 25], a: 0.03, lp: 1600 }); noise(0.4, { type: 'bandpass', f: 800, to: 300, q: 2, vol: 0.15 }); break;
+        default: noise(0.2, { f: 1500, to: 200, vol: 0.4 }); tone(160, 0.2, { to: 60, vol: 0.35 });
+      }
+    },
+    gameOver() { if (!gate('gameOver', 1)) return; [523, 440, 349].forEach((f, i) => tone(f, 0.18, { type: 'triangle', vol: 0.12, delay: 0.05 + i * 0.13 })); },
+    stopLoops() { S.handStop(); if (loops.engine && ac) loops.engine.g.gain.setTargetAtTime(0, ac.currentTime, 0.05); },
+    unlock, status,
+    get running() { return !!ac && ac.state === 'running'; },
+    toggleMute() {
+      muted = !muted;
+      try { localStorage.setItem('crossyrd2-muted', muted ? '1' : '0'); } catch (e) {}
+      if (out) out.gain.setTargetAtTime(muted ? 0 : 0.5, ac.currentTime, 0.02);
+      return muted;
+    },
+    get muted() { return muted; },
+    played
+  };
+  return S;
+})();
+
+// ---------------- input ----------------
+const KEYS = {
+  ArrowUp: [0, 1], KeyW: [0, 1], ArrowDown: [0, -1], KeyS: [0, -1],
+  ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0]
+};
+// test mode panel
+const testPanel = document.getElementById('testPanel');
+const testChoice = { only: 'park', speed: '0', god: '0' };
+function syncTestPanel() {
+  for (const grp of testPanel.querySelectorAll('.opts')) {
+    for (const b of grp.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v === testChoice[grp.dataset.group]));
+  }
+}
+function openTestPanel() {
+  if (test.on) Object.assign(testChoice, { only: test.only, speed: String(test.speedRow), god: test.god ? '1' : '0' });
+  syncTestPanel();
+  document.getElementById('testExit').style.display = test.on ? '' : 'none';
+  testPanel.classList.add('open');
+  elMini.style.display = 'none';
+  document.getElementById('testStart').focus();
+}
+function closeTestPanel() { testPanel.classList.remove('open'); if (typeof lbShow === 'function' && LB.view === 'title') lbShow('title'); }
+const testPanelOpen = () => testPanel.classList.contains('open');
+testPanel.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) { if (e.target === testPanel) closeTestPanel(); return; }
+  const grp = b.closest('.opts');
+  if (grp) { testChoice[grp.dataset.group] = b.dataset.v; syncTestPanel(); return; }
+  if (b.id === 'testStart') {
+    Object.assign(test, { on: true, only: testChoice.only, speedRow: +testChoice.speed, god: testChoice.god === '1' });
+    closeTestPanel(); reset();
+  } else if (b.id === 'testExit') {
+    test.on = false; closeTestPanel(); reset();
+  }
+});
+document.getElementById('testBtn').addEventListener('click', openTestPanel);
+const inTestUI = e => e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #muteBtn');
+
+const muteBtn = document.getElementById('muteBtn');
+// speaker: on, muted, or a quiet speaker while the browser hasn't let sound start yet
+function syncMute() {
+  const icon = SFX.muted ? '\u{1F507}' : SFX.running ? '\u{1F50A}' : '\u{1F508}';
+  if (muteBtn.textContent !== icon) { muteBtn.textContent = icon; muteBtn.setAttribute('aria-pressed', String(SFX.muted)); }
+}
+syncMute();
+muteBtn.addEventListener('click', () => { SFX.unlock(); SFX.toggleMute(); syncMute(); muteBtn.blur(); });
+// open the sound on any first touch, click or key, wherever it lands
+if (document.addEventListener) for (const ev of ['pointerdown', 'touchend', 'mousedown', 'click', 'keydown'])
+  document.addEventListener(ev, () => SFX.unlock(), { capture: true, passive: true });
+window.addEventListener('keydown', e => {
+  SFX.unlock();
+  if (e.code === 'KeyM' && !e.repeat && !(e.target && e.target.tagName === 'INPUT')) { SFX.toggleMute(); syncMute(); return; }
+  if (e.target && e.target.tagName === 'INPUT') return;          // typing a leaderboard name
+  if (LB.view === 'modal') { if (e.code === 'Escape' || e.code === 'KeyL') lbShow('title'); return; }
+  if (testPanelOpen()) { if (e.code === 'Escape' || e.code === 'KeyT') closeTestPanel(); return; }
+  if (e.code === 'KeyT' && (game.mode === 'ready' || game.mode === 'over')) { openTestPanel(); return; }
+  if (game.mode === 'over') {
+    if (!e.repeat && ['KeyR', 'Enter', 'Space'].includes(e.code)) reset();
+    return;
+  }
+  const mv = KEYS[e.code];
+  if (!mv) return;
+  e.preventDefault();
+  if (e.repeat) return;
+  tryMove(mv[0], mv[1]);
+});
+let touch = null;
+const inBoardUI = e => LB.view === 'modal' || (e.target && e.target.closest && e.target.closest('#boardCard, #lbMini'));
+window.addEventListener('pointerdown', e => { SFX.unlock(); touch = inTestUI(e) || testPanelOpen() || inBoardUI(e) ? null : { x: e.clientX, y: e.clientY }; });
+window.addEventListener('pointerup', e => {
+  if (inTestUI(e) || testPanelOpen() || inBoardUI(e)) { touch = null; return; }
+  if (game.mode === 'over') { reset(); return; }
+  if (!touch) return;
+  const dx = e.clientX - touch.x, dy = e.clientY - touch.y;
+  touch = null;
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (Math.max(ax, ay) < 24) tryMove(0, 1);
+  else if (ax > ay) tryMove(dx > 0 ? 1 : -1, 0);
+  else tryMove(0, dy < 0 ? 1 : -1);
+});
+
+// ---------------- main loop ----------------
+let last = performance.now() / 1000;
+function frame() {
+  const now = performance.now() / 1000;
+  const dt = Math.min(0.05, now - last);
+  last = now;
+  update(dt);
+  updateVisuals(dt);
+  updateHUD();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+reset();
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
