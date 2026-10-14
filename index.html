@@ -159,6 +159,59 @@
   #lbName .go { font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; background: #3fbf5a; padding: 7px 14px 4px; }
   #lbFoot { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   #center.withBoard { padding-right: 44%; box-sizing: border-box; }
+  /* ============ panel style (run stats page) ============
+     Cream paper panel, clay-red frame, tilted paper title tag, red X close button. Izzy liked this style for
+     pop-up panels; the title and game over screens keep their original look, and the logo is never restyled. */
+  :root {
+    --ink: #3a2216; --text: #4a2a17; --soft: #8a6447; --paper: #fbe8cf; --paper2: #f3d6b2; --paper3: #ebc79d;
+    --clay: #e0685a; --clayDark: #b8473c; --orange: #f2a12b; --green: #8cc63f; --teal: #2fc1b5; --grey: #a3a6aa;
+    --red: #e0564a; --purple: #b450d6; --purpleDark: #86319f; --gold: #ffd23f;
+  }
+  .btn {
+    font: 20px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #fff; cursor: pointer;
+    text-shadow: 0 2px 0 rgba(58, 34, 22, .55); background: var(--orange);
+    border: 3px solid var(--ink); border-radius: 12px; padding: 10px 16px 7px;
+    box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .18), inset 0 3px 0 rgba(255, 255, 255, .35), 0 5px 0 var(--ink);
+    pointer-events: auto; -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 2px 0 var(--ink); }
+  .btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .btn:disabled { filter: grayscale(.6); cursor: default; }
+  .btn.green { background: var(--green); } .btn.teal { background: var(--teal); } .btn.grey { background: var(--grey); }
+  .btn.red { background: var(--red); } .btn.tan { background: var(--paper3); color: var(--text); text-shadow: none; }
+  .btn.icon { width: 64px; height: 64px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; }
+  .btn.icon svg { width: 34px; height: 34px; filter: drop-shadow(0 2px 0 rgba(58, 34, 22, .55)); }
+  .btn.small { font-size: 15px; padding: 7px 11px 5px; border-width: 2px; border-radius: 9px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .15), 0 3px 0 var(--ink); }
+  .panel {
+    position: relative; box-sizing: border-box; background: var(--paper); color: var(--text);
+    border: 6px solid var(--clay); border-radius: 18px; outline: 3px solid var(--ink);
+    box-shadow: inset 0 0 0 3px #fff5e6, 0 9px 0 var(--clayDark), 0 9px 0 3px var(--ink), 0 18px 24px rgba(0, 0, 0, .35);
+    font: 15px/1.4 "Segoe UI", system-ui, sans-serif; text-shadow: none; text-align: left;
+  }
+  .tag {          /* tilted paper label sitting on a panel's top edge */
+    position: absolute; left: 50%; top: -26px; transform: translateX(-50%) rotate(-2.5deg); white-space: nowrap;
+    font: 22px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: var(--text);
+    background: var(--paper2); border: 3px solid var(--ink); padding: 9px 18px 6px; border-radius: 4px 10px 4px 10px;
+    box-shadow: 0 4px 0 var(--ink);
+  }
+  .xbtn {         /* red square close button on a panel's corner */
+    position: absolute; right: -16px; top: -18px; width: 42px; height: 42px; transform: rotate(6deg); cursor: pointer;
+    background: var(--red); border: 3px solid var(--ink); border-radius: 8px; box-shadow: 0 4px 0 var(--ink);
+    color: #fff; font: 24px/1 "Luckiest Guy", "Arial Black", sans-serif; padding: 4px 0 0; pointer-events: auto;
+  }
+  .xbtn:active { transform: rotate(6deg) translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  #stats { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 12; background: rgba(42, 22, 16, .6); }
+  #stats.show { display: flex; }
+  #stats .panel { width: min(640px, 94%); padding: 34px 18px 16px; font-size: 14px; }
+  #stats .scroll { max-height: calc(86vh - 70px); overflow-y: auto; }
+  #stats h3 { font: 16px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 16px 0 4px; color: var(--clayDark); }
+  #stats table { width: 100%; border-collapse: collapse; }
+  #stats td, #stats th { padding: 4px 6px 2px; text-align: right; border-bottom: 2px solid var(--paper2); }
+  #stats td:first-child, #stats th:first-child { text-align: left; }
+  #stats th { color: var(--soft); font-weight: 600; }
+  #stats .bar { display: inline-block; height: 9px; background: var(--orange); border: 1px solid var(--ink); border-radius: 4px; vertical-align: middle; }
+  #stats .top { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; margin-bottom: 6px; }
+
   #ghostPtr svg { position: absolute; left: 14px; top: 12px; width: 36px; height: 40px;
                   filter: drop-shadow(0 3px 0 #1b1b26); }
 </style>
@@ -210,6 +263,8 @@
     </div>
   </div>
 </div>
+<div id="stats" role="dialog" aria-label="Run stats"><div class="panel"><div class="tag">Run stats</div>
+  <button type="button" class="xbtn" data-r="close" aria-label="Close">✕</button><div class="scroll" id="statsCard"></div></div></div>
 <div id="lbMini" class="lbcard"></div>
 <div id="board"><div id="boardCard" class="lbcard" role="dialog" aria-label="Leaderboard"></div></div>
 <div id="ghostPtr"><div class="arrow"></div><svg viewBox="0 0 36 40"><path d="M3 38V17a15 15 0 0 1 30 0v21l-5-4-5 4-5-4-5 4-5-4z" fill="#f4f6ff" stroke="#1b1b26" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="13" width="5" height="8" fill="#1b1b26"/><rect x="21" y="13" width="5" height="8" fill="#1b1b26"/></svg></div>
@@ -233,9 +288,10 @@ const H = W / 2;                 // half the tube width (tiles are 1 unit)
 const HOP_TIME = 0.12;           // seconds per hop
 const HOP_HEIGHT = 0.6;
 const LAND_TIME = 0.1;
-// Crumble zone (a difficult obstacle): 20 rows where the ground is grey and cracked. Each cracked tile
-// falls away 2 seconds after you first step on it, whether or not you're still there. Inside the zone
-// there are only cracked ground, roads and rails: no trees, rivers, logs, jams or other hard obstacles.
+// Crumble zone / boulder field (a difficult obstacle): 20 rows where all the ground is grey and cracked. Each
+// cracked tile falls away 0.8 s after you first step on it, whether or not you're still there. Instead of
+// roads it has rolling-boulder lanes (boulders roll across the face like traffic, on cracked ground that
+// crumbles too), plus train tracks: no trees, rivers, logs, jams or other hard obstacles.
 // A boulder drops from the far side of the tube to announce it as you approach.
 // Hard crumble zone: boulders fall onto flashing red landing zones near you. Shapes are grid "circles":
 // r = 0 is one tile, r = 1 adds every tile next to it in a straight line (a plus), r = 2 grows it once more
@@ -247,16 +303,18 @@ const BOULDERS = {
     { r: 1, warn: 1.4, weight: 0.35, scale: 0.62 },
     { r: 2, warn: 1.9, weight: 0.15, scale: 0.95 }
   ],
-  interval: [0.9, 1.6],   // seconds between drops
-  maxActive: 2,
+  interval: [0.6, 1.0],   // seconds between drops (was 0.9-1.6)
+  maxActive: 3,           // (was 2)
   rowsAhead: [-1, 4],     // where they land relative to you
   tilesAround: 6,
-  fallTime: 0.55,         // the boulder is visible for the last part of the warning
+  fallTime: 0.7,          // the boulder is visible (thrown by the boss) for the last part of the warning
   hopTime: 0.18           // assumed time per hop when checking you can escape
 };
+// Rolling boulders: the boulder field's traffic. Size in tiles; radius sets how fast it spins.
+const ROLL = { len: 0.9, scale: 0.26, radius: 0.44 };
 const ZONE = {
   rows: 20, fromRow: 40, minSpacing: 30,   // the hard variant (falling boulders) comes from the difficulty roll
-  fuse: 2.0,          // seconds from stepping on a tile until it falls
+  fuse: 0.8,          // seconds from stepping on a tile until it falls (was 2.0)
   warnAhead: 7,       // the boulder drops when the zone is this many rows ahead of you
   rockFall: 1.1       // seconds for the boulder to fall
 };
@@ -345,15 +403,17 @@ const ROLLER = { minRun: 12, maxAhead: 20, speed: 2, chance: 0.2, cooldown: 25, 
 // Darkness: stretches of 25 rows, roughly every 80 to 140 rows from row 40. The normal version is dusk (you
 // see about 6 tiles); the difficult one is dark (about 3 tiles, +8 when you get through). It sits on top of
 // whatever is there (dusk: you see about 4 tiles; dark: pitch black but for lights and your own tile, with a
-// flash every 2 s that lights up about 7 tiles; rivers are pure memory), but a dark stretch that overlaps a boulder field or a graveyard drops to dusk.
+// fast strobe, lit 0.2 s out of every 0.5 s, that lights up about 7 tiles; rivers are pure memory), but a dark stretch that overlaps a boulder field or a graveyard drops to dusk.
 // Whether it's dark is settled once every row it covers exists (about 2 rows before you reach it).
 // Anything that warns you of danger shows through: car headlights, train and gridlock lights, skeleton eyes,
 // the ghost, steamroller beacons and their path, boulder landing marks.
 const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2,
   dusk: { see: 4, fog: 0x2c2443, ambient: 0.2, sun: 0.14 },
-  // dark: pitch black except lights and your own tile, with a flash every 2 s that shows about 7 tiles
+  // dark: pitch black except lights and your own tile, strobing: lit 0.2 s, dark 0.3 s, hard cuts with no fade
+  // (a choppy, low-frame-rate feel). Was a 2 s cycle with a soft flash. Keep it at 3 flashes a second or
+  // fewer: faster full-screen flashing can trigger seizures in photosensitive players.
   dark: { see: 0.6, fog: 0x000000, ambient: 0.03, sun: 0, flashSee: 7, flashFog: 0x18203a, flashAmbient: 0.42, flashSun: 0.3 },
-  blink: { period: 2, rise: 0.05, hold: 0.3, fade: 0.3 } };
+  blink: { period: 0.5, rise: 0, hold: 0.2, fade: 0, pulseEvery: 4 } };
 const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5 };
 // Graveyard (the difficult park): 9 rows of dark grass. Gravestones sit on 15% of tiles and block you like
 // trees; every graveyard is checked to have a way through. Each face has one skeleton per 2 rows. A skeleton
@@ -371,7 +431,7 @@ const GRAVE = {
   skel: { perRows: 2, glow: 0.6, dash: 4, dashSpeed: 10, rest: 1.5, rowsBehind: 1, rowsAhead: 3, reach: 6, hit: 0.62 },
   // calm: what can't appear during the chase. noRails: no train tracks at all; noGridlock: no difficult jams
   calm: { noRails: true, noGridlock: true },
-  ghost: { behind: 6, speed: 3, maxSpeed: 4.5, chaseRows: 40, hit: 0.6, height: 0.5, water: 0.75 },
+  ghost: { behind: 6, speed: 3, maxSpeed: 4.5, chaseRows: 40, hit: 0.6, height: 0.5, water: 0.75, riverZone: 5 },
   grass: [0x6f7c5d, 0x687556], grassAlt: [0x6a7758, 0x637052], stone: [0xa3a8b4, 0x8e94a1, 0x7c8290],
   engrave: 0x50545e, dirt: 0x5b4733, bone: 0xe6e1d1
 };
@@ -421,7 +481,7 @@ const COLORS = {
   log: 0x8f5d36, logTop: 0xa66d40, logEnd: 0xc89462,
   gravel: [0x7d7c86, 0x75747e], tie: 0x6b4a33, rail: 0xc8ccd4,
   coin: 0xffd23f, sky: 0x9cd8ff,
-  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, crackHard: 0x6a1010, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a]
+  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, crackHard: 0x6a1010, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a], rollBoulder: [0x4a4b52, 0x3e3f46, 0x56575f]
 };
 const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 0x2bb3b3];
 
@@ -919,7 +979,7 @@ function zoneSpec(v) {
   else if (!(GRAVE.calm.noRails && inCalm(v))) { z.block = 'rail'; z.blockLeft = 0; kind = 'rail'; }
   else { z.block = 'road'; z.blockLeft = 0; kind = 'road'; }
   if (last) { gen.zone = null; gen.lastZoneEnd = v; gen.type = 'zone'; gen.left = 0; }
-  return { type: kind === 'ground' ? 'grass' : kind, cracked: kind === 'ground', inZone: true, zoneFirst: first, zoneTier: z.tier };
+  return { type: kind === 'ground' ? 'grass' : kind, cracked: kind !== 'rail', inZone: true, zoneFirst: first, zoneTier: z.tier };
 }
 
 // Can you get from the first row of a graveyard to its last, going round gravestones?
@@ -1066,6 +1126,20 @@ function nextSpec(v) {
   return { type: gen.type, hard };
 }
 
+// land: the row before or after a lily pad row. canClear: land isn't drawn yet, so clear the tile next to one
+// pad; otherwise land is already drawn, so add a pad next to an open tile instead
+function padExits(pads, land, canClear) {
+  for (let f = 0; f < 4; f++) {
+    const mine = [...pads].filter(p => Math.floor(p / W) === f);
+    if (mine.some(p => !land.blocked.has(p))) continue;
+    if (canClear) { const p = pick(mine); land.blocked.delete(p); land.trees.delete(p); }
+    else {
+      const open = [];
+      for (let u = 0; u < W; u++) if (!land.blocked.has(f * W + u)) open.push(f * W + u);
+      if (open.length) pads.add(pick(open));      // a face that's all trees is a wall anyway
+    }
+  }
+}
 function makeLane(v) {
   const spec = nextSpec(v);
   const type = spec.type;
@@ -1127,10 +1201,10 @@ function makeLane(v) {
       for (const o of pat.escorts.cars[spec.side]) lane.vehicles.push({ o, len, color: pick(CAR_COLORS), parts: [] });
     }
   } else if (type === 'road') {
-    const truck = Math.random() < 0.3;
-    lane.kind = truck ? 'truck' : 'car';
+    const truck = !spec.inZone && Math.random() < 0.3;
+    lane.kind = spec.inZone ? 'boulder' : truck ? 'truck' : 'car';     // boulder field: rolling boulders, not cars
     lane.dir = Math.random() < 0.5 ? 1 : -1;
-    lane.speed = (truck ? rand(1.6, 2.6) : rand(2.2, 4.0)) * mul;
+    lane.speed = (truck ? rand(1.6, 2.6) : lane.kind === 'boulder' ? rand(2.0, 3.4) : rand(2.2, 4.0)) * mul;
     // difficult variant: this lane is a conveyor that drags you against the traffic
     lane.belt = !spec.inZone && (test.on ? !!spec.hard : Math.random() < hardShare(v));
     if (lane.belt) {
@@ -1138,7 +1212,7 @@ function makeLane(v) {
       lane.beltSpeed = BELT.speed * mul;
       bonuses.push({ row: v + 1, points: BONUS.belt, label: 'CONVEYOR' });
     }
-    const len = truck ? 2.7 : 1.5;
+    const len = truck ? 2.7 : lane.kind === 'boulder' ? ROLL.len : 1.5;
     // space cars by time, so even on the slowest stretch (the ceiling) there's a car-and-a-bit between them
     const minDt = (len + GRAVITY.carGap) / MIN_FACTOR;
     const n = Math.min(truck ? randInt(3, 4) : randInt(4, 6), Math.floor(LAP_TIME / minDt));
@@ -1211,6 +1285,20 @@ function makeLane(v) {
     lane.trainStart = 0;
   }
 
+  // corners: a face's last tile and the next face's first tile touch, so trees/rocks there overlap. One is fine,
+  // never both (gravestones are left alone)
+  if (type === 'grass') {
+    const solid = p => lane.blocked.has(p) && lane.trees.get(p) >= 0;
+    for (let f = 0; f < 4; f++) {
+      const a = f * W + W - 1, b = wrapP(a + 1);
+      if (solid(a) && solid(b)) { const k = Math.random() < 0.5 ? a : b; lane.blocked.delete(k); lane.trees.delete(k); }
+    }
+  }
+  // lily pads next to land: every face keeps at least one pad with an open tile right next to it, on the
+  // way in and on the way out. Whichever of the two rows is made second does the fixing.
+  if (prev && prev.type === 'pads' && !isWater(lane)) padExits(prev.pads, lane, true);
+  if (lane.type === 'pads' && prev && !isWater(prev)) padExits(lane.pads, prev, false);
+
   buildLaneStatic(lane);
   buildLaneDynamic(lane);
   scene.add(lane.group);
@@ -1270,7 +1358,7 @@ function updateDarkness(dt) {
   const k = darkLook.amt, h = darkLook.hardK, D = DARK.dark, U = DARK.dusk;
   // the dark's look this frame: black, or flashing; then mixed with dusk by how far into dark you are
   const b = blinkLevel();
-  const beat = Math.floor(clock / DARK.blink.period);
+  const beat = Math.floor(clock / (DARK.blink.period * DARK.blink.pulseEvery));     // the low pulse every 2 s, not every flash
   if (beat !== darkLook.beat) { darkLook.beat = beat; if (game.mode === 'play' && k * h > 0.3) SFX.pulse(k * h); }
   const see = lerp(U.see, lerp(D.see, D.flashSee, b), h);
   const amb = lerp(U.ambient, lerp(D.ambient, D.flashAmbient, b), h);
@@ -1304,13 +1392,13 @@ function buildLaneStatic(lane) {
   }
   const m = new Merge();
   const v = lane.v;
-  const nextRoad = lane.type === 'road' && lanes.get(v + 1) && lanes.get(v + 1).type === 'road';
+  const nextRoad = lane.type === 'road' && !lane.cracked && lanes.get(v + 1) && lanes.get(v + 1).type === 'road' && !lanes.get(v + 1).cracked;
   for (let p = 0; p < P; p++) {
     if (lane.holes.has(p)) continue;
     const face = Math.floor(p / W), u = p % W, rot = face * Math.PI / 2;
     const x = u - H + 0.5;
     const alt = (u + face) % 2;
-    if (lane.type === 'grass' && lane.cracked) {
+    if (lane.cracked) {
       m.box(COLORS.cracked[alt], x, -0.2, 0, 1, 0.4, 1, rot);
       // black cracks: a few short zigzag segments per tile, the same every time for this tile
       let seed = (v * 131 + p * 977) >>> 0;
@@ -1396,7 +1484,18 @@ function buildLaneDynamic(lane) {
     lane.hazardGeo = hm.geometry();
   }
   for (const veh of lane.vehicles) {
-    if (lane.kind === 'truck') {
+    if (lane.kind === 'boulder') {
+      // the rock spins inside a holder that only moves: holder -> spinner (turns) -> rock (centred)
+      const holder = new THREE.Object3D(), spin = new THREE.Object3D(), rock = new THREE.Mesh(ROLL_GEO, VCOL);
+      rock.scale.setScalar(ROLL.scale);
+      rock.position.y = -1.7 * ROLL.scale;
+      spin.position.y = 1.7 * ROLL.scale;
+      spin.rotation.y = rand(-0.35, 0.35);               // a little variety, but the face stays toward the camera
+      rock.add(new THREE.Mesh(ROLL_FACE_GEO, VCOL));      // the face rolls with the rock
+      spin.add(rock); holder.add(spin);
+      veh.spin = spin;
+      veh.parts.push({ mesh: holder, off: 0 });
+    } else if (lane.kind === 'truck') {
       const cab = new THREE.Mesh(truckCabGeometry(veh.color), VCOL);
       addHeadlights(cab, -0.3);
       veh.parts.push({ mesh: cab, off: 0.9 });
@@ -1488,7 +1587,8 @@ function removeLane(lane) {
   lane.group.traverse(o => {
     if (o.isMesh && o.geometry !== LOG_GEO && o.geometry !== LOG_END_GEO && o.geometry !== COIN_GEO && o.geometry !== CRACK_GEO && o.geometry !== SINK_GEO &&
         o.geometry !== SKEL_GEO && o.geometry !== SKEL_EYE_GEO && o.geometry !== BELT_GEO &&
-        o.geometry !== HEADLIGHT_GEO && o.geometry !== BEAM_GEO && o.geometry !== TAILLIGHT_GEO) o.geometry.dispose();
+        o.geometry !== HEADLIGHT_GEO && o.geometry !== BEAM_GEO && o.geometry !== TAILLIGHT_GEO &&
+        o.geometry !== ROLL_GEO && o.geometry !== ROLL_FACE_GEO) o.geometry.dispose();
   });
   for (const sk of lane.skels || []) sk.eyeMat.dispose();
   if (lane.beltMat) { lane.beltMat.dispose(); lane.beltTex.dispose(); }
@@ -1575,7 +1675,7 @@ function carHonks() {
   if (game.mode !== 'play' || !game.started) return;
   const [pp, pv] = playerNow();
   const lane = lanes.get(Math.round(pv));
-  if (!lane || lane.type !== 'road' || !lane.speed) return;
+  if (!lane || lane.type !== 'road' || !lane.speed || lane.kind === 'boulder') return;
   for (const veh of lane.vehicles) {
     const ahead = wrapP((pp - vehicleCenter(lane, veh)) * lane.dir);      // how far you are in front of its centre
     const gap = ahead - veh.len / 2;
@@ -1722,7 +1822,11 @@ function updateGhost(dt) {
   if (game.mode !== 'play') return;
   const over = lanes.get(Math.round(ghost.gv));
   const wet = !!over && (over.type === 'river' || over.type === 'pads');
-  const speed = Math.min(G.maxSpeed, G.speed * speedMul(game.dist)) * (wet ? G.water : 1);
+  // also slowed (same amount, not stacked) in the rows just before a river: players waiting for a log were
+  // getting caught by a ghost still running full speed on the land behind them
+  let nearRiver = false;
+  for (let k = 1; k <= G.riverZone && !nearRiver; k++) nearRiver = isWater(lanes.get(Math.round(ghost.gv) + k));
+  const speed = Math.min(G.maxSpeed, G.speed * speedMul(game.dist)) * (wet || nearRiver ? G.water : 1);
   const { dp, dv, d } = ghostDist();
   const step = Math.min(d, speed * dt);
   if (d > 1e-6) { ghost.gpf += dp / d * step; ghost.gv += dv / d * step; }
@@ -1837,7 +1941,8 @@ function crushRow(r, lane) {
   for (let i = lane.vehicles.length - 1; i >= 0; i--) {
     const veh = lane.vehicles[i], c = vehicleCenter(lane, veh);
     if (!inside(c) && !inside(c - veh.len / 2 + 0.2) && !inside(c + veh.len / 2 - 0.2)) continue;
-    for (const part of veh.parts) { lane.group.remove(part.mesh); part.mesh.geometry.dispose(); }
+    // rolling boulders are a holder around shared rock/face geometry: just remove them, nothing to dispose
+    for (const part of veh.parts) { lane.group.remove(part.mesh); if (part.mesh.geometry) part.mesh.geometry.dispose(); }
     lane.vehicles.splice(i, 1);
     debris(c, lane.v, veh.color || 0xdddddd, 10, 5);
   }
@@ -1950,7 +2055,14 @@ function updateLanes(dt) {
       const yaw = lane.dir > 0 ? 0 : Math.PI;
       for (const veh of lane.vehicles) {
         const c = vehicleCenter(lane, veh);
-        for (const part of veh.parts) place(part.mesh, c + lane.dir * part.off, 0, yaw);
+        // boulders never turn round (yaw 0), so the face always looks at the camera; they spin by how far
+        // they've actually moved, measured across the wrap so the spin never jumps
+        for (const part of veh.parts) place(part.mesh, c + lane.dir * part.off, 0, veh.spin ? 0 : yaw);
+        if (veh.spin) {
+          if (veh.lastC !== undefined) { let d = c - veh.lastC; d -= Math.round(d / P) * P; veh.rolled = (veh.rolled || 0) + d; }
+          veh.lastC = c;
+          veh.spin.rotation.z = -(veh.rolled || 0) / ROLL.radius;
+        }
       }
     } else if (lane.type === 'river') {
       for (const log of lane.logs) {
@@ -2127,7 +2239,8 @@ function tryMove(dp, dv) {
   if (tv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
   const lane = laneAt(tv);
   const tw = wrapP(tp);
-  if (lane.blocked.has(tw) || lane.holes.has(tw)) { player.bump = 0.14; SFX.bump(); return; }
+  // holes don't stop you: hop into one and you fall (easy to do by accident in a crumbling field)
+  if (lane.blocked.has(tw)) { player.bump = 0.14; SFX.bump(); return; }
   player.hop = { fp: player.pf, fv: player.v, tp, tv, t: 0, dp, dv };
   if (dv > 0) run.hops++;
   calmHand();
@@ -2190,7 +2303,7 @@ function finishHop() {
   game.score = game.dist + game.bonus;
 }
 
-const HIT_NAMES = { car: 'CAR', train: 'TRAIN', water: 'WATER', crumble: 'FELL', boulder: 'BOULDER', crack: 'CRACKED LOG',
+const HIT_NAMES = { car: 'CAR', train: 'TRAIN', water: 'WATER', crumble: 'FELL', boulder: 'BOULDER', roll: 'BOULDER', crack: 'CRACKED LOG',
                     grab: 'GRABBED', slap: 'SLAPPED', skeleton: 'SKELETON', ghost: 'GHOST', sink: 'SANK', roller: 'STEAMROLLER' };
 function testHit(cause) {
   if (test.hitT[cause] && clock - test.hitT[cause] < 0.7) return;
@@ -2222,15 +2335,33 @@ const zones = [];            // crumble zones generated so far, for the boulder 
 const fallingPieces = [];    // tiles that have given way, on their way down
 const FUSE_GEO = new THREE.BoxGeometry(0.98, 0.014, 0.98);
 const FALL_GEO = new THREE.BoxGeometry(0.98, 0.4, 0.98);
-const BOULDER_GEO = (() => {
-  const m = new Merge(), c = COLORS.boulder;
+const BOULDER_GEO = rockGeometry(COLORS.boulder);
+// rolling boulders are darker, so they stand out from the falling ones and the grey ground
+const ROLL_GEO = rockGeometry(COLORS.rollBoulder);
+// their cartoon face, on the side facing the camera: big eyes looking in, stepped angry brows, gritted teeth
+const ROLL_FACE_GEO = (() => {
+  const m = new Merge();
+  for (const sx of [-0.75, 0.75]) {
+    const inward = sx < 0 ? 1 : -1;
+    m.part(0xffffff, sx, 2.05, 1.62, 0.78, 0.86, 0.12);                        // eye
+    m.part(0x111111, sx + inward * 0.13, 1.95, 1.7, 0.32, 0.42, 0.06);          // pupil
+    m.part(0x1b1b1f, sx + inward * 0.22, 2.6, 1.68, 0.5, 0.2, 0.1);             // brow, low on the inside
+    m.part(0x1b1b1f, sx - inward * 0.25, 2.74, 1.68, 0.48, 0.2, 0.1);
+  }
+  m.part(0x1b1b1f, 0, 1.05, 1.64, 1.5, 0.34, 0.1);                             // mouth
+  m.part(0xffffff, -0.42, 1.13, 1.7, 0.26, 0.16, 0.04);                        // teeth
+  m.part(0xffffff, 0.42, 1.13, 1.7, 0.26, 0.16, 0.04);
+  return m.geometry();
+})();
+function rockGeometry(c) {
+  const m = new Merge();
   m.part(c[0], 0, 1.5, 0, 3.4, 2.7, 3.0);
   m.part(c[1], 0.5, 3.0, -0.3, 2.4, 1.0, 2.2);
   m.part(c[2], -1.2, 1.0, 0.8, 1.5, 1.5, 1.5);
   m.part(c[1], 1.4, 0.9, 1.0, 1.3, 1.2, 1.2);
   m.part(c[2], 0.2, 0.6, -1.4, 1.6, 1.0, 1.0);
   return m.geometry();
-})();
+}
 
 function lightFuse(lane, tile) {
   lane.fuse.set(tile, clock + ZONE.fuse);
@@ -2314,16 +2445,141 @@ function updateZones(dt) {
     z.mesh.rotation.set(z.t * 0.6, z.t * 0.9, z.roll);
     if (k >= 1) {
       z.done = true;
-      scene.remove(z.mesh);
       scene.remove(z.shadow);
       z.shadow.geometry.dispose(); z.shadow.material.dispose();
       rubble(z.roll, z.start);
+      crater(z);
+      bossWakes(z);                                   // the big boulder gets up and follows you through the field
       camState.shake = 0.55;
       SFX.boom(2);
     }
   }
 }
 
+// The big boulder breaks the cracked ground where it lands: the middle three tiles of the face on the
+// zone's first row, the middle tile of the next row, and sometimes one more beside that. The rest of the
+// face (and every other face) stays whole, so there's always a way in.
+function crater(z) {
+  const f = ((Math.round(z.roll / (Math.PI / 2)) % 4) + 4) % 4, mid = f * W + Math.floor(W / 2);
+  const tiles = [[0, -1], [0, 0], [0, 1], [1, 0]];
+  if (Math.random() < 0.6) tiles.push([1, pick([-1, 1])]);
+  for (const [dv, du] of tiles) {
+    const lane = lanes.get(z.start + dv), t = wrapP(mid + du);
+    if (!lane || !lane.cracked || lane.holes.has(t) || lane.coins.has(t)) continue;
+    if (player.v === z.start + dv && wrapP(Math.round(player.pf)) === t) continue;
+    collapse(lane, t);
+  }
+}
+// ---------------- the boulder boss ----------------
+// The big boulder that lands at the start of a boulder field is the boss. After landing he rises (shrinking
+// to 60%), floats about 6 rows ahead of you, high up and drifting side to side, and leaves once you're past
+// the field. Easy field: he only taunts (waves his wand, bobs). Hard field: every falling boulder is thrown
+// from his wand in an arc instead of dropping from the ceiling. The landing zones, warning times and the
+// "always a way out" check are exactly as before; only where the boulder comes from changed.
+const BOSS = { ahead: 7, height: 0.9, scale: 0.5, rise: 0.8, leave: 1.0, drift: 2.2, taunt: [1.8, 3.2],
+  gold: 0xe8b62c, goldDark: 0xb98a14, orb: 0xa13cff };
+const BOSS_FACE_GEO = (() => {
+  // the rolling boulders' face, angrier: pupils pushed in and up under heavy, steep brows; a gritted frown
+  const m = new Merge();
+  for (const sx of [-0.78, 0.78]) {
+    const inward = sx < 0 ? 1 : -1;
+    m.part(0xffffff, sx, 2.0, 1.62, 0.8, 0.78, 0.12);                          // eye
+    m.part(0x111111, sx + inward * 0.17, 2.02, 1.7, 0.3, 0.36, 0.06);           // pupil
+    m.part(0x1b1b1f, sx + inward * 0.3, 2.42, 1.69, 0.42, 0.24, 0.12);          // brow: three steps, cutting
+    m.part(0x1b1b1f, sx, 2.56, 1.69, 0.4, 0.24, 0.12);                          // into the eye on the inside
+    m.part(0x1b1b1f, sx - inward * 0.3, 2.7, 1.69, 0.42, 0.24, 0.12);
+  }
+  m.part(0x1b1b1f, 0, 1.0, 1.64, 1.3, 0.36, 0.1);                              // frown: middle up,
+  m.part(0x1b1b1f, -0.78, 0.84, 1.64, 0.36, 0.36, 0.1);                        // corners down
+  m.part(0x1b1b1f, 0.78, 0.84, 1.64, 0.36, 0.36, 0.1);
+  for (const tx of [-0.42, 0, 0.42]) m.part(0xffffff, tx, 1.08, 1.7, 0.24, 0.16, 0.04);   // gritted teeth
+  return m.geometry();
+})();
+const BOSS_ARM_GEO = (() => {
+  const m = new Merge();
+  m.part(0x6c6e77, 2.0, 1.5, 0.5, 1.1, 0.6, 0.7);         // stone arm
+  m.part(0x7d7f88, 2.55, 1.85, 0.5, 0.62, 0.72, 0.72);    // fist
+  return m.geometry();
+})();
+const BOSS_WAND_GEO = (() => {             // drawn from the fist up, so it waves around the fist
+  const m = new Merge();
+  m.part(BOSS.goldDark, 0, 0, 0, 0.26, 0.24, 0.26);
+  m.part(BOSS.gold, 0, 0.1, 0, 0.17, 1.75, 0.17);
+  m.part(BOSS.goldDark, 0, 1.75, 0, 0.3, 0.14, 0.3);
+  return m.geometry();
+})();
+let boss = null;
+function bossWakes(z) {
+  if (boss) bossGone();
+  const body = z.mesh;                                    // keep the big boulder that just landed
+  body.add(new THREE.Mesh(BOSS_FACE_GEO, VCOL));
+  body.add(new THREE.Mesh(BOSS_ARM_GEO, VCOL));
+  const wand = new THREE.Group();
+  wand.position.set(2.55, 2.2, 0.5);
+  wand.add(new THREE.Mesh(BOSS_WAND_GEO, VCOL));
+  const orbMat = new THREE.MeshBasicMaterial({ color: BOSS.orb, fog: false });
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 10), orbMat);
+  orb.position.y = 2.15; wand.add(orb);
+  const glowMat = new THREE.MeshBasicMaterial({ color: BOSS.orb, transparent: true, opacity: 0.25, depthWrite: false, fog: false });
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(0.6, 12, 10), glowMat);
+  glow.position.y = 2.15; wand.add(glow);
+  body.add(wand);
+  const pf = Math.floor((player.pf + 0.5) / W) * W + Math.floor(W / 2);   // middle of the face it landed on
+  boss = { z, body, wand, orb, glow, glowMat, state: 'rise', t: 0, row: z.start, pf, h: 0, scale: 1,
+           flash: 0, wave: 0, nextTaunt: rand(BOSS.taunt[0], BOSS.taunt[1]), fromRow: z.start, fromPf: pf };
+}
+function bossGone() {
+  if (!boss) return;
+  scene.remove(boss.body);
+  boss.glowMat.dispose(); boss.orb.material.dispose(); boss.orb.geometry.dispose(); boss.glow.geometry.dispose();
+  boss = null;
+}
+// the wand tip in the world, where thrown boulders start
+function bossWandTip() {
+  if (!boss) return null;
+  boss.body.updateMatrixWorld(true);
+  return boss.orb.getWorldPosition(new THREE.Vector3());
+}
+function updateBoss(dt) {
+  if (!boss) return;
+  const b = boss, z = b.z;
+  b.t += dt;
+  const e = 1 - Math.exp(-dt * 3);
+  // where he wants to be: ahead of you, over your face, drifting
+  const wantRow = Math.min(player.v + BOSS.ahead, z.end + 2);
+  const facePf = Math.floor((player.pf + 0.5) / W) * W + Math.floor(W / 2);
+  const wantPf = facePf + Math.sin(clock * 0.7) * BOSS.drift;
+  if (b.state === 'rise') {
+    const k = clamp01(b.t / BOSS.rise), s = k * k * (3 - 2 * k);
+    b.row = lerp(b.fromRow, wantRow, s);
+    let d = wantPf - b.fromPf; d -= Math.round(d / P) * P;
+    b.pf = b.fromPf + d * s;
+    b.h = BOSS.height * s; b.scale = lerp(1, BOSS.scale, s);
+    if (k >= 1) { b.state = 'follow'; b.t = 0; }
+  } else if (b.state === 'follow') {
+    b.row += (wantRow - b.row) * e;
+    let d = wantPf - b.pf; d -= Math.round(d / P) * P;
+    b.pf += d * e;
+    b.h = BOSS.height + Math.sin(clock * 2.1) * 0.25;
+    if (player.v > z.end + 1 || game.mode === 'over') { b.state = 'leave'; b.t = 0; }
+  } else {                                                   // fly up and away, shrinking
+    const k = clamp01(b.t / BOSS.leave);
+    b.h = BOSS.height + k * k * 6; b.scale = BOSS.scale * (1 - k);
+    b.row += dt * 6;
+    if (k >= 1) return bossGone();
+  }
+  // wand: flicks when he throws, waves now and then in the easy field
+  b.flash = Math.max(0, b.flash - dt * 3);
+  if (z.tier !== 'difficult' && b.state === 'follow' && (b.nextTaunt -= dt) <= 0) { b.wave = 1; b.nextTaunt = rand(BOSS.taunt[0], BOSS.taunt[1]); }
+  b.wave = Math.max(0, b.wave - dt * 1.4);
+  b.wand.rotation.z = Math.sin(b.wave * Math.PI * 4) * 0.6 * b.wave - b.flash * 0.9;
+  b.glowMat.opacity = 0.2 + 0.5 * b.flash + 0.08 * Math.sin(clock * 6);
+  b.glow.scale.setScalar(1 + b.flash * 0.6);
+  const f = ringFrame(b.pf, b.h);
+  b.body.scale.setScalar(b.scale);
+  b.body.position.set(f.x, f.y, -b.row);
+  b.body.rotation.set(Math.sin(clock * 1.3) * 0.06, Math.sin(clock * 0.9) * 0.12 + b.wave * Math.sin(b.t * 20) * 0.08, f.roll);
+}
 const drops = [];            // boulders with a landing zone, active in hard crumble zones
 // landing-zone tile: red fill with a white border, so it stays distinct from a flashing rail lane
 const MARK_GEO = (() => {
@@ -2351,6 +2607,9 @@ function canEscape(danger, steps) {
       for (const [dv, dp] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nv = v + dv, np = p + dp, k = key(nv, np);
         if (seen.has(k) || !walkable(nv, np)) continue;
+        // with the faster fuse, a tile that's already crumbling may be gone before you get there
+        const ln = lanes.get(nv), at = ln && ln.fuse.get(wrapP(np));
+        if (at !== undefined && at < clock + (d + 1) * BOULDERS.hopTime) continue;
         if (!danger.has(k)) return true;
         seen.add(k);
         next.push([nv, np]);
@@ -2433,10 +2692,22 @@ function updateDrops(dt) {
     d.mat.opacity = Math.sin(clock * rate * Math.PI * 2) > 0 ? 0.85 : 0.35;
     if (left <= BOULDERS.fallTime) {
       const k = clamp01(1 - left / BOULDERS.fallTime);
-      const f = ringFrame(d.p, lerp(W - 3, 0, k * k));
-      if (!d.mesh.visible) SFX.whistle(left);
+      if (!d.mesh.visible) {
+        SFX.whistle(left);
+        d.from = bossWandTip();                          // thrown by the boss when he's there
+        if (boss) boss.flash = 1;
+      }
       d.mesh.visible = true;
-      d.mesh.position.set(f.x, f.y, -d.row);
+      const f = ringFrame(d.p, 0);
+      if (d.from) {
+        // an arc from the wand tip down onto the landing zone, highest a third of the way along
+        const up = ringFrame(d.p, 2.2), arc = Math.sin(Math.PI * Math.min(1, k * 1.15)) * (1 - k * 0.3);
+        d.mesh.position.set(lerp(d.from.x, f.x, k) + (up.x - f.x) * arc, lerp(d.from.y, f.y, k) + (up.y - f.y) * arc,
+                            lerp(d.from.z, -d.row, k));
+      } else {
+        const g = ringFrame(d.p, lerp(W - 3, 0, k * k));
+        d.mesh.position.set(g.x, g.y, -d.row);
+      }
       d.mesh.rotation.set(d.t * d.spin, d.t * 1.3, f.roll);
     }
     if (left <= 0) {
@@ -2518,7 +2789,7 @@ function update(dt) {
       const [hf, ht] = hopEnds(h);
       const lp = lerp(hf, ht, t);
       const lane = lanes.get(lv);
-      if (lane && lane.type === 'road' && vehicleHits(lane, lp)) die('car');
+      if (lane && lane.type === 'road' && vehicleHits(lane, lp)) die(lane.kind === 'boulder' ? 'roll' : 'car');
       else if (lane && lane.type === 'rail' && trainHits(lane, lp)) die('train');
       else if (lane && lane.skels && skelHits(lane, lp)) die('skeleton');
       else if (rollerHits(lp, lerp(h.fv, h.tv, t))) die('roller');
@@ -2536,7 +2807,7 @@ function update(dt) {
         else player.pf += lane.dir * lane.speed * dt;     // the log carries you, even round a corner
       }
       if (lane.belt) player.pf += lane.beltDir * lane.beltSpeed * dt;   // the conveyor drags you
-      if (lane.type === 'road' && vehicleHits(lane, player.pf)) die('car');
+      if (lane.type === 'road' && vehicleHits(lane, player.pf)) die(lane.kind === 'boulder' ? 'roll' : 'car');
       if (lane.type === 'rail' && trainHits(lane, player.pf)) die('train');
       if (lane.skels && skelHits(lane, player.pf)) die('skeleton');
       if (rollerHits(player.pf, player.v)) die('roller');
@@ -2572,6 +2843,7 @@ function update(dt) {
   updateParticles(dt);
   updateCrumble(dt);
   updateZones(dt);
+  updateBoss(dt);
   updateDrops(dt);
 }
 
@@ -2635,7 +2907,7 @@ function updateVisuals(dt) {
       px = f2.x; py = f2.y;
       yaw += t * 9;
       show = t < 0.9;
-    } else if (game.death === 'car' || game.death === 'boulder' || game.death === 'slap' || game.death === 'skeleton' || game.death === 'roller') {
+    } else if (game.death === 'car' || game.death === 'boulder' || game.death === 'roll' || game.death === 'slap' || game.death === 'skeleton' || game.death === 'roller') {
       sy = 0.14; sx = 1.35; sz = 1.35;
       const f2 = ringFrame(player.pf, 0.04);
       px = f2.x; py = f2.y;
@@ -2809,13 +3081,14 @@ function gameOver() {
   game.mode = 'over';
   SFX.gameOver();
   const why = { car: 'Hit by a car', train: 'Hit by a train', water: 'Fell in the water',
-                crumble: 'The ground gave way', boulder: 'Crushed by a boulder', crack: 'The log cracked',
+                crumble: 'The ground gave way', boulder: 'Crushed by a boulder', roll: 'Flattened by a rolling boulder', crack: 'The log cracked',
                 grab: 'Pulled off the screen', slap: 'Slapped for standing still',
                 skeleton: 'Caught by a skeleton', ghost: 'The ghost got you',
                 sink: 'Sank with the log', roller: 'Flattened by a steamroller' }[game.death] || '';
   showCenter('GAME OVER', why + '  ·  Score ' + game.score,
              test.on ? 'Press R or tap to retry the test  ·  T to change it' : 'Press R or tap to play again', true);
   lbRunOver();
+  logDeath();
 }
 
 function startGame() {
@@ -2853,6 +3126,7 @@ function reset() {
   clock = 0;
   for (const z of zones) { if (z.mesh) scene.remove(z.mesh); if (z.shadow) scene.remove(z.shadow); }
   zones.length = 0;
+  bossGone();
   for (const d of drops) clearDrop(d);
   drops.length = 0;
   for (const f of fallingPieces) scene.remove(f.mesh);
@@ -2893,7 +3167,7 @@ const LBV = {
   show: 10, fetch: 50, fetchWeek: 200
 };
 const LB = { state: 'loading', view: 'hidden', tab: 'all', db: null, uid: null, name: '', mine: null, all: [], week: [], wk: '',
-             last: null, pending: null, askName: false, editName: false, needPin: false, busy: false, err: '', unsub: [] };
+             last: null, pending: null, askName: false, editName: false, switching: false, needPin: false, busy: false, err: '', unsub: [] };
 
 const lbLocal = (() => { try { return window.localStorage || null; } catch (e) { return null; } })();
 function lbStore(k, v) { try { if (lbLocal) lbLocal.setItem('crd2.' + k, String(v)); } catch (e) {} }
@@ -2911,7 +3185,9 @@ function runOk(r) {
   if (!r || typeof r !== 'object') return false;
   const { dist, bonus, secs, hops, b } = r;
   if (!isInt(dist) || !isInt(bonus) || !isInt(hops) || !Number.isFinite(secs) || dist < 1 || dist > 1e6) return false;
-  if (hops < dist || secs < hops / LBV.hopsPerSec) return false;     // every row needs a forward hop, and hops take time
+  // every row needs a forward hop, and hops take time. The clock starts with the first hop, so n hops need at
+  // least n-1 hop-times (a run that dies right after a quick 2-3 hops used to fail this check)
+  if (hops < dist || secs < (hops - 1) / LBV.hopsPerSec) return false;
   if (!b || typeof b !== 'object' || Array.isArray(b)) return false;
   let sum = 0, obs = 0;
   for (const k of Object.keys(b)) {
@@ -3074,19 +3350,24 @@ async function lbSaveName(rawName, rawPin) {
   const res = await lbClaim(n, pin);
   if (res === 'taken') return n + ' is taken, or that PIN is wrong.';
   if (res === 'error') return 'Couldn\u2019t reach the leaderboard. Try again.';
+  // Only "Change name" renames: it moves your scores to the new name and frees the old one. Signing in as
+  // someone else ("Not you?", "Sign in", or a PIN prompt) never touches the previous player's row: that used
+  // to delete their score when a second person signed in on the same computer.
+  const renaming = LB.editName && !LB.switching && !LB.needPin && !!LB.name;
   const old = LB.name, oldMine = LB.mine, wk = weekKey();
   LB.name = n; lbStore('name', n);
-  LB.askName = false; LB.editName = false; LB.needPin = false;
+  LB.askName = false; LB.editName = false; LB.switching = false; LB.needPin = false;
   await lbLoadMine();                                                        // signing back in: your row comes back
+  if (!renaming && old !== n) { game.best = LB.mine && rowOk(LB.mine) ? LB.mine.best : 0; lbStore('best', game.best); }   // TOP = this player's best
   const runs = [];
-  if (old && old !== n && oldMine && rowOk(oldMine)) {                      // renaming: bring your scores along
+  if (renaming && old !== n && oldMine && rowOk(oldMine)) {                 // renaming: bring your scores along
     runs.push([oldMine.run, false, oldMine.at]);
     if (weekOk(oldMine, wk)) runs.push([oldMine.wRun, true, oldMine.wAt]);
   }
   if (LB.pending) { runs.push([LB.pending, true]); LB.pending = null; }
   const d = runs.length ? lbMerge(runs) : null;
   if (d) await lbWrite(d);
-  if (old && old !== n) {                                                   // free the old name
+  if (renaming && old !== n) {                                              // free the old name
     try { await LB.db.doc('scores/' + old).delete(); } catch (e) {}
     try { await LB.db.doc('names/' + old).delete(); } catch (e) {}
   }
@@ -3158,8 +3439,11 @@ function lbRender() {
   const keep = id => { const el = document.getElementById(id); return el && typeof el.value === 'string' && elCard.contains && elCard.contains(el) ? el.value : null; };
   const typed = keep('lbNameIn'), typedPin = keep('lbPinIn');           // keep what's being typed across redraws
   const act = document.activeElement, focusId = act && (act.id === 'lbNameIn' || act.id === 'lbPinIn') ? act.id : null;
-  const title = LB.needPin ? 'Enter your PIN for ' + LB.name : LB.askName ? 'Name your score' : 'Change name or sign in';
+  const title = LB.needPin ? 'Enter your PIN for ' + LB.name : LB.askName ? 'Name your score' :
+    LB.switching || !LB.name ? 'Sign in' : 'Change your name';
   const help = LB.needPin ? 'This computer isn\u2019t signed in as ' + LB.name + ' yet.' :
+    LB.switching ? 'Your name and PIN. ' + LB.name + '\u2019s scores stay as they are.' :
+    LB.editName && LB.name ? 'Your scores move to the new name, and ' + LB.name + ' is freed up.' :
     'Pick a name (up to 6 letters or numbers) and a 4-number PIN. The PIN lets you use your name on any computer.';
   elCard.innerHTML =
     '<div class="tabs"><button type="button" data-tab="all" aria-pressed="' + (LB.tab === 'all') + '">All time</button>' +
@@ -3167,18 +3451,19 @@ function lbRender() {
     (LB.view === 'modal' ? '<button type="button" class="x" data-act="close">Close</button>' : '') + '</div>' +
     (place ? '<p id="lbPlace">' + place + '</p>' : '') +
     (ask ? '<div id="lbName"><h3>' + title + '</h3>' +
-      '<label>Name <input id="lbNameIn" maxlength="6" autocomplete="off" spellcheck="false" value="' + (LB.name || '') + '"></label>' +
+      '<label>Name <input id="lbNameIn" maxlength="6" autocomplete="off" spellcheck="false" value="' + (LB.switching ? '' : LB.name || '') + '"></label>' +
       '<label>PIN <input id="lbPinIn" class="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>' +
-      '<button type="button" class="go" data-act="name"' + (LB.busy ? ' disabled' : '') + '>' + (LB.busy ? '\u2026' : 'Post') + '</button>' +
+      '<button type="button" class="go" data-act="name"' + (LB.busy ? ' disabled' : '') + '>' + (LB.busy ? '\u2026' : LB.askName || LB.needPin ? 'Post' : 'OK') + '</button>' +
       '<p class="muted" id="lbNameMsg">' + help + (LB.askName ? ' Esc to skip.' : '') + '</p></div>' : '') +
     lbList(LB.tab, LBV.show) +
     '<div id="lbFoot"><span class="muted">' + (LB.err || (LB.name && !LB.needPin ? 'You\u2019re ' + LB.name : '')) + '</span>' +
-    (LB.state === 'ok' && !ask ? '<button type="button" data-act="rename">' + (LB.name ? 'Change name' : 'Sign in') + '</button>' : '') + '</div>';
+    (LB.state === 'ok' && !ask ? (LB.name ? '<span class="btns"><button type="button" data-act="rename">Change name</button> ' +
+      '<button type="button" data-act="switch">Not you?</button></span>' : '<button type="button" data-act="switch">Sign in</button>') : '') + '</div>';
   if (ask) {
     const inp = document.getElementById('lbNameIn'), pin = document.getElementById('lbPinIn');
     if (inp && typed !== null) inp.value = typed;
     if (pin && typedPin !== null) pin.value = typedPin;
-    const f = focusId ? document.getElementById(focusId) : (LB.name ? pin : inp);
+    const f = focusId ? document.getElementById(focusId) : (LB.name && !LB.switching && !LB.editName ? pin : inp);
     if (f && f.focus && (focusId || typed === null)) f.focus();
   }
 }
@@ -3188,7 +3473,8 @@ function lbClick(e) {
   if (b.dataset.tab) { LB.tab = b.dataset.tab; lbRender(); }
   else if (b.dataset.act === 'open') lbShow('modal');
   else if (b.dataset.act === 'close') lbShow('title');
-  else if (b.dataset.act === 'rename') { LB.editName = true; lbRender(); }
+  else if (b.dataset.act === 'rename') { LB.editName = true; LB.switching = false; lbRender(); }
+  else if (b.dataset.act === 'switch') { LB.editName = true; LB.switching = true; lbRender(); }
   else if (b.dataset.act === 'name') lbNameSubmit();
 }
 async function lbNameSubmit() {
@@ -3208,10 +3494,94 @@ elCard.addEventListener('keydown', e => {
   if (e.target && (e.target.id === 'lbNameIn' || e.target.id === 'lbPinIn')) {
     e.stopPropagation();
     if (e.key === 'Enter') { e.preventDefault(); lbNameSubmit(); }
-    if (e.key === 'Escape') { LB.askName = false; LB.editName = false; LB.needPin = false; lbRender(); }
+    if (e.key === 'Escape') { LB.askName = false; LB.editName = false; LB.switching = false; LB.needPin = false; lbRender(); }
   }
 });
 lbInit();
+
+// ---------------- run stats ----------------
+// Every finished run (not test runs) adds one anonymous line to deaths/: what ended it, which row, the score,
+// time played and what kind of row the player was on. No names. Izzy reads them on the #stats page.
+function logDeath() {
+  if (!run.ranked || !game.started || LB.state !== 'ok' || !LB.db || typeof window === 'undefined' || !window.firebase) return;
+  const ln = lanes.get(player.v);
+  try {
+    LB.db.collection('deaths').add({
+      cause: String(game.death || 'unknown').slice(0, 20), row: Math.max(0, game.dist | 0), score: Math.max(0, game.score | 0),
+      secs: Math.round(run.secs * 10) / 10, lane: String(ln ? ln.type : 'none').slice(0, 20), week: weekKey(), uid: LB.uid,
+      at: window.firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
+  } catch (e) {}
+}
+const elStats = document.getElementById('stats'), elStatsCard = document.getElementById('statsCard');
+const statsOpen = () => !!(elStats && elStats.className === 'show');
+const ST = { rows: null, range: 'week', err: '' };
+const CAUSE = { car: 'Car', train: 'Train', water: 'Water', crumble: 'Ground gave way', boulder: 'Falling boulder', roll: 'Rolling boulder', crack: 'Log cracked',
+  grab: 'Hand (grabbed)', slap: 'Hand (slapped)', skeleton: 'Skeleton', ghost: 'Ghost', sink: 'Sank with log', roller: 'Steamroller' };
+function closeStats() {
+  elStats.className = '';
+  if (location.hash === '#stats' && history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+}
+async function openStats() {
+  elStats.className = 'show';
+  ST.rows = null; ST.err = ''; statsRender();
+  for (let i = 0; i < 100 && LB.state === 'loading'; i++) await new Promise(r => setTimeout(r, 100));
+  if (LB.state !== 'ok') { ST.err = 'The leaderboard database isn\u2019t reachable, so there are no stats to show.'; return statsRender(); }
+  try {
+    const snap = await LB.db.collection('deaths').orderBy('at', 'desc').limit(3000).get();
+    ST.rows = snap.docs.map(d => d.data()).map(d => Object.assign(d, { ms: d.at && d.at.toMillis ? d.at.toMillis() : 0 }));
+  } catch (e) { ST.err = 'Couldn\u2019t load the stats.'; }
+  statsRender();
+}
+function statsRender() {
+  const med = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : Math.round((b[m - 1] + b[m]) / 2); };
+  const pct = (n, t) => t ? Math.round(n * 100 / t) + '%' : '0%';
+  const bar = (n, max) => '<span class="bar" style="width:' + Math.round(80 * n / (max || 1)) + 'px"></span>';
+  const esc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  let h = '<div class="top">' +
+    '<button type="button" class="btn small tan" data-r="week" aria-pressed="' + (ST.range === 'week') + '">Last 7 days</button>' +
+    '<button type="button" class="btn small tan" data-r="all" aria-pressed="' + (ST.range === 'all') + '">All</button></div>';
+  if (ST.err) h += '<p>' + ST.err + '</p>';
+  else if (!ST.rows) h += '<p>Loading\u2026</p>';
+  else {
+    const cut = Date.now() - 7 * 864e5;
+    const R = ST.range === 'week' ? ST.rows.filter(d => d.ms >= cut || !d.ms) : ST.rows;
+    const T = R.length;
+    if (!T) h += '<p>No runs recorded yet. Every finished run (not test runs) shows up here.</p>';
+    else {
+      const players = new Set(R.map(d => d.uid)).size;
+      h += '<p>' + T + ' runs by ' + players + ' player' + (players === 1 ? '' : 's') + ' \u00b7 typical run: score ' + med(R.map(d => d.score)) +
+        ', row ' + med(R.map(d => d.row)) + ', ' + med(R.map(d => d.secs)) + ' s' + (ST.rows.length >= 3000 ? ' \u00b7 newest 3000 runs only' : '') + '</p>';
+      const by = (key) => { const m = new Map(); for (const d of R) { const k = key(d); if (!m.has(k)) m.set(k, []); m.get(k).push(d); } return [...m].sort((a, b) => b[1].length - a[1].length); };
+      const causes = by(d => d.cause), cmax = causes[0][1].length;
+      h += '<h3>What ends runs</h3><table><tr><th>Cause</th><th>Runs</th><th></th><th>Share</th><th>Typical row</th></tr>' +
+        causes.map(([c, a]) => '<tr><td>' + esc(CAUSE[c] || c) + '</td><td>' + a.length + '</td><td>' + bar(a.length, cmax) + '</td><td>' + pct(a.length, T) +
+          '</td><td>' + med(a.map(d => d.row)) + '</td></tr>').join('') + '</table>';
+      const B = [[0, 9], [10, 24], [25, 49], [50, 99], [100, 199], [200, 1e9]];
+      const bucket = r => B.findIndex(([a, b]) => r >= a && r <= b);
+      const rows = B.map((b, i) => R.filter(d => bucket(d.row) === i)), bmax = Math.max(...rows.map(a => a.length));
+      h += '<h3>Where runs end</h3><table><tr><th>Rows</th><th>Runs</th><th></th><th>Share</th><th>Top killer there</th></tr>' +
+        rows.map((a, i) => { if (!a.length) return '';
+          const top = [...a.reduce((m, d) => m.set(d.cause, (m.get(d.cause) || 0) + 1), new Map())].sort((x, y) => y[1] - x[1])[0];
+          return '<tr><td>' + B[i][0] + (B[i][1] > 1e8 ? '+' : '\u2013' + B[i][1]) + '</td><td>' + a.length + '</td><td>' + bar(a.length, bmax) + '</td><td>' + pct(a.length, T) +
+            '</td><td>' + esc(CAUSE[top[0]] || top[0]) + ' (' + pct(top[1], a.length) + ')</td></tr>'; }).join('') + '</table>';
+      const lanesBy = by(d => d.lane);
+      h += '<h3>What kind of row they died on</h3><table><tr><th>Row type</th><th>Runs</th><th>Share</th></tr>' +
+        lanesBy.map(([l, a]) => '<tr><td>' + esc(l) + '</td><td>' + a.length + '</td><td>' + pct(a.length, T) + '</td></tr>').join('') + '</table>';
+    }
+  }
+  elStatsCard.innerHTML = h;
+  for (const b of elStatsCard.querySelectorAll('[aria-pressed="true"]')) b.className = 'btn small';
+}
+if (elStats && elStats.addEventListener) elStats.addEventListener('click', e => {
+  const b = e.target.closest ? e.target.closest('button') : null;
+  if (e.target === elStats || (b && b.dataset.r === 'close')) return closeStats();
+  if (b && b.dataset.r) { ST.range = b.dataset.r; statsRender(); }
+});
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('hashchange', () => { if (location.hash === '#stats') openStats(); });
+  if (typeof location !== 'undefined' && location.hash === '#stats') openStats();
+}
 
 // ---------------- sound effects ----------------
 // Every sound is made in code with Web Audio (no files to load), so the page stays self-contained and works on a
@@ -3458,7 +3828,7 @@ const SFX = (() => {
           for (let i = 0; i < 4; i++) tone(jit(500, 0.2), 0.09, { to: 220, vol: 0.12, delay: 0.15 + i * 0.12 });   // glug
           break;
         case 'crumble': tone(500, 0.9, { to: 90, vol: 0.18, type: 'triangle' }); noise(0.5, { f: 700, to: 120, vol: 0.25 }); break;
-        case 'boulder': case 'roller':
+        case 'boulder': case 'roll': case 'roller':
           noise(0.35, { f: 1500, to: 150, vol: 0.45 }); tone(140, 0.35, { to: 45, vol: 0.45 });
           tone(900, 0.25, { to: 1400, type: 'triangle', vol: 0.08, delay: 0.12 });   // squeak as you flatten
           break;
@@ -3521,7 +3891,7 @@ testPanel.addEventListener('click', e => {
   }
 });
 document.getElementById('testBtn').addEventListener('click', openTestPanel);
-const inTestUI = e => e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #muteBtn');
+const inTestUI = e => statsOpen() || (e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #muteBtn, #stats'));
 
 const muteBtn = document.getElementById('muteBtn');
 // speaker: on, muted, or a quiet speaker while the browser hasn't let sound start yet
@@ -3538,6 +3908,7 @@ window.addEventListener('keydown', e => {
   SFX.unlock();
   if (e.code === 'KeyM' && !e.repeat && !(e.target && e.target.tagName === 'INPUT')) { SFX.toggleMute(); syncMute(); return; }
   if (e.target && e.target.tagName === 'INPUT') return;          // typing a leaderboard name
+  if (statsOpen()) { if (e.code === 'Escape') closeStats(); return; }
   if (LB.view === 'modal') { if (e.code === 'Escape' || e.code === 'KeyL') lbShow('title'); return; }
   if (testPanelOpen()) { if (e.code === 'Escape' || e.code === 'KeyT') closeTestPanel(); return; }
   if (e.code === 'KeyT' && (game.mode === 'ready' || game.mode === 'over')) { openTestPanel(); return; }
