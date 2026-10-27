@@ -288,6 +288,20 @@
   #lbName input { font: 700 18px var(--px); letter-spacing: 1px; background: var(--cream); color: var(--ink); border: 0; border-radius: 0; padding: 6px 8px;
                   box-shadow: 0 -3px 0 0 var(--ink), 0 3px 0 0 var(--ink), -3px 0 0 0 var(--ink), 3px 0 0 0 var(--ink); margin: 3px 8px 3px 3px; }
   .lbcard button:focus-visible, #testPanel button:focus-visible, #testBtn:focus-visible, #muteBtn:focus-visible, .lbcard input:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+  /* patch notes: shown once per update, in the Pixel Paper style */
+  #notes { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(42, 22, 16, .6); padding: 16px; box-sizing: border-box; }
+  #notes[hidden] { display: none; }
+  #notes .card { position: relative; max-width: 460px; width: 100%; max-height: calc(100% - 40px); overflow-y: auto; background: var(--paper); color: var(--text); margin: 4px; padding: 30px 22px 20px;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 12px 0 0 var(--ink); font: 13px/1.5 var(--px); padding-top: 22px; }
+  #notes .notesTag { display: inline-block; margin: 0 0 10px; background: var(--orange); color: var(--ink); font: 700 12px var(--px); padding: 5px 10px;
+    box-shadow: 0 -3px 0 0 var(--ink), 0 3px 0 0 var(--ink), -3px 0 0 0 var(--ink), 3px 0 0 0 var(--ink); }
+  #notes h2 { font: 700 22px/1.1 var(--px); color: var(--clayDark); margin: 0 0 12px; }
+  #notes ul { margin: 0 0 16px; padding: 0; list-style: none; }
+  #notes li { padding: 8px 0; border-bottom: 3px solid var(--paper3); font-size: 12px; }
+  #notes li b { color: var(--clayDark); }
+  #notes button { font: 700 16px var(--px); background: var(--orange); color: var(--ink); border: 0; padding: 10px 18px; margin: 4px; cursor: pointer;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 4px var(--clayDark); }
+  #notes button:focus-visible { outline: 3px solid var(--orange); outline-offset: 6px; }
 </style>
 </head>
 <body>
@@ -342,6 +356,21 @@
   <button type="button" class="xbtn" data-r="close" aria-label="Close">✕</button><div class="scroll" id="statsCard"></div></div></div>
 <div id="lbMini" class="lbcard"></div>
 <div id="board"><div id="boardCard" class="lbcard" role="dialog" aria-label="Leaderboard"></div></div>
+<div id="notes" role="dialog" aria-modal="true" aria-labelledby="notesTitle" hidden>
+  <div class="card">
+    <div class="notesTag">NEW UPDATE</div>
+    <h2 id="notesTitle">What's new</h2>
+    <ul>
+      <li><b>Three areas.</b> The tube now runs through the grassland, the boulder field and the graveyard, each blending into the next.</li>
+      <li><b>Boulder field.</b> Crumbling ground and the Boulder King. Some fields have a chasm: wait for his gravity magic, then leap pillar to pillar before his earthquakes shift them. Some have a stone-age roller. Watch for red-hot coal trains.</li>
+      <li><b>Graveyard.</b> A fenced graveyard full of skeletons and zombies, between rivers of spooky logs.</li>
+      <li><b>Record ghost.</b> Beat this week's #1 and their ghost comes after you.</li>
+      <li><b>Scoring.</b> Only full laps give bonus points now. Difficult obstacles no longer do.</li>
+      <li><b>New look.</b> Pixel menus and the Crossy Tube logo.</li>
+    </ul>
+    <button type="button" id="notesOk">Got it</button>
+  </div>
+</div>
 <div id="ghostName"></div>
 <div id="ghostPtr"><div class="arrow"></div><svg viewBox="0 0 36 40"><path d="M3 38V17a15 15 0 0 1 30 0v21l-5-4-5 4-5-4-5 4-5-4z" fill="#f4f6ff" stroke="#1b1b26" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="13" width="5" height="8" fill="#1b1b26"/><rect x="21" y="13" width="5" height="8" fill="#1b1b26"/></svg></div>
 <div id="center"><h1 id="title" class="logo">CROSSY <span class="sq">TUBE</span></h1><p id="sub"></p><p id="sub2"></p></div>
@@ -388,6 +417,21 @@ const BOULDERS = {
 };
 // Rolling boulders: the boulder field's traffic. Size in tiles; radius sets how fast it spins.
 const ROLL = { len: 0.9, scale: 0.26, radius: 0.44 };
+// Boulder field biome. dryRows: no water in the rows just before its fade starts, so the tile-by-tile fade
+// always happens on land. The king lands once per field, on the first row of the fade into it, when you're
+// kingWarn rows away (the shadow grows under him first). Landing on you kills, he breaks only crumbling
+// tiles, then he follows you through the whole field and leaves at its far end.
+const FIELD = { dryRows: 5, kingWarn: 4 };
+// the king's landing area: one of these irregular shapes, picked at random and randomly mirrored and flipped.
+// [rows ahead (+) or behind (-) his row, tiles right (+) or left (-) of the middle]; every one covers his spot
+const KING_SHAPES = [
+  [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0], [1, 1]],                              // lopsided plus
+  [[0, 0], [0, -1], [0, 1], [0, 2], [-1, 0], [-1, -1], [1, 1]],                     // zigzag
+  [[0, 0], [0, -1], [0, 1], [-1, -1], [-1, 0], [1, 0], [1, 1], [1, 2]],             // slanted blob
+  [[0, 0], [0, -2], [0, -1], [0, 1], [-1, 0], [1, -1], [1, 0]],                     // wide splat
+  [[0, 0], [0, 1], [-1, 0], [-1, 1], [1, -1], [1, 0], [1, 1], [-1, -1]],            // 3x3 with a bite out
+  [[0, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [1, 0], [1, 2], [0, 1]],            // hooked
+];
 const ZONE = {
   rows: 20, fromRow: 40, minSpacing: 30,   // the hard variant (falling boulders) comes from the difficulty roll
   fuse: 0.8,          // seconds from stepping on a tile until it falls (was 2.0)
@@ -401,6 +445,43 @@ const ZONE = {
 const SPACING = { grassAfter: [2, 3], repeat: 0.45 };
 const AHEAD = 26, BEHIND = 12;   // rows kept around the player
 const START_SAFE = 5;            // rows 0..4 have no traffic
+// ---------------- chasm (boulder field) ----------------
+// A raised rock edge, then pit and pillar rows taking turns (CHASM.pillarRows rows of stone pillars standing in
+// the pit), then a raised far edge. Hopping forward (or back) off anything raised, over a pit row, leaps you
+// 2 rows; hopping sideways off a pillar leaps you 2 tiles. Land where there is no pillar and you fall in, like
+// missing a lily pad. Every chasm has a way through: on each face a chain of pillars, 2 tiles apart, leads from
+// pillar row to pillar row, plus a decoy or two that go nowhere.
+// Pillars stand only on a grid: slots SLOTS (tiles 1, 3, 5, 7, 9 of each face), the same in every pillar row,
+// so every pillar is exactly one leap from its neighbours and none touch a corner. A sideways leap that
+// would go round a corner onto the next face just bumps.
+// The king's gravity magic: as you step onto a chasm's edge he waves his wand and a purple glow wraps around
+// you; it's what lets you leap 2 at a time, and it fades when you reach the far edge.
+// The king's earthquake: while you're out on the pillars he slams his wand every QUAKE.every seconds. For
+// QUAKE.warn seconds the pillars about to sink crack and shake and dust rises from the empty slots where new
+// ones will come up; then they shift. Every shift leaves a way through on every face, and if your own pillar
+// is sinking there is always a pillar that stays up one leap away.
+const SLOTS = [1, 3, 5, 7, 9];
+// delay: seconds from the king's cast until the gravity magic takes hold. last: how long it holds; a ring of
+// purple marks around your feet shows what's left, and it flashes for the last `warn` seconds. When it runs
+// out there's a `recastGap` second gap with no magic, then he casts it again: another 1 second charge, then a
+// fresh `last` seconds. You can't leap during the gap or the charge.
+const MAGIC = { delay: 1.0, last: 7.0, warn: 2.0, marks: 16, recastGap: 2.0 };
+// between quakes the king throws a boulder at a pillar: red squares on it for `aim` seconds, then it's smashed
+// (and you with it if you're still on it). He aims at yours when there's another pillar one leap away;
+// a pillar is only smashed if a way through is left.
+const KING_THROW = { at: 1.0, aim: 1.1, height: 3.5 };
+// every/warn are at 1x game speed; they shrink as the game speeds up (d = speedMul). first: seconds after you step
+// out onto the pillars until the first quake's warning starts. minWarn: the warning never gets shorter than this.
+const QUAKE = { every: 3.4, warn: 1.1, first: 0.3, minWarn: 0.7, shake: 0.35 };
+const quakeD = () => Math.max(1, speedMul(player.v));   // each quake rolls a whole new grid
+// Each boulder field gets at most one special obstacle: a chasm, the stone roller, or neither (FIELD_SPECIAL
+// gives the chances). A field with neither gets the king throwing boulders more often (plainThrowRate x).
+const FIELD_SPECIAL = { chasm: 1 / 3, roller: 1 / 3, plainThrowRate: 1.6, rollerFrom: 6 };
+function fieldSpecial(seg) { return (bSegs[seg] && bSegs[seg].special) || 'none'; }   // rolled when the segment is laid out (makeSeg)
+const CHASM = { fieldLead: 4, fieldTail: 3, height: 0.42, pillarRows: [4, 6], decoys: [0, 1], leapTime: 3.4, leapHeight: 1.25, rock: 0x7c7e86, rockTop: 0xa6a8b0, rockDark: 0x5c5e66,
+                pit: 0x1b1a20, pitWall: 0x2a2830, pillar: 0x6e7078, pillarTop: 0xb4b6be };
+const CHASM_TEST = false;        // the chasm tester page sets this: every row comes from chasmTestSpec
+const raisedAt = (lane, p) => !!lane && (lane.chasm === 'edge' || (lane.chasm === 'pillars' && !lane.holes.has(wrapP(p))));
 
 // ---------------- difficulty ----------------
 // Driven by distance (rows travelled). Up to row 100 it is calm: speeds rise from 0.85x to 1x and no
@@ -434,7 +515,8 @@ function hardShare(v) {
 // the normal or the difficult variant, so the total amount of obstacles stays the same.
 const FAMILY = { road: 34, river: 20, rail: 14, park: 8, jam: 8, crumble: 5 };
 const PARK = { rows: [6, 12], coins: [4, 8], treeChance: 0.05 };
-const BONUS = { lap: 20, lapRows: 10, log: 1, dark: 8,  /* lapRows: rows to climb on EACH face */ jam: 5, crumble: 5, rail: 4, grave: 8, ghost: 5, belt: 3, roller: 5 };   // lap bonus, rows a lap must climb, and difficult-obstacle bonuses
+// only the lap bonus is paid now; the difficult-obstacle bonuses are 0 (their pop-ups still show, worth nothing)
+const BONUS = { lap: 20, lapRows: 10, log: 0, dark: 0,  /* lapRows: rows to climb on EACH face */ jam: 0, crumble: 0, rail: 0, grave: 0, ghost: 0, belt: 0, roller: 0 };
 const MIN_V = -2;                // how far back you can walk
 const LOG_TOP = 0.14;            // standing height on a log
 // Logs: each river row has its own speed, clearly different from the river row before it.
@@ -474,7 +556,8 @@ const BELT = { speed: 1.5, base: 0x2f3139, rail: 0x9ba2ae, bolt: 0x5c626d, back:
 // river can still be crossed). At tracks it just stops and sinks away.
 // 20% chance on each new row you reach while there's a long enough stretch ahead, at least 25 rows apart,
 // from row 20. Whether it's difficult uses the usual difficult share.
-const ROLLER = { minRun: 12, maxAhead: 20, speed: 2, chance: 0.2, cooldown: 25, fromRow: 20,
+// (chance and minRun were 0.2 and 12 before the biomes; the grassland is shorter now, so they're looser)
+const ROLLER = { minRun: 10, maxAhead: 20, speed: 2, chance: 0.4, cooldown: 25, fromRow: 20,
                  front: 0.5, back: 1.6, body: 0xf2b632, bodyDark: 0xc98d1c, drum: 0x8c929c, drumDark: 0x5d626c,
                  dark: 0x23252c, glass: 0x9fd4ef, warn: 0xff5a2a, sinkTime: 1.2, maxCross: 0 };
 // Darkness: stretches of 25 rows, roughly every 80 to 140 rows from row 40. The normal version is dusk (you
@@ -484,7 +567,8 @@ const ROLLER = { minRun: 12, maxAhead: 20, speed: 2, chance: 0.2, cooldown: 25, 
 // Whether it's dark is settled once every row it covers exists (about 2 rows before you reach it).
 // Anything that warns you of danger shows through: car headlights, train and gridlock lights, skeleton eyes,
 // the ghost, steamroller beacons and their path, boulder landing marks.
-const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2,
+// Darkness only happens in the graveyard now: every graveyard biome is at dusk, and graveDark of them are fully dark.
+const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2, graveDark: 0.35,
   dusk: { see: 4, fog: 0x2c2443, ambient: 0.2, sun: 0.14 },
   // dark: pitch black except lights and your own tile, strobing: lit 0.2 s, dark 0.3 s, hard cuts with no fade
   // (a choppy, low-frame-rate feel). Was a 2 s cycle with a soft flash. Keep it at 3 flashes a second or
@@ -492,6 +576,11 @@ const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2,
   dark: { see: 0.6, fog: 0x000000, ambient: 0.03, sun: 0, flashSee: 7, flashFog: 0x18203a, flashAmbient: 0.42, flashSun: 0.3 },
   blink: { period: 0.5, rise: 0, hold: 0.2, fade: 0, pulseEvery: 4 } };
 const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5 };
+// The boulder field's red train is the red-hot coal train: it goes round only once, and as it passes it flings
+// EMBERS.count burning coals onto rock 1-2 rows either side of the track. A red glow marks where each will land;
+// the tile then burns for good and blocks you like a tree. Never on your tile when thrown, never more than a
+// face can spare (each face of a row keeps EMBERS.keepOpen open tiles), never into a chasm or a hole.
+const EMBERS = { count: [3, 5], flight: 0.7, keepOpen: 6, reach: 3 };
 // Graveyard (the difficult park): 9 rows of dark grass. Gravestones sit on 15% of tiles and block you like
 // trees; every graveyard is checked to have a way through. Each face has one skeleton per 2 rows. A skeleton
 // on the face you're on, from 1 row behind you to 3 ahead, wakes up: its eyes glow for 0.6 s, then it dashes
@@ -509,13 +598,14 @@ const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5
 // During the chase (GRAVE.calm): no train tracks, no graveyard, and gridlocks only if allowed, in rows
 // generated after he appears. Every other difficult obstacle can still appear.
 const GRAVE = {
-  rows: 9, stoneChance: 0.15, coins: [2, 4],
+  biomeLead: 6,           // the graveyard biome starts with this many rows (a log river) before its graveyard
+  rows: [10, 13], stoneChance: 0.12, coins: [3, 6],      // rows inside the fences (12-15 with them): a bit longer than the old 9
   skel: { perRows: 2, glow: 0.6, dash: 4, dashSpeed: 10, rest: 1.5, rowsBehind: 1, rowsAhead: 3, reach: 6, hit: 0.62 },
   // calm: what can't appear during the chase. noRails: no train tracks at all; noGridlock: no difficult jams
   calm: { noRails: true, noGridlock: true },
   ghost: { behind: 6, speed: 2.25, maxSpeed: 3.375, chaseRows: 40, hit: 0.6, height: 0.5, water: 0.75, riverZone: 5,
            floor: 100, testScore: 15 },
-  riser: { perFaceRow: 0.5, wait: [1, 3], shake: 1, rise: 0.25, up: 2.5, sink: 0.3, rest: [2, 4], rowsBehind: 1, rowsAhead: 4, hit: 0.5 },
+  riser: { perFaceRow: 0.53, wait: [1, 3], shake: 1, rise: 0.25, up: 2.5, sink: 0.3, rest: [2, 4], rowsBehind: 1, rowsAhead: 4, hit: 0.5 },
   grass: [0x6f7c5d, 0x687556], grassAlt: [0x6a7758, 0x637052], stone: [0xa3a8b4, 0x8e94a1, 0x7c8290],
   engrave: 0x50545e, dirt: 0x5b4733, bone: 0xe6e1d1
 };
@@ -570,7 +660,7 @@ const COLORS = {
 const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 0x2bb3b3];
 
 // ---------------- biomes ----------------
-// The run goes through the biomes in a fixed order, BIOME.len rows each, then loops. The last BIOME.blend rows of
+// The run goes through the biomes in a fixed order, BIOME.lens rows each, then loops. The last BIOME.blend rows of
 // every biome blend into the next one. Across the blend a chance t climbs from 5% to 95%:
 //   - every ground tile is drawn as the next biome (colour and decoration) with chance t, tile by tile
 //   - every new hazard block picks the next biome's hazards with chance t, so one row is always ONE biome's
@@ -579,23 +669,48 @@ const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 
 // allowed and roads/rivers/tracks are cut short, so nothing spills past the boundary.
 // fam: obstacle families and weights in that biome ('boulder' = a rolling-boulder lane on a dirt track).
 // deco: what blocks tiles there (tree = trees and a few rocks, rock = rocks only, stone = headstones).
-const BIOME = { len: 60, blend: 10, order: [0, 1, 2] };
+// lens: rows per biome, by biome (grassland, boulder field, graveyard), each including its blend into the next.
+// The boulder field is the long one now; the graveyard biome is a log river section around ONE graveyard
+const BIOME = { lens: [40, 56, 44], blend: 16, order: [0, 1, 2] };
 const BIOMES = [
   { name: 'GRASSLAND', fam: { road: 34, river: 20, rail: 14, park: 8, jam: 8 }, rollers: true,
     grass: COLORS.grass, grassAlt: COLORS.grassAlt, road: COLORS.road, water: [COLORS.water, COLORS.waterDeep],
     deco: 'tree', decoChance: 0.17, sky: COLORS.sky },
-  { name: 'BOULDER FIELD', fam: { boulder: 34, rail: 14, crumble: 22, park: 6 }, rollers: false,
+  { name: 'BOULDER FIELD', fam: { rail: 14, crumble: 22, park: 6 }, rollers: true,   // no roads: no rolling-boulder lanes, no cars
     grass: [0x92949c, 0x8a8c94], grassAlt: [0x8e9098, 0x868890], road: [0x5e6068, 0x575960], water: [COLORS.water, COLORS.waterDeep],
     deco: 'rock', decoChance: 0.12, sky: 0xc9c3b8 },
-  { name: 'GRAVEYARD', fam: { road: 30, river: 24, park: 22 }, rollers: false,
+  { name: 'GRAVEYARD', fam: { river: 24 }, rollers: false,   // spooky log rivers, and one graveyard (placed below) in the middle
     grass: GRAVE.grass, grassAlt: GRAVE.grassAlt, road: [0x484954, 0x41424d], water: [0x4f8c94, 0x447f88],
     deco: 'stone', decoChance: 0.1, sky: 0xa69cc8 }
 ];
+// Biome segments are laid out as the run goes, each with its own length. A boulder field's length depends on
+// its special obstacle (rolled when the segment is made): a short run-up, the special (a chasm of 11-15 rows,
+// or the stone roller's stretch), then FIELD_LEN.tail rows of crumbling ground. Fields with no special are a
+// little shorter. Every length includes the BIOME.blend rows at its end.
+const FIELD_LEN = { lead: 4, rollerSection: 13, tail: [10, 15], plain: [22, 26] };
+const bSegs = [];
+function makeSeg(i, start) {
+  const n = BIOME.order.length, cur = BIOME.order[i % n], seg = { start, cur, next: BIOME.order[(i + 1) % n], special: null, pr: 0 };
+  let pure = BIOME.lens[cur] - BIOME.blend;
+  if (cur === 1) {
+    const r = Math.random();
+    seg.special = r < FIELD_SPECIAL.chasm ? 'chasm' : r < FIELD_SPECIAL.chasm + FIELD_SPECIAL.roller ? 'roller' : 'none';
+    const tail = randInt(FIELD_LEN.tail[0], FIELD_LEN.tail[1]);
+    if (seg.special === 'chasm') { seg.pr = randInt(CHASM.pillarRows[0], CHASM.pillarRows[1]); pure = FIELD_LEN.lead + 2 + 2 * seg.pr + 3 + tail; }
+    else if (seg.special === 'roller') pure = FIELD_LEN.lead + 2 + FIELD_LEN.rollerSection + tail;
+    else pure = randInt(FIELD_LEN.plain[0], FIELD_LEN.plain[1]);
+  }
+  seg.end = start + pure + BIOME.blend;
+  return seg;
+}
 function biomeAt(v) {
-  const seg = Math.max(0, Math.floor(v / BIOME.len)), n = BIOME.order.length;
-  const into = v - seg * BIOME.len - (BIOME.len - BIOME.blend);      // rows into the blend (negative: not there yet)
-  return { seg, cur: BIOME.order[seg % n], next: BIOME.order[(seg + 1) % n],
-           t: into < 0 ? 0 : (into + 0.5) / BIOME.blend, end: (seg + 1) * BIOME.len };
+  const x = Math.max(0, v);
+  if (!bSegs.length) bSegs.push(makeSeg(0, 0));
+  while (bSegs[bSegs.length - 1].end <= x) bSegs.push(makeSeg(bSegs.length, bSegs[bSegs.length - 1].end));
+  let lo = 0, hi = bSegs.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (bSegs[mid].start <= x) lo = mid; else hi = mid - 1; }
+  const s = bSegs[lo], into = x - (s.end - BIOME.blend);              // rows into the blend (negative: not there yet)
+  return { seg: lo, cur: s.cur, next: s.next, t: into < 0 ? 0 : (into + 0.5) / BIOME.blend, start: s.start, end: s.end };
 }
 const rollBiome = v => { const b = biomeAt(v); return Math.random() < b.t ? b.next : b.cur; };
 
@@ -833,7 +948,37 @@ function truckBoxGeometry() {
   for (const x of [-0.55, 0.45]) for (const z of [-0.42, 0.42]) m.part(0x1d1d22, x, 0.15, z, 0.34, 0.3, 0.1);
   return m.geometry();
 }
-function trainGeometry(front, red = false) {
+// coal trains (boulder field only): a black steam engine (red cab, brass trim, smokestack, headlight) pulling coal hoppers heaped
+// with coal. The red train's version runs hot: dark red hoppers full of glowing coal and a fire in the engine.
+// Each car is one tile long; the engine's front (headlight, cowcatcher) points along +x.
+function coalTrainGeometry(front, red = false) {
+  const m = new Merge();
+  if (front) {
+    m.part(0x26262c, 0, 0.12, 0, 0.9, 0.2, 0.72);                                // chassis
+    m.part(0x2b2b33, 0.05, 0.52, 0, 0.88, 0.5, 0.6);                             // boiler
+    m.part(0x3a3a44, 0.05, 0.52, 0, 0.9, 0.12, 0.62);
+    m.part(0xd9b84a, 0.05, 0.52, 0.31, 0.6, 0.04, 0.01); m.part(0xd9b84a, 0.05, 0.52, -0.31, 0.6, 0.04, 0.01);   // brass bands
+    m.part(red ? 0x7a1612 : 0x9a2a22, -0.28, 0.72, 0, 0.42, 0.62, 0.82);         // cab
+    m.part(0x1e1e24, -0.28, 1.06, 0, 0.5, 0.06, 0.9);
+    m.part(red ? 0xffb04a : 0x9fd4ef, -0.28, 0.82, 0.415, 0.28, 0.2, 0.01);      // window (glowing fire on the hot one)
+    m.part(red ? 0xffb04a : 0x9fd4ef, -0.28, 0.82, -0.415, 0.28, 0.2, 0.01);
+    m.part(0x1e1e24, 0.3, 0.92, 0, 0.16, 0.34, 0.16); m.part(0x3a3a44, 0.3, 1.11, 0, 0.24, 0.06, 0.24);   // smokestack
+    if (red) m.part(0xff6a2a, 0.3, 1.15, 0, 0.14, 0.04, 0.14);                   // embers in the stack
+    m.part(0xfff2a8, 0.48, 0.58, 0, 0.03, 0.16, 0.2);                             // headlight
+    m.part(red ? 0xd8302a : 0x9a2a22, 0.46, 0.2, 0, 0.06, 0.24, 0.66);           // cowcatcher
+  } else {
+    m.part(0x26262c, 0, 0.12, 0, 0.88, 0.2, 0.7);
+    m.part(red ? 0x5a1c16 : 0x3b3a42, 0, 0.5, 0, 0.94, 0.56, 0.8);              // hopper
+    m.part(red ? 0x7a2a20 : 0x4b4a54, 0, 0.78, 0, 0.98, 0.06, 0.84);
+    m.part(red ? 0x3e120e : 0x2f2e36, 0, 0.5, 0.405, 0.8, 0.12, 0.01); m.part(red ? 0x3e120e : 0x2f2e36, 0, 0.5, -0.405, 0.8, 0.12, 0.01);
+    m.part(0x141418, 0, 0.84, 0, 0.82, 0.08, 0.68);                              // the coal heap
+    m.part(red ? 0xff6a2a : 0x1c1c22, -0.15, 0.92, 0.05, 0.36, 0.1, 0.4);
+    m.part(red ? 0xffa23a : 0x1c1c22, 0.18, 0.9, -0.1, 0.3, 0.08, 0.34);
+    m.part(red ? 0xffd25a : 0x2a2a32, 0.05, 0.98, 0, 0.18, 0.06, 0.2);
+  }
+  return m.geometry();
+}
+function classicTrainGeometry(front, red = false) {
   const m = new Merge();
   m.part(red ? (front ? 0xb3201a : 0xd8302a) : (front ? 0xd8433b : 0x3d6fd6), 0, 0.6, 0, 0.96, 0.9, 0.86);
   m.part(0xf2f2f2, 0, 0.92, 0, 0.98, 0.14, 0.88);
@@ -843,6 +988,8 @@ function trainGeometry(front, red = false) {
   m.part(0x26262c, 0, 0.1, 0, 0.8, 0.2, 0.7);
   return m.geometry();
 }
+// coal trains only run in the boulder field; everywhere else it's the classic train
+const trainGeometry = (front, red, biome) => biome === 1 ? coalTrainGeometry(front, red) : classicTrainGeometry(front, red);
 const LOG_GEO = (() => {
   const m = new Merge();
   m.part(COLORS.log, 0, -0.04, 0, 1.0, 0.34, 0.7);
@@ -877,6 +1024,51 @@ const SINK_GEO = (() => {
   }
   return m.geometry();
 })();
+// graveyard biome logs: dark, rotting wood with moss on top and a few pale mushrooms
+const SPOOKY_LOG = { wood: 0x4e443c, top: 0x5c5148, end: 0x7a6b5c, moss: 0x55703c, cap: 0xd9d2c3, stem: 0xb9b1a2 };
+const SPOOKY_LOG_GEO = (() => {
+  const m = new Merge(), L = SPOOKY_LOG;
+  m.part(L.wood, 0, -0.04, 0, 1.0, 0.34, 0.7);
+  m.part(L.top, 0, 0.14, 0, 1.0, 0.02, 0.5);
+  m.part(L.moss, -0.18, 0.155, 0.04, 0.42, 0.02, 0.34);
+  m.part(L.moss, 0.3, 0.155, -0.12, 0.24, 0.02, 0.2);
+  m.part(L.stem, 0.12, 0.2, 0.2, 0.04, 0.08, 0.04); m.part(L.cap, 0.12, 0.25, 0.2, 0.12, 0.04, 0.12);
+  m.part(L.moss, 0, 0.0, 0.352, 0.5, 0.12, 0.012);                     // moss down the side you see
+  return m.geometry();
+})();
+const SPOOKY_END_GEO = (() => { const m = new Merge(); m.part(SPOOKY_LOG.end, 0, -0.04, 0, 0.04, 0.3, 0.62); return m.geometry(); })();
+// the graveyard's risky logs, same signals as the ordinary ones: the cracked log's X gash glows a sickly green
+// with bone-pale splinters; the sinking log's two holes show murky green water with a faint green rim
+const SPOOKY_CRACK_GEO = (() => {
+  const m = new Merge(), L = SPOOKY_LOG, gash = 0x1a1612, glow = 0x8cff5a, bone = 0xe6dfcc;
+  m.part(L.wood, 0, -0.04, 0, 1.0, 0.34, 0.7);
+  m.part(L.top, 0, 0.14, 0, 1.0, 0.02, 0.5);
+  m.part(L.moss, 0.36, 0.155, 0.16, 0.2, 0.02, 0.14);
+  for (let i = 0; i <= 6; i++) {
+    const t = -1 + i / 3, x = t * 0.32;
+    for (const z of [t * 0.2, -t * 0.2]) {
+      m.part(gash, x, 0.153, z, 0.11, 0.014, 0.1);
+      m.part(glow, x, 0.156, z, 0.05, 0.014, 0.045);                     // green light deep in the gash
+      if (i % 2 === 0 && i !== 3) m.part(bone, x + 0.07, 0.158, z, 0.05, 0.016, 0.04);
+    }
+  }
+  m.part(gash, 0, 0.04, 0.352, 0.14, 0.18, 0.012); m.part(glow, 0, 0.04, 0.356, 0.05, 0.12, 0.012);
+  m.part(gash, 0, 0.04, -0.352, 0.14, 0.18, 0.012);
+  return m.geometry();
+})();
+const SPOOKY_SINK_GEO = (() => {
+  const m = new Merge(), L = SPOOKY_LOG;
+  m.part(L.wood, 0, -0.04, 0, 1.0, 0.34, 0.7);
+  m.part(L.top, 0, 0.14, 0, 1.0, 0.02, 0.5);
+  m.part(L.moss, 0.02, 0.155, -0.2, 0.22, 0.02, 0.1);
+  for (const [x, z] of [[-0.24, -0.06], [0.22, 0.08]]) {
+    m.part(0x6fd05a, x, 0.152, z, 0.27, 0.012, 0.25);                  // faint green rim
+    m.part(0x1d1a16, x, 0.156, z, 0.19, 0.014, 0.17);
+    m.part(0x2f6b5a, x, 0.157, z, 0.1, 0.014, 0.09);                    // murky green water at the bottom
+  }
+  m.part(L.stem, -0.02, 0.2, 0.22, 0.04, 0.08, 0.04); m.part(L.cap, -0.02, 0.25, 0.22, 0.12, 0.04, 0.12);
+  return m.geometry();
+})();
 const LOG_END_GEO = (() => {
   const m = new Merge();
   m.part(COLORS.logEnd, 0, -0.04, 0, 0.04, 0.3, 0.62);
@@ -898,6 +1090,30 @@ const ROLLER_GEO = (() => {
     m.part(R.dark, cx, 1.68, -1.0, 1.7, 0.1, 1.15);                       // roof
     m.part(R.dark, cx + 1.25, 1.35, -1.35, 0.16, 0.8, 0.16);              // exhaust
     for (const dx of [-1.2, -0.4, 0.4, 1.2]) m.part(R.dark, cx + dx, 0.82, -0.19, 0.36, 0.1, 0.02); // hazard stripes
+  }
+  return m.geometry();
+})();
+// stone-age roller (boulder field): a big chiseled stone drum on a log frame with mammoth tusks, a plank deck
+// on stone wheels, and a spotted hide canopy. Same size and footprint as the steamroller.
+const STONE_ROLLER_GEO = (() => {
+  const m = new Merge(), st = 0x8f8a84, stDk = 0x6f6a64, stLt = 0xa8a39c, wood = 0x8a5a32, woodDk = 0x6a4224,
+        plank = 0xa36f3e, hide = 0xd9a95c, spot = 0x7a4a24, bone = 0xe9e2cf;
+  for (const cx of [-2.5, 2.5]) {
+    // the drum: stepped slabs make a round profile (an octagon from the side)
+    for (const [h, d] of [[1.3, 0.54], [1.12, 0.94], [0.54, 1.3]]) m.part(st, cx, 0.65, 0.15, 3.6, h, d);
+    for (const [i, dx] of [-1.5, -0.9, -0.3, 0.3, 0.9, 1.5].entries()) for (const [h, d] of [[1.16, 0.58], [0.58, 1.16]]) m.part(i % 2 ? stDk : stLt, cx + dx, 0.65, 0.15, 0.5, h + 0.01, d + 0.01);
+    for (const dx of [-1.8, 1.8]) for (const [h, d] of [[1.32, 0.56], [0.56, 1.32]]) m.part(stDk, cx + dx, 0.65, 0.15, 0.06, h, d);   // worn rims
+    for (const [dx, dy, s2] of [[-1.1, 0.95, 0.2], [0.3, 0.45, 0.24], [1.2, 0.85, 0.16], [-0.4, 1.1, 0.14]]) m.part(0x5c5852, cx + dx, dy, 0.82, s2, s2, 0.02);
+    for (const dx of [-1.92, 1.92]) { m.part(woodDk, cx + dx, 0.65, 0.15, 0.2, 0.34, 0.34); m.part(bone, cx + dx, 0.65, 0.15, 0.28, 0.14, 0.14); }   // axle ends
+    for (const dx of [-1.75, 1.75]) { m.part(bone, cx + dx, 0.98, 0.8, 0.12, 0.12, 0.5); m.part(bone, cx + dx, 1.15, 1.03, 0.1, 0.3, 0.1); }   // tusks
+    for (const dx of [-1.75, 1.75]) m.part(wood, cx + dx, 0.62, -0.6, 0.2, 0.2, 1.6);   // log frame
+    m.part(plank, cx, 0.5, -1.15, 3.2, 0.14, 1.2);
+    for (const dx of [-1.2, -0.4, 0.4, 1.2]) m.part(woodDk, cx + dx, 0.58, -1.15, 0.04, 0.02, 1.2);
+    for (const dx of [-1.4, 1.4]) { m.part(stDk, cx + dx, 0.28, -1.35, 0.4, 0.56, 0.56); m.part(st, cx + dx, 0.28, -1.35, 0.42, 0.4, 0.4); }   // stone back wheels
+    for (const [dx, dz] of [[-1.3, -0.65], [1.3, -0.65], [-1.3, -1.65], [1.3, -1.65]]) m.part(wood, cx + dx, 1.1, dz, 0.12, 1.1, 0.12);
+    m.part(hide, cx, 1.7, -1.15, 3.0, 0.1, 1.4);
+    for (const [dx, dz] of [[-1.0, -0.8], [-0.2, -1.4], [0.7, -0.9], [1.2, -1.5], [-0.8, -1.6]]) m.part(spot, cx + dx, 1.76, dz, 0.3, 0.02, 0.24);
+    for (const dx of [-1.3, -0.8, -0.3, 0.2, 0.7, 1.2]) m.part(hide, cx + dx, 1.56, -0.46, 0.22, 0.2 + ((Math.abs(dx) * 10) % 3) * 0.04, 0.03);
   }
   return m.geometry();
 })();
@@ -950,6 +1166,11 @@ const ZOMBIE_GEO = (() => {
   m.part(dark, 0, 0.88, 0.205, 0.2, 0.05, 0.012);                         // mouth
   return m.geometry();
 })();
+// they show through darkness like skeleton eyes do: glowing eyes once up, a green glow in the mound while it shakes
+const ZOMBIE_EYE_GEO = (() => { const m = new Merge(); for (const x of [-0.1, 0.1]) m.part(0xffffff, x, 1.04, 0.212, 0.1, 0.08, 0.012); return m.geometry(); })();
+const MOUND_GLOW_GEO = (() => { const m = new Merge(); m.part(0xffffff, 0, 0.155, 0, 0.36, 0.012, 0.06); m.part(0xffffff, 0.05, 0.155, 0, 0.06, 0.012, 0.3); return m.geometry(); })();
+const zombieEyeMat = new THREE.MeshBasicMaterial({ color: 0xc8ff6a, fog: false });
+const moundGlowMat = new THREE.MeshBasicMaterial({ color: 0x8dff5a, fog: false });
 // ghost: a floating sheet that always faces the camera
 const GHOST_GEO = (() => {
   const m = new Merge(), c = 0xffffff;
@@ -1102,7 +1323,7 @@ function planEscorts(pat) {
   return { dir: pat.dir, cars: [al, al], worst: 0, fallback: true };
 }
 
-// One row of a crumble zone: starts and ends on cracked ground, with road and rail blocks in between.
+// One row of a crumble zone: crumbling ground all the way, broken up by single train tracks.
 function zoneSpec(v) {
   const z = gen.zone;
   z.left--;
@@ -1111,11 +1332,10 @@ function zoneSpec(v) {
   if (first || last) kind = 'ground';
   else if (z.blockLeft > 0) { z.blockLeft--; kind = z.block; }
   else if (z.block !== 'ground') { z.block = 'ground'; z.blockLeft = randInt(0, 1); kind = 'ground'; }
-  else if (Math.random() < 0.7) { z.block = 'road'; z.blockLeft = randInt(0, 2); kind = 'road'; }
-  else if (!(GRAVE.calm.noRails && inCalm(v))) { z.block = 'rail'; z.blockLeft = 0; kind = 'rail'; }
-  else { z.block = 'road'; z.blockLeft = 0; kind = 'road'; }
+  else if (Math.random() < 0.7 || (GRAVE.calm.noRails && inCalm(v))) { z.block = 'ground'; z.blockLeft = 0; kind = 'ground'; }
+  else { z.block = 'rail'; z.blockLeft = 0; kind = 'rail'; }
   if (last) { gen.zone = null; gen.lastZoneEnd = v; gen.type = 'zone'; gen.left = 0; }
-  return { type: kind === 'ground' ? 'grass' : kind, cracked: kind !== 'rail', inZone: true, zoneFirst: first, zoneLen: z.len, zoneTier: z.tier, biome: z.biome };
+  return { type: kind === 'rail' ? 'rail' : 'grass', cracked: kind === 'ground', inZone: true, zoneFirst: first, zoneLen: z.len, zoneTier: z.tier, biome: z.biome };
 }
 
 // Can you get from the first row of a graveyard to its last, going round gravestones?
@@ -1133,9 +1353,20 @@ function graveyardPassable(stones) {
   }
   return false;
 }
+// The graveyard is fenced: an iron fence row at its entrance and at its exit, with two 2-tile gates on every
+// face. The fence blocks like a gravestone; the passability check makes sure a gate leads to a way through.
+function fenceRow() {
+  const st = new Set();
+  for (let f = 0; f < 4; f++) {
+    const a = randInt(0, 3), b = randInt(a + 3, W - 2);          // two gates, apart from each other
+    for (let u = 0; u < W; u++) if (!(u === a || u === a + 1 || u === b || u === b + 1)) st.add(f * W + u);
+  }
+  return st;
+}
 function graveyardSpec(v) {
-  const n = GRAVE.rows;
-  const roll = () => Array.from({ length: n }, () => {
+  const inner = randInt(GRAVE.rows[0], GRAVE.rows[1]), n = inner + 2;   // plus the two fence rows
+  const roll = () => Array.from({ length: n }, (_, r) => {
+    if (r === 0 || r === n - 1) return fenceRow();
     const st = new Set();
     for (let p = 0; p < P; p++) if (Math.random() < GRAVE.stoneChance) st.add(p);
     return st;
@@ -1156,7 +1387,7 @@ function graveyardSpec(v) {
   if (!graveyardPassable(both(stones, mounds))) {
     const c = randInt(0, P - 1); stones.forEach(st => st.delete(c)); mounds.forEach(m => m.delete(c));
   }
-  const rows = stones.map((st, r) => ({ type: 'grass', grave: true, stones: st, mounds: mounds[r], coinTiles: [], skeletons: [] }));
+  const rows = stones.map((st, r) => ({ type: 'grass', grave: true, fence: r === 0 || r === n - 1, stones: st, mounds: mounds[r], coinTiles: [], skeletons: [] }));
   const taken = new Set();
   const openTile = (r, lo, hi) => {
     for (let i = 0; i < 30; i++) {
@@ -1166,16 +1397,16 @@ function graveyardSpec(v) {
     return -1;
   };
   // one skeleton per 2 rows on every face
-  for (let r0 = 0; r0 < n; r0 += GRAVE.skel.perRows) {
+  for (let r0 = 1; r0 < n - 1; r0 += GRAVE.skel.perRows) {
     for (let f = 0; f < 4; f++) {
-      const r = Math.min(n - 1, r0 + randInt(0, GRAVE.skel.perRows - 1));
+      const r = Math.min(n - 2, r0 + randInt(0, GRAVE.skel.perRows - 1));
       const p = openTile(r, f * W, f * W + W - 1);
       if (p >= 0) rows[r].skeletons.push(p);
     }
   }
   const coins = randInt(GRAVE.coins[0], GRAVE.coins[1]);
   for (let i = 0; i < coins; i++) {
-    const r = randInt(0, n - 1), p = openTile(r, 0, P - 1);
+    const r = randInt(1, n - 2), p = openTile(r, 0, P - 1);
     if (p >= 0) rows[r].coinTiles.push(p);
   }
   gen.queue.push(...rows.slice(1));
@@ -1194,14 +1425,78 @@ function nextSpec(v) {
   }
   // boulder field ground cracks everywhere. Any open-ground row (plain, park or the sparse row after a jam)
   // in a blend into or out of the boulder field cracks tile by tile, following the blend
-  if (s.type === 'grass' && !s.inZone && !s.grave && !s.clear && !s.cracked && !test.on && v >= START_SAFE) {
+  if (s.type === 'grass' && !s.inZone && !s.grave && !s.clear && !s.cracked && !s.chasm && !test.on && v >= START_SAFE) {   // chasm rock never crumbles
     const b = biomeAt(v);
     if (b.t > 0 && (b.cur === 1 || b.next === 1)) s.crackPartial = true;
     else if (b.t === 0 && b.cur === 1) s.cracked = true;
   }
   return s;
 }
+// the chasm tester's run: 2 grass rows, 4 rows of crumbling rock, the chasm, 4 rows of crumbling rock, 3 grass rows
+// one pillar row of a chasm on the grid. route: per face, the slot the way through arrives at. The way through
+// always slides 1-2 slots sideways along the row before going on, so there is never a straight line to leap
+// down; plus up to one decoy that leads nowhere useful.
+function pillarRowFrom(route) {
+  const pil = new Set(), S = SLOTS.length;
+  for (let f = 0; f < 4; f++) {
+    const r = route[f];
+    let r2 = r + pick([-2, -1, 1, 2]);
+    if (r2 < 0 || r2 > S - 1) r2 = r - (r2 - r);
+    r2 = Math.max(0, Math.min(S - 1, r2));
+    for (let i = Math.min(r, r2); i <= Math.max(r, r2); i++) pil.add(f * W + SLOTS[i]);
+    route[f] = r2;
+    for (let d = randInt(CHASM.decoys[0], CHASM.decoys[1]); d > 0; d--) pil.add(f * W + SLOTS[randInt(0, S - 1)]);
+  }
+  return pil;
+}
+const newRoute = () => Array.from({ length: 4 }, () => randInt(0, SLOTS.length - 1));
+// a whole chasm's pillar rows at once, one face at a time, so no face has a slot with a pillar in every row
+// (no straight line to leap down: the way through always needs sideways leaps)
+function makeChasmLayout(n, thin = false) {
+  const rows = Array.from({ length: n }, () => new Set()), S = SLOTS.length;
+  for (let f = 0; f < 4; f++) {
+    let best = null;
+    for (let tries = 0; tries < 60; tries++) {
+      let r = randInt(0, S - 1);
+      const slots = Array.from({ length: n }, () => {
+        const set = new Set();
+        let r2 = r + pick(thin ? [-1, 1] : [-2, -1, 1, 2]);
+        if (r2 < 0 || r2 > S - 1) r2 = r - (r2 - r);
+        r2 = Math.max(0, Math.min(S - 1, r2));
+        for (let i = Math.min(r, r2); i <= Math.max(r, r2); i++) set.add(i);
+        r = r2;
+        if (!thin) for (let d = randInt(CHASM.decoys[0], CHASM.decoys[1]); d > 0; d--) set.add(randInt(0, S - 1));
+        return set;
+      });
+      best = slots;
+      if (![...Array(S).keys()].some(i => slots.every(set => set.has(i)))) break;
+    }
+    best.forEach((set, k) => set.forEach(i => rows[k].add(f * W + SLOTS[i])));
+  }
+  return rows;
+}
+function chasmPillarRow(i) {
+  if (i === 0) gen.chasmLayout = makeChasmLayout(CHASM.pillarRows);
+  return gen.chasmLayout[i];
+}
+// every row of one chasm, starting with its near edge at row v
+function chasmRows(v, pr = randInt(CHASM.pillarRows[0], CHASM.pillarRows[1])) {
+  const n = 2 * pr + 1, layout = makeChasmLayout(pr), rows = [];
+  rows.push({ type: 'grass', chasm: 'edge', rock: true, biome: 1, chasmStart: true, chasmFar: v + n + 1 });
+  for (let k = 0; k < n; k++) rows.push(k % 2 === 1 ? { type: 'grass', chasm: 'pillars', pillars: layout[(k - 1) / 2], rock: true, biome: 1 }
+                                                   : { type: 'grass', chasm: 'pit', rock: true, biome: 1 });
+  rows.push({ type: 'grass', chasm: 'edge', rock: true, biome: 1 });
+  return rows;
+}
+const CHASM_TEST_PATTERN = 'ggcccc#ccccggg';         // g grass, c crumbling rock, # a whole chasm
+function chasmTestSpec(v) {
+  if (v < START_SAFE) return { type: 'grass' };
+  const k = CHASM_TEST_PATTERN[gen.testStep = ((gen.testStep ?? -1) + 1) % CHASM_TEST_PATTERN.length];
+  if (k === '#') { const rows = chasmRows(v); gen.queue.push(...rows.slice(1)); return rows[0]; }
+  return k === 'c' ? { type: 'grass', cracked: true, rock: true, biome: 1 } : { type: 'grass' };
+}
 function nextSpecRaw(v) {
+  if (CHASM_TEST) return gen.queue.length ? gen.queue.shift() : chasmTestSpec(v);
   if (v < START_SAFE) return { type: 'grass' };
   if (gen.zone) return zoneSpec(v);
   if (gen.queue.length) return gen.queue.shift();
@@ -1225,8 +1520,11 @@ function nextSpecRaw(v) {
   const weights = Object.entries(test.on ? FAMILY : BIOMES[bio].fam).filter(([f]) =>
     !(leaving && (f === 'crumble' || f === 'park' || f === 'jam')) &&
     !(!test.on && f === 'crumble' && bi.t > 0) &&
-    !(!test.on && bio === bi.cur && ((f === 'crumble' && v + ZONE.rows > bi.end) || (f === 'park' && v + PARK.rows[1] > bi.end))) &&
+    !(!test.on && bio === bi.cur && ((f === 'crumble' && v + ZONE.rows > bi.end) || (f === 'park' && v + (bio === 2 ? GRAVE.rows[1] : PARK.rows[1]) > bi.end))) &&
     !(f === 'park' && !parkAllowed) &&
+    !(!test.on && f === 'river' && bi.next === 1 && v >= bi.end - BIOME.blend - FIELD.dryRows) &&
+    !(!test.on && (f === 'road' || f === 'jam') && bi.t > 0 && (bi.next === 1 || bi.cur === 1)) &&
+    !(!test.on && f === 'jam' && bi.next === 1 && v + 5 >= bi.end - BIOME.blend) &&
     !(f === 'rail' && GRAVE.calm.noRails && inCalm(v)) &&
     !(f === 'jam' && (!jamAllowed || v < JAM.normal.fromRow)) &&
     !(f === 'crumble' && (v < ZONE.fromRow || v - gen.lastZoneEnd < ZONE.minSpacing)));
@@ -1257,7 +1555,10 @@ function nextSpecRaw(v) {
   gen.lastFam = fam;
   if (test.on) hard = fam === testFam();
   // during a ghost chase: never a second graveyard, and gridlocks only if allowed
-  if (!test.on && fam === 'park') hard = bio === 2;   // graveyards only in the graveyard biome, and all its parks are graveyards
+  if (!test.on && fam === 'park') hard = false;      // graveyards only come from the graveyard biome's own slot (below)
+  // the graveyard biome's one graveyard: once its first river section is behind you, with room for it
+  if (!test.on && bi.cur === 2 && bi.t === 0 && gen.graveSeg !== bi.seg && v >= bi.start + GRAVE.biomeLead &&
+      bi.end - BIOME.blend - v >= GRAVE.rows[1] + 2 + 1) { gen.graveSeg = bi.seg; fam = 'park'; hard = true; }
   if (inCalm(v) && (fam === 'park' || (fam === 'jam' && GRAVE.calm.noGridlock))) hard = false;
   gen.blockBoulder = fam === 'boulder';
   gen.blockHard = hard;
@@ -1267,10 +1568,23 @@ function nextSpecRaw(v) {
   let zoneLen = ZONE.rows;
   if (!test.on && bi.cur === 1 && bi.t === 0) {
     const room = bi.end - BIOME.blend - v;
-    if (room >= 3) { fam = 'crumble'; zoneLen = Math.min(ZONE.rows, room); }
+    // one chasm per field: after a short stretch of crumbling ground, 4-6 pillar rows, as many as fit with
+    // some crumbling ground left after it
+    const fits = Math.floor((room - CHASM.fieldTail - 3) / 2);
+    if (gen.chasmSeg !== bi.seg && fieldSpecial(bi.seg) === 'chasm' && v >= bi.start + CHASM.fieldLead && fits >= CHASM.pillarRows[0]) {
+      gen.chasmSeg = bi.seg;
+      const rows = chasmRows(v, Math.min(fits, bSegs[bi.seg].pr || CHASM.pillarRows[0]));
+      gen.queue.push(...rows.slice(1));
+      gen.type = 'zone'; gen.left = 0;
+      return rows[0];
+    }
+    // the crumble zone before the chasm stops where the chasm will start
+    const untilChasm = gen.chasmSeg !== bi.seg && fieldSpecial(bi.seg) === 'chasm' ? Math.max(1, bi.start + CHASM.fieldLead - v) : room;
+    if (room >= 3) { fam = 'crumble'; zoneLen = Math.max(1, Math.min(ZONE.rows, room, untilChasm)); }
   }
   if (fam === 'crumble') {
-    gen.zone = { left: zoneLen, len: zoneLen, block: 'ground', blockLeft: 0, tier: hard ? 'difficult' : 'normal', biome: bio };
+    // one kind of boulder field: always the version with falling boulders
+    gen.zone = { left: zoneLen, len: zoneLen, block: 'ground', blockLeft: 0, tier: test.on && !hard ? 'normal' : 'difficult', biome: bio };
     return zoneSpec(v);
   }
   if (fam === 'jam') {
@@ -1299,10 +1613,19 @@ function nextSpecRaw(v) {
     return rows[0];
   }
   const room = !test.on && bio === bi.cur ? Math.max(1, bi.end - v) : 99;     // rows left before the boundary
-  if (fam === 'road' || fam === 'boulder') { gen.type = 'road';  gen.left = Math.min(room - 1, randInt(0, 2 + Math.round(prog * 2))); }
+  if (fam === 'road' || fam === 'boulder') {
+    gen.type = 'road';  gen.left = Math.min(room - 1, randInt(0, 2 + Math.round(prog * 2)));
+    if (!test.on && bi.next === 1) gen.left = Math.max(0, Math.min(gen.left, bi.end - BIOME.blend - v - 1));   // roads stop before a boulder field's fade
+  }
   else if (fam === 'river') {
     let n = 1;                                             // 1..12 rows, longer ones rarer
     while (n < RIVER.maxRows && Math.random() < RIVER.decay) n++;
+    if (!test.on && bi.next === 1) n = Math.max(1, Math.min(n, bi.end - BIOME.blend - FIELD.dryRows - v));   // dry before a boulder field
+    // the graveyard biome's river section ends in time for its graveyard
+    if (!test.on && (bi.cur === 2 || bi.next === 2)) {
+      const gSeg = bi.cur === 2 ? bi.seg : bi.seg + 1, gAt = (bi.cur === 2 ? bi.start : bi.end) + GRAVE.biomeLead;
+      if (gen.graveSeg !== gSeg && v < gAt + 3) n = Math.max(1, Math.min(n, gAt + 1 - v));
+    }
     gen.type = 'river'; gen.left = Math.min(room, n) - 1;
   }
   else                      { gen.type = 'rail';  gen.left = Math.min(room - 1, randInt(0, 1)); }
@@ -1336,9 +1659,23 @@ function makeLane(v) {
     fuse: new Map(),        // cracked tile -> clock time it falls
     fuseMeshes: new Map(),  // cracked tile -> its warning overlay
     park: !!spec.park, grave: !!spec.grave,
-    biome: spec.biome || 0, tileB: new Uint8Array(P)
+    biome: spec.biome || 0, tileB: new Uint8Array(P),
+    chasm: spec.chasm || null
   };
+  if (spec.chasmStart) {
+    chasms.push({ edge: v, far: spec.chasmFar, quakeT: 0, phase: 'idle', sink: [], rise: [], marks: [], woke: false });
+    // the tester: the crumbling rock on both sides gets the boulder field's falling boulders (thrown by the king)
+    if (CHASM_TEST) for (const [a, b] of [[v - 4, v - 1], [spec.chasmFar + 1, spec.chasmFar + 4]])
+      zones.push({ start: a, end: b, tier: 'difficult', triggered: true, done: true, t: 0, roll: 0, nextDrop: 0.6 });
+  }
+  if (spec.chasm === 'pit') for (let p = 0; p < P; p++) lane.holes.add(p);
+  if (spec.chasm === 'pillars') for (let p = 0; p < P; p++) if (!spec.pillars.has(p)) lane.holes.add(p);
   lane.zoneTier = spec.zoneTier || null;
+  if (!test.on && !CHASM_TEST) {
+    const fb = biomeAt(v);
+    if (fb.next === 1 && v === fb.end - BIOME.blend && v >= START_SAFE)
+      zones.push({ start: v, end: biomeAt(fb.end).end - BIOME.blend - 1, tier: 'field', field: true, warn: FIELD.kingWarn, t: 0, triggered: false, done: false });
+  }
   if (spec.zoneFirst) zones.push({ start: v, end: v + spec.zoneLen - 1, tier: spec.zoneTier,
                                   triggered: false, t: 0, roll: 0, done: false, nextDrop: 0 });
   if (spec.zoneFirst && spec.zoneTier === 'difficult')
@@ -1354,7 +1691,10 @@ function makeLane(v) {
     const deco = v < MIN_V;                  // rows behind where you can walk: thick trees
     const bt = biomeAt(v);
     for (let p = 0; p < P; p++) {
-      const tb = lane.tileB[p] = Math.random() < bt.t ? bt.next : bt.cur;     // this tile's look
+      // a boulder field's fade is all rock for its last 30% (no stray grass tiles among the cracks), and mirrored
+      // on the way out; other biomes blend evenly
+      const nt = bt.next === 1 ? Math.min(1, bt.t / 0.7) : bt.cur === 1 ? Math.max(0, (bt.t - 0.3) / 0.7) : bt.t;
+      const tb = lane.tileB[p] = spec.rock ? 1 : Math.random() < nt ? bt.next : bt.cur;     // this tile's look
       // fading into or out of the boulder field, in three steps: grass, then plain rock, then crumbling rock.
       // A boulder field tile here is crumbling with a chance that starts once the blend is 30% rock and
       // reaches every rock tile at the field's edge (mirrored on the way out)
@@ -1367,7 +1707,7 @@ function makeLane(v) {
       const nearStart = v <= START_SAFE && face === 0 && Math.abs(u - Math.floor(W / 2)) <= 2;
       if (nearStart && !deco) continue;
       if (spec.grave && !deco) {
-        if (spec.stones.has(p)) { lane.blocked.add(p); lane.trees.set(p, -1 - randInt(0, 2)); }   // -1..-3: gravestones
+        if (spec.stones.has(p)) { lane.blocked.add(p); lane.trees.set(p, spec.fence ? -4 : -1 - randInt(0, 2)); }   // -1..-3: gravestones, -4: fence
         else if (spec.coinTiles.includes(p)) lane.coins.set(p, null);
         continue;
       }
@@ -1375,12 +1715,12 @@ function makeLane(v) {
       if ((spec.clear || spec.cracked || (lane.crackMask && lane.crackMask[p])) && !deco) chance = 0;
       if (spec.park && !deco) chance = spec.coinTiles.includes(p) ? 0 : PARK.treeChance;
       if (spec.sparse && !deco) chance = lane.blocked.has(wrapP(p - 1)) || (p === P - 1 && lane.blocked.has(0)) ? 0 : 0.08;
-      if ((spec.cracked || (lane.crackMask && lane.crackMask[p])) && !deco) chance = 0;     // nothing grows on crumbling rock
+      if ((spec.cracked || spec.chasm || (lane.crackMask && lane.crackMask[p])) && !deco) chance = 0;     // nothing grows on crumbling rock or in a chasm
       if (Math.random() < chance) {
         lane.blocked.add(p);
         const d = deco ? 'tree' : BIOMES[tb].deco;
         lane.trees.set(p, d === 'stone' ? -1 - randInt(0, 2) : d === 'rock' ? 0 : Math.random() < 0.82 ? randInt(1, 3) : 0);   // 0 = rock, <0 headstone
-      } else if (spec.park ? spec.coinTiles.includes(p) : (!deco && v >= 1 && Math.random() < 0.035)) {
+      } else if (!spec.chasm && (spec.park ? spec.coinTiles.includes(p) : (!deco && v >= 1 && Math.random() < 0.035))) {
         lane.coins.set(p, null);
       }
     }
@@ -1463,13 +1803,17 @@ function makeLane(v) {
   } else {   // rail
     lane.dir = Math.random() < 0.5 ? 1 : -1;
     lane.idle = rand(2.5, 5.5);
-    lane.hard = !spec.inZone && (test.on ? !!spec.hard : Math.random() < hardShare(v));
+    lane.hard = (!spec.inZone || spec.biome === 1) && (test.on ? !!spec.hard : Math.random() < hardShare(v));
     if (lane.hard) {
       lane.warn = RED_TRAIN.warn;
       lane.trainLen = P - RED_TRAIN.gap;
       lane.laps = RED_TRAIN.laps;
       // the row is almost fully covered from when the whole train is on it until its head finishes lap 3
       lane.trainSpeed = (lane.laps * P - lane.trainLen) / RED_TRAIN.coverSeconds;
+      if (lane.biome === 1) {                                 // the red-hot coal train: once round, throwing embers
+        lane.laps = 1; lane.embers = true;
+        lane.trainSpeed = 26 * mul;                          // the same speed as a normal train
+      }
       bonuses.push({ row: v + 1, points: BONUS.rail, label: 'RED LINE' });
     } else {
       lane.warn = 1.3;
@@ -1510,7 +1854,12 @@ function makeLane(v) {
 const darkZones = [];          // { from, to, hard, decided }
 function scheduleDark(v) {
   const testing = test.on && test.only === 'dark';
-  if (v === gen.nextDarkAt && (!test.on || testing)) {
+  // the graveyard biome: dusk over all of it (dark, sometimes), from where it starts to where its fade begins
+  if (!test.on && !CHASM_TEST) {
+    const b = biomeAt(v);
+    if (b.cur === 2 && v === b.start) darkZones.push({ from: v, to: b.end - BIOME.blend - 1, hard: Math.random() < DARK.graveDark, decided: true, grave: true });
+  }
+  if (testing && v === gen.nextDarkAt) {
     let hard = Math.random() < hardShare(v);
     if (testing) { hard = gen.darkFlip; gen.darkFlip = !gen.darkFlip; }     // test mode: dusk, then dark, ...
     darkZones.push({ from: v, to: v + DARK.len - 1, hard, decided: false });
@@ -1519,8 +1868,8 @@ function scheduleDark(v) {
   for (const z of darkZones) {
     if (z.decided || v < z.to) continue;
     z.decided = true;
-    // over a boulder field or a graveyard it can only be dusk
-    for (let r = z.from; r <= z.to && z.hard; r++) {
+    // (darkness elsewhere, test mode only: over a boulder field or a graveyard it can only be dusk)
+    for (let r = z.from; r <= z.to && z.hard && !z.grave; r++) {
       const l = lanes.get(r);
       if (l && (l.grave || l.zoneTier === 'difficult')) z.hard = false;
     }
@@ -1594,9 +1943,32 @@ function buildLaneStatic(lane) {
   const v = lane.v;
   const nextRoad = lane.type === 'road' && !lane.cracked && lanes.get(v + 1) && lanes.get(v + 1).type === 'road' && !lanes.get(v + 1).cracked;
   for (let p = 0; p < P; p++) {
+    if (lane.chasm) {
+      const face = Math.floor(p / W), u = p % W, rot = face * Math.PI / 2, x = u - H + 0.5, C = CHASM, eh = C.height;
+      // the pit floor reaches past the face's edge tiles so no light shows through the corners of the tube
+      const wide = u === 0 ? -1 : u === W - 1 ? 1 : 0;
+      if (lane.holes.has(p)) {                                            // the pit: black, with a dim wall on the near side
+        m.box(C.pit, x + wide * 0.55, -0.9, 0, 1 + Math.abs(wide) * 1.1, 0.2, 1, rot);
+        m.box(C.pitWall, x + wide * 0.55, -0.45, 0.49, 1 + Math.abs(wide) * 1.1, 0.9, 0.02, rot);
+        m.box(C.pitWall, x + wide * 0.55, -0.45, -0.49, 1 + Math.abs(wide) * 1.1, 0.9, 0.02, rot);
+      } else if (lane.chasm === 'pillars') {                              // a stone pillar standing up out of the pit
+        m.box(C.pit, x + wide * 0.55, -0.9, 0, 1 + Math.abs(wide) * 1.1, 0.2, 1, rot);
+        m.box(C.pillar, x, (eh - 0.8) / 2, 0, 0.8, eh + 0.8, 0.8, rot);
+        m.box(C.pillarTop, x, eh + 0.01, 0, 0.8, 0.04, 0.8, rot);
+        m.box(C.rockDark, x, (eh - 0.8) / 2, 0.405, 0.8, eh + 0.8, 0.01, rot);
+        if ((p * 7 + v) % 3 === 0) m.box(0x8e909a, x + 0.2, eh + 0.04, -0.15, 0.14, 0.04, 0.12, rot);
+      } else {                                                            // the raised edge
+        m.box(C.rock, x, (eh - 0.4) / 2, 0, 1, eh + 0.4, 1, rot);
+        m.box(C.rockTop, x, eh + 0.01, 0, 1, 0.03, 1, rot);
+        m.box(C.rockDark, x, eh / 2 - 0.2, 0.505, 1, eh + 0.4, 0.01, rot);
+        m.box(C.rockDark, x, eh / 2 - 0.2, -0.505, 1, eh + 0.4, 0.01, rot);
+        if ((p * 5 + v) % 4 === 0) m.box(0x9a9ca4, x - 0.25, eh + 0.04, 0.2, 0.14, 0.06, 0.12, rot);
+      }
+      continue;
+    }
     if (lane.holes.has(p)) continue;
     const face = Math.floor(p / W), u = p % W, rot = face * Math.PI / 2;
-    const x = u - H + 0.5;
+    const x = u - H + 0.5, cornerOut = u === 0 ? -1 : u === W - 1 ? 1 : 0;
     const alt = (u + face) % 2;
     if (crackedAt(lane, p)) {
       m.box(COLORS.cracked[alt], x, -0.2, 0, 1, 0.4, 1, rot);
@@ -1606,9 +1978,9 @@ function buildLaneStatic(lane) {
       let cx = x - 0.32 + rnd() * 0.2, cz = -0.3 + rnd() * 0.2;
       for (let k = 0; k < 4; k++) {
         const lenX = 0.12 + rnd() * 0.22, lenZ = 0.1 + rnd() * 0.2;
-        m.box(lane.zoneTier === 'difficult' ? COLORS.crackHard : COLORS.crack, cx + lenX / 2, 0.006, cz, lenX, 0.012, 0.045, rot);
+        m.box(COLORS.crack, cx + lenX / 2, 0.006, cz, lenX, 0.012, 0.045, rot);
         cx += lenX;
-        m.box(lane.zoneTier === 'difficult' ? COLORS.crackHard : COLORS.crack, cx, 0.006, cz + lenZ / 2, 0.045, 0.012, lenZ, rot);
+        m.box(COLORS.crack, cx, 0.006, cz + lenZ / 2, 0.045, 0.012, lenZ, rot);
         cz += lenZ;
         if (cx > x + 0.4 || cz > 0.4) break;
       }
@@ -1633,7 +2005,19 @@ function buildLaneStatic(lane) {
         m.box(GRAVE.bone, x - 0.32, 0.03, 0.2, 0.08, 0.08, 0.14, rot);
         m.box(GRAVE.bone, x + 0.02, 0.03, 0.2, 0.08, 0.08, 0.14, rot);
       }
-      if (t !== undefined && t < 0) {
+      if (t === -4) {                                                       // a section of iron graveyard fence
+        const iron = 0x2e2a36, cap = 0x4b4458;
+        const gateL = !lane.blocked.has(wrapP(p - 1)), gateR = !lane.blocked.has(wrapP(p + 1));
+        m.box(iron, x, 0.26, 0, 1.0, 0.06, 0.06, rot);                     // rails
+        m.box(iron, x, 0.56, 0, 1.0, 0.06, 0.06, rot);
+        for (const dx of [-0.3, -0.1, 0.1, 0.3]) {                          // pickets with spear tips
+          m.box(iron, x + dx, 0.36, 0, 0.06, 0.66, 0.06, rot);
+          m.box(cap, x + dx, 0.72, 0, 0.1, 0.08, 0.1, rot);
+        }
+        // a stone gatepost where the fence meets a gate
+        if (gateL) { m.box(GRAVE.stone[1], x - 0.42, 0.42, 0, 0.18, 0.84, 0.22, rot); m.box(GRAVE.stone[0], x - 0.42, 0.88, 0, 0.24, 0.08, 0.28, rot); }
+        if (gateR) { m.box(GRAVE.stone[1], x + 0.42, 0.42, 0, 0.18, 0.84, 0.22, rot); m.box(GRAVE.stone[0], x + 0.42, 0.88, 0, 0.24, 0.08, 0.28, rot); }
+      } else if (t !== undefined && t < 0) {
         const c = GRAVE.stone[(p + v) % 3];
         m.box(GRAVE.dirt, x, 0.04, 0.14, 0.62, 0.08, 0.62, rot);              // the grave mound, on your side
         if (t === -2) {                                                     // a stone cross
@@ -1674,13 +2058,27 @@ function buildLaneStatic(lane) {
       } else m.box(BIOMES[lane.biome].road[alt], x, -0.2, 0, 1, 0.4, 1, rot);
       if (nextRoad && lane.kind !== 'boulder' && u % 2 === 0) m.box(COLORS.line, x, 0.005, -0.5, 0.55, 0.02, 0.07, rot);
     } else if (lane.type === 'pads') {
-      m.box(BIOMES[lane.biome].water[alt ? 0 : 1], x, -0.42, 0, 1, 0.44, 1, rot);
-      if (lane.pads.has(p)) {
+      m.box(BIOMES[lane.biome].water[alt ? 0 : 1], x + cornerOut * 0.45, -0.42, 0, 1 + Math.abs(cornerOut) * 0.9, 0.44, 1, rot);
+      if (lane.pads.has(p) && lane.biome === 2) {
+        // graveyard lily pad: a murky grey-green pad with a notch, dark veins, and now and then a pale purple
+        // night bloom; still clearly lighter than the dark water so you can read where to land
+        m.box(0x5f7a48, x, -0.05, 0, 0.84, 0.1, 0.84, rot);
+        m.box(0x7a9558, x - 0.08, 0.004, 0.05, 0.5, 0.012, 0.5, rot);
+        m.box(BIOMES[lane.biome].water[alt ? 0 : 1], x + 0.3, 0.006, 0.3, 0.2, 0.014, 0.2, rot);     // the notch
+        m.box(0x3f5432, x - 0.1, 0.008, -0.1, 0.42, 0.01, 0.04, rot);
+        m.box(0x3f5432, x + 0.02, 0.008, 0.08, 0.04, 0.01, 0.36, rot);
+        if ((p + lane.v) % 3 === 0) {
+          for (const [dx, dz] of [[-0.06, 0], [0.06, 0], [0, -0.06], [0, 0.06]]) m.box(0xc9a2e8, x - 0.18 + dx, 0.05, -0.16 + dz, 0.1, 0.06, 0.1, rot);
+          m.box(0xf2e9b8, x - 0.18, 0.09, -0.16, 0.06, 0.04, 0.06, rot);
+        }
+      } else if (lane.pads.has(p)) {
         m.box(0x4fae37, x, -0.05, 0, 0.84, 0.1, 0.84, rot);
         m.box(0x67c94a, x - 0.08, 0.004, 0.05, 0.5, 0.012, 0.5, rot);
       }
     } else if (lane.type === 'river') {
-      m.box(BIOMES[lane.biome].water[alt ? 0 : 1], x, -0.42, 0, 1, 0.44, 1, rot);
+      // water sits lower than the ground, so at the tube's corners it reaches a little past the face's edge
+      // (otherwise a thin line of sky shows through the seam)
+      m.box(BIOMES[lane.biome].water[alt ? 0 : 1], x + cornerOut * 0.45, -0.42, 0, 1 + Math.abs(cornerOut) * 0.9, 0.44, 1, rot);
     } else {
       m.box(COLORS.gravel[alt], x, -0.2, 0, 1, 0.4, 1, rot);
       for (const tz of [-0.25, 0.25]) m.box(COLORS.tie, x + tz * 0.6, 0.02, 0, 0.16, 0.05, 0.82, rot);
@@ -1729,10 +2127,11 @@ function buildLaneDynamic(lane) {
   }
   for (const log of lane.logs) {
     for (let i = 0; i < log.len; i++) {
-      const mesh = new THREE.Mesh(log.sink ? SINK_GEO : log.cracks && log.cracks.has(i) ? CRACK_GEO : LOG_GEO, VCOL);
+      const spooky = lane.biome === 2;
+      const mesh = new THREE.Mesh(log.sink ? (spooky ? SPOOKY_SINK_GEO : SINK_GEO) : log.cracks && log.cracks.has(i) ? (spooky ? SPOOKY_CRACK_GEO : CRACK_GEO) : spooky ? SPOOKY_LOG_GEO : LOG_GEO, VCOL);
       mesh.rotation.order = 'ZYX';
       if (i === 0 || i === log.len - 1) {
-        const end = new THREE.Mesh(LOG_END_GEO, VCOL);
+        const end = new THREE.Mesh(spooky ? SPOOKY_END_GEO : LOG_END_GEO, VCOL);
         end.position.x = i === 0 ? -0.5 : 0.5;
         mesh.add(end);
       }
@@ -1743,7 +2142,7 @@ function buildLaneDynamic(lane) {
   if (lane.type === 'rail') {
     lane.wagons = [];
     for (let i = 0; i < lane.trainLen; i++) {
-      const mesh = new THREE.Mesh(trainGeometry(i === 0, lane.hard), VCOL);
+      const mesh = new THREE.Mesh(trainGeometry(i === 0, lane.hard, lane.biome), VCOL);
       mesh.rotation.order = 'ZYX';
       mesh.visible = false;
       lane.wagons.push(mesh);
@@ -1782,6 +2181,8 @@ function buildLaneDynamic(lane) {
   for (const rz of lane.risers || []) {
     rz.mound = new THREE.Mesh(MOUND_GEO, VCOL); rz.mound.rotation.order = 'ZYX';
     rz.mesh = new THREE.Mesh(ZOMBIE_GEO, VCOL); rz.mesh.rotation.order = 'ZYX'; rz.mesh.visible = false;
+    rz.mesh.add(new THREE.Mesh(ZOMBIE_EYE_GEO, zombieEyeMat));
+    rz.glow = new THREE.Mesh(MOUND_GLOW_GEO, moundGlowMat); rz.glow.visible = false; rz.mound.add(rz.glow);
     place(rz.mound, rz.pos, 0, 0); place(rz.mesh, rz.pos, -1, 0);
     lane.group.add(rz.mound, rz.mesh);
   }
@@ -1807,8 +2208,9 @@ function buildLaneDynamic(lane) {
 function removeLane(lane) {
   scene.remove(lane.group);
   lane.group.traverse(o => {
-    if (o.isMesh && o.geometry !== LOG_GEO && o.geometry !== LOG_END_GEO && o.geometry !== COIN_GEO && o.geometry !== CRACK_GEO && o.geometry !== SINK_GEO &&
-        o.geometry !== SKEL_GEO && o.geometry !== SKEL_EYE_GEO && o.geometry !== BELT_GEO && o.geometry !== MOUND_GEO && o.geometry !== ZOMBIE_GEO &&
+    if (o.isMesh && o.geometry !== LOG_GEO && o.geometry !== LOG_END_GEO && o.geometry !== COIN_GEO && o.geometry !== CRACK_GEO && o.geometry !== SINK_GEO && o.geometry !== SPOOKY_CRACK_GEO && o.geometry !== SPOOKY_SINK_GEO && o.geometry !== FIRE_GEO && o.geometry !== MARK_GEO &&
+        o.geometry !== SKEL_GEO && o.geometry !== SKEL_EYE_GEO && o.geometry !== BELT_GEO && o.geometry !== MOUND_GEO && o.geometry !== ZOMBIE_GEO && o.geometry !== ZOMBIE_EYE_GEO && o.geometry !== MOUND_GLOW_GEO &&
+        o.geometry !== SPOOKY_LOG_GEO && o.geometry !== SPOOKY_END_GEO &&
         o.geometry !== HEADLIGHT_GEO && o.geometry !== BEAM_GEO && o.geometry !== TAILLIGHT_GEO &&
         o.geometry !== ROLL_GEO && o.geometry !== ROLL_FACE_GEO) o.geometry.dispose();
   });
@@ -2017,6 +2419,7 @@ function updateRisers(dt) {
       // drawing: the mound shakes, then he climbs out, sways, and sinks back
       const shake = rz.state === 'shake' ? Math.sin(rz.t * 60) * 0.05 * (0.4 + rz.t / R.shake) : 0;
       place(rz.mound, rz.pos + shake, 0, 0);
+      rz.glow.visible = rz.state === 'shake';
       let h = null;
       if (rz.state === 'rise') h = -1 + clamp01(rz.t / R.rise);
       else if (rz.state === 'up') h = 0;
@@ -2115,7 +2518,7 @@ function updateGhost(dt) {
 // ---------------- steamrollers ----------------
 const rollers = [];
 const rollerGen = { lastRow: 0, lastEnd: -999, flip: false };
-const rollable = l => !!l && (l.type === 'grass' || l.type === 'road');
+const rollable = l => !!l && !l.chasm && (l.type === 'grass' || l.type === 'road');
 const isWater = l => !!l && (l.type === 'river' || l.type === 'pads');
 // how many water rows in a row (river or lily pads) this water row is part of
 function waterRunAt(v) {
@@ -2128,12 +2531,16 @@ function waterRunAt(v) {
 // rivers of up to ROLLER.maxCross rows it drives across (0: none, it sinks in any river)
 const shortWater = v => { const n = waterRunAt(v); return n > 0 && n <= ROLLER.maxCross; };
 const rollerPath = v => rollable(lanes.get(v)) || shortWater(v);
+// the stone roller doesn't stop for tracks (it rumbles over them), so it can run inside a boulder field
+const rollableFor = (r, l) => r && r.kind === 'stone' ? !!l && !l.chasm && (l.type === 'grass' || l.type === 'road' || l.type === 'rail') : rollable(l);
+const rollerPathFor = (r, v) => rollableFor(r, lanes.get(v)) || shortWater(v);
 const rollerDeadly = r => !r.stopped && !(r.sinking && r.sinkT > r.R.sinkTime * 0.5);
 function rollerFaces(r) { return r.faces.map(f => ((f % 4) + 4) % 4); }
 function rollerCovers(r, pf, v) {
   return rollerFaces(r).includes(faceOf(pf)) && v >= r.v - r.R.front - 0.05 && v <= r.v + r.R.back;
 }
-function rollerHits(pf, v) { return rollers.some(r => rollerDeadly(r) && rollerCovers(r, pf, v)); }
+let lastRollerKind = 'steam';
+function rollerHits(pf, v) { const r = rollers.find(r => rollerDeadly(r) && rollerCovers(r, pf, v)); if (r) lastRollerKind = r.kind; return !!r; }
 // small cubes thrown up: rubble from the rollers, or what's left of something they crushed
 function debris(pf, v, color, n, up) {
   const f = ringFrame(pf, 0.2);
@@ -2150,26 +2557,35 @@ function debris(pf, v, color, n, up) {
 }
 function trySpawnRoller() {
   const R = test.on && test.only === 'roller' ? { ...ROLLER, chance: 1, cooldown: 8, fromRow: 6 } : ROLLER;
-  if (rollers.length || player.v < R.fromRow || player.v - rollerGen.lastEnd < R.cooldown) return;
+  const stoneField = !test.on && biomeAt(player.v).cur === 1;
+  if (rollers.length || player.v < R.fromRow || (!stoneField && player.v - rollerGen.lastEnd < R.cooldown)) return;
   if (test.on && test.only !== 'roller') return;           // test mode: only when testing steamrollers
-  if (Math.random() >= R.chance) return;
+  if (Math.random() >= R.chance && biomeAt(player.v).cur !== 1) return;     // (a roller field's stone roller always comes)
+  // which machine: the stone-age roller in the boulder field, the steamroller elsewhere (graveyard: none yet)
+  const kbi = biomeAt(player.v), kb = kbi.cur;
+  if (!test.on && kb === 2) return;
+  const kind = !test.on && kb === 1 ? 'stone' : 'steam', probe = { kind };
+  if (kind === 'stone') {
+    // only in a field that rolled the stone roller, once, and not before FIELD_SPECIAL.rollerFrom rows in
+    if (kbi.t > 0 || fieldSpecial(kbi.seg) !== 'roller' || (gen.rollerSegs || {})[kbi.seg] || player.v < kbi.start + FIELD_SPECIAL.rollerFrom) return;
+  }
   let run = 0;
-  while (run < R.maxAhead && rollerPath(player.v + run)) run++;
-  while (run > 0 && !rollable(lanes.get(player.v + run - 1))) run--;     // it starts on land, not in water
+  while (run < R.maxAhead && rollerPathFor(probe, player.v + run)) run++;
+  while (run > 0 && !rollableFor(probe, lanes.get(player.v + run - 1))) run--;     // it starts on land, not in water
   if (run < R.minRun) return;
   // one big thing at a time: no steamroller during a ghost chase, in the dark, or through a boulder field
   if (!test.on) {
     if (ghost.active) return;
-    for (let k = -4; k < run; k++) { const l = lanes.get(player.v + k); if ((l && (l.inZone || !BIOMES[l.biome].rollers)) || darknessAt(player.v + k).amt > 0) return; }
+    for (let k = -4; k < run; k++) { const l = lanes.get(player.v + k); if ((l && ((l.inZone && kind !== 'stone') || !BIOMES[l.biome].rollers)) || (kind !== 'stone' && darknessAt(player.v + k).amt > 0)) return; }
   }
   const f0 = faceOf(player.pf);
   let hard = Math.random() < hardShare(player.v);
   if (test.on) { hard = rollerGen.flip; rollerGen.flip = !rollerGen.flip; }   // test mode: alternate 1 and 2 faces
   const faces = hard ? [f0, f0 + (Math.random() < 0.5 ? 1 : -1)] : [f0];
-  const r = { faces, hard, R, v: player.v + run - 1 + R.front, paid: false, stopped: false, fade: 1, meshes: [], paths: [], dustT: 0 };
+  const r = { kind, faces, hard, R, v: player.v + run - 1 + R.front, paid: false, stopped: false, fade: 1, meshes: [], paths: [], dustT: 0 };
   for (const f of faces) {
-    const mesh = new THREE.Mesh(ROLLER_GEO, VCOL);
-    mesh.add(new THREE.Mesh(ROLLER_BEACON_GEO, rollerBeaconMat));
+    const mesh = new THREE.Mesh(kind === 'stone' ? STONE_ROLLER_GEO : ROLLER_GEO, VCOL);
+    if (kind !== 'stone') mesh.add(new THREE.Mesh(ROLLER_BEACON_GEO, rollerBeaconMat));
     mesh.rotation.order = 'ZYX';
     scene.add(mesh); r.meshes.push(mesh);
     const path = new THREE.Mesh(ROLLER_PATH_GEO, rollerPathMat);
@@ -2177,7 +2593,7 @@ function trySpawnRoller() {
     scene.add(path); r.paths.push(path);
   }
   rollers.push(r);
-  SFX.rollerHorn();
+  if (kind === 'stone') { (gen.rollerSegs = gen.rollerSegs || {})[kbi.seg] = true; SFX.rumble(); } else SFX.rollerHorn();
 }
 function removeRoller(r) {
   for (const m of [...r.meshes, ...r.paths]) scene.remove(m);
@@ -2270,7 +2686,7 @@ function updateRollers(dt) {
         r.sinking = true; r.sinkRow = ahead; r.sinkT = 0; r.v = next;
         for (const f of rollerFaces(r)) for (const u of [0, 2.5, 5, 7.5, 10]) splash(f * W + u, ahead);
         camState.shake = Math.max(camState.shake, 0.12);
-      } else if (!rollable(al)) { r.v = ahead + 0.5 + R.front; r.stopped = true; }   // tracks: stop and sink away
+      } else if (!rollableFor(r, al)) { r.v = ahead + 0.5 + R.front; r.stopped = true; }   // tracks (or a chasm): stop and sink away
       else r.v = next;
     } else if (r.sinking && game.mode === 'play') {
       const stopV = r.sinkRow - 0.2 + R.front;
@@ -2300,10 +2716,10 @@ function updateRollers(dt) {
       r.dustT = 0.05;
       for (const f of rollerFaces(r)) for (const u of [0, 5, 10]) debris(f * W + u, r.v - R.front + 0.2, Math.random() < 0.5 ? 0x8a7a66 : 0x6b6e75, 1, 3);
     }
-    if (r.hard && !r.paid && game.mode === 'play' && r.v + R.back < player.v - 0.5) { r.paid = true; addBonus(BONUS.roller, 'STEAMROLLER'); }
+    if (r.hard && !r.paid && game.mode === 'play' && r.v + R.back < player.v - 0.5) { r.paid = true; addBonus(BONUS.roller, r.kind === 'stone' ? 'STONE ROLLER' : 'STEAMROLLER'); }
     // drawing: the machines, sinking away when stopped, and a red path down to the end of the land
     let end = Math.floor(r.v - R.front - 0.5);
-    while (end > r.v - 40 && rollerPath(end)) end--;
+    while (end > r.v - 40 && rollerPathFor(r, end)) end--;
     const pathFrom = r.v - R.front, pathTo = end + 0.5, len = Math.max(0, pathFrom - pathTo);
     r.meshes.forEach((mesh, i) => {
       const f = r.faces[i];
@@ -2375,6 +2791,19 @@ function updateLanes(dt) {
         mesh.visible = pos !== null;
         if (mesh.visible) place(mesh, pos, 0, yaw);
       });
+      if (lane.embers && st.run && game.mode === 'play') {
+        if (lane.emberCycle !== lane.cycle) {                 // a new pass: when along it the coals fly
+          lane.emberCycle = lane.cycle;
+          const pass = (P + lane.trainLen) / lane.trainSpeed;
+          lane.emberPlan = Array.from({ length: randInt(EMBERS.count[0], EMBERS.count[1]) }, () => rand(0.1, 0.85) * pass).sort((a, b) => a - b);
+        }
+        const tRun = st.travelled / lane.trainSpeed;
+        while (lane.emberPlan.length && lane.emberPlan[0] <= tRun) {
+          lane.emberPlan.shift();
+          const head = wagonPos(lane, st, Math.min(lane.trainLen - 1, randInt(0, 4)));
+          if (head !== null) throwEmber(lane, head);
+        }
+      }
     }
     for (const coin of lane.coins.values()) if (coin) coin.rotation.y = clock * 3;
   }
@@ -2422,6 +2851,7 @@ const pops = { lap: 0, bonus: 0 };
 const run = { ranked: false, secs: 0, hops: 0, b: {} };   // what this run measured, for the leaderboard
 
 function addBonus(points, label) {
+  if (points <= 0) return;                             // difficult obstacles no longer give points or a pop-up
   game.bonus += points;
   run.b[points] = (run.b[points] || 0) + 1;            // the leaderboard checks bonuses against these counts
   game.score = game.dist + game.bonus;
@@ -2516,15 +2946,24 @@ function tryMove(dp, dv) {
     SFX.hop();
     return;
   }
-  const tp = Math.round(player.pf) + dp;
-  const tv = player.v + dv;
+  let tp = Math.round(player.pf) + dp;
+  let tv = player.v + dv;
+  // sideways off a pillar: leap 2 tiles
+  const sideLeap = gravity.on && dv === 0 && dp !== 0 && here && here.chasm === 'pillars' && raisedAt(here, Math.round(player.pf));
+  if (sideLeap) {
+    tp += dp;
+    if (faceOf(wrapP(tp)) !== faceOf(wrapP(Math.round(player.pf)))) { player.bump = 0.14; SFX.bump(); return; }   // not round a corner
+  }
   if (tv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
-  const lane = laneAt(tv);
+  let lane = laneAt(tv);
+  // off something raised, forward or back over a pit row: leap 2 rows
+  const leap = sideLeap || (gravity.on && dv !== 0 && lane.chasm === 'pit' && raisedAt(here, Math.round(player.pf)));
+  if (leap && !sideLeap) { tv += dv; lane = laneAt(tv); }
   const tw = wrapP(tp);
   // holes don't stop you: hop into one and you fall (easy to do by accident in a crumbling field)
   if (lane.blocked.has(tw)) { player.bump = 0.14; SFX.bump(); return; }
-  player.hop = { fp: player.pf, fv: player.v, tp, tv, t: 0, dp, dv };
-  if (dv > 0) run.hops++;
+  player.hop = { fp: player.pf, fv: player.v, tp, tv, t: 0, dp, dv, leap };
+  if (dv > 0) run.hops += leap ? 2 : 1;     // a leap covers 2 rows: counted as 2 hops so the board's checks still add up
   calmHand();
   player.onLog = null;
   game.started = true;
@@ -2572,6 +3011,7 @@ function finishHop() {
     player.slot = slot;
   }
   const tile = wrapP(Math.round(player.pf));
+  if (lane.chasm && lane.holes.has(tile)) { die('chasm'); return; }   // missed the pillar
   if (crackedAt(lane, tile)) {
     if (lane.holes.has(tile)) { die('crumble'); return; }       // it fell while you were in the air
     if (!lane.fuse.has(tile)) lightFuse(lane, tile);
@@ -2585,8 +3025,8 @@ function finishHop() {
   game.score = game.dist + game.bonus;
 }
 
-const HIT_NAMES = { car: 'CAR', train: 'TRAIN', water: 'WATER', crumble: 'FELL', boulder: 'BOULDER', roll: 'BOULDER', crack: 'CRACKED LOG',
-                    grab: 'GRABBED', slap: 'SLAPPED', skeleton: 'SKELETON', zombie: 'ZOMBIE', ghost: 'GHOST', sink: 'SANK', roller: 'STEAMROLLER' };
+const HIT_NAMES = { car: 'CAR', train: 'TRAIN', water: 'WATER', crumble: 'FELL', chasm: 'CHASM', fire: 'BURNED', boulder: 'BOULDER', roll: 'BOULDER', crack: 'CRACKED LOG',
+                    grab: 'GRABBED', slap: 'SLAPPED', skeleton: 'SKELETON', zombie: 'ZOMBIE', king: 'BOULDER KING', ghost: 'GHOST', sink: 'SANK', roller: 'STEAMROLLER' };
 function testHit(cause) {
   if (test.hitT[cause] && clock - test.hitT[cause] < 0.7) return;
   test.hitT[cause] = clock;
@@ -2673,6 +3113,291 @@ function collapse(lane, tile) {
   if (game.mode === 'play' && !player.hop && player.v === lane.v && wrapP(Math.round(player.pf)) === tile) die('crumble');
 }
 
+// ---------------- embers from the red-hot coal train ----------------
+const embers = [];
+const EMBER_GEO = (() => { const m = new Merge(); m.part(0xff7a2a, 0, 0, 0, 0.22, 0.22, 0.22); m.part(0xffd25a, 0.03, 0.05, 0.03, 0.12, 0.12, 0.12); return m.geometry(); })();
+const FIRE_GEO = (() => {
+  const m = new Merge();
+  m.part(0x2a1a14, 0, 0.03, 0, 0.8, 0.06, 0.8);                                   // scorched rock
+  m.part(0x1c1c22, -0.12, 0.1, 0.1, 0.3, 0.12, 0.28); m.part(0x1c1c22, 0.16, 0.09, -0.12, 0.26, 0.1, 0.24);   // coals
+  m.part(0xff5a1a, 0, 0.3, 0, 0.5, 0.42, 0.5); m.part(0xff9a2a, 0.05, 0.5, -0.03, 0.32, 0.34, 0.32);
+  m.part(0xffd25a, 0, 0.7, 0.02, 0.16, 0.24, 0.16);
+  return m.geometry();
+})();
+const emberMarkMat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent: true, opacity: 0.45, depthWrite: false });
+function throwEmber(lane, head) {
+  const pf = player.pf, here = wrapP(Math.round(pf));
+  const hopTo = player.hop ? wrapP(Math.round(hopEnds(player.hop)[1])) : -1;
+  const options = [];
+  for (const dv of [-1, 1, -2, 2]) {
+    const l = lanes.get(lane.v + dv);
+    if (!l || l.type !== 'grass' || l.chasm || l.grave) continue;
+    for (let du = -EMBERS.reach; du <= EMBERS.reach; du++) {
+      const p = wrapP(Math.round(head) + du);
+      if (l.blocked.has(p) || l.holes.has(p) || (l.fires && l.fires.has(p))) continue;
+      if (l.v === player.v && (p === here || p === hopTo)) continue;
+      if (player.hop && l.v === player.hop.tv && p === hopTo) continue;
+      const f = faceOf(p); let open = 0;
+      for (let u = 0; u < W; u++) if (!l.blocked.has(f * W + u) && !l.holes.has(f * W + u)) open++;
+      if (open - 1 < EMBERS.keepOpen) continue;
+      options.push([l, p, Math.abs(dv)]);
+    }
+  }
+  if (!options.length) return;
+  const near = options.filter(o => o[2] === 1), [l, p] = pick(near.length && Math.random() < 0.65 ? near : options);
+  const from = ringFrame(head, 0.9), mesh = new THREE.Mesh(EMBER_GEO, VCOL), mark = new THREE.Mesh(MARK_GEO, emberMarkMat);
+  mesh.position.set(from.x, from.y, -lane.v); scene.add(mesh);
+  mark.rotation.order = 'ZYX'; place(mark, p, 0.02, 0); l.group.add(mark);
+  embers.push({ l, p, t: 0, from: mesh.position.clone(), mesh, mark });
+  SFX.rattle();
+}
+function updateEmbers(dt) {
+  for (let i = embers.length - 1; i >= 0; i--) {
+    const e = embers[i]; e.t += dt;
+    const k = Math.min(1, e.t / EMBERS.flight), f = ringFrame(e.p, 0.2);
+    e.mesh.position.set(lerp(e.from.x, f.x, k), lerp(e.from.y, f.y, k) + Math.sin(Math.PI * k) * 1.2, lerp(e.from.z, -e.l.v, k));
+    e.mesh.rotation.x += dt * 9; e.mesh.rotation.z += dt * 7;
+    if (k < 1) continue;
+    scene.remove(e.mesh); e.l.group.remove(e.mark); embers.splice(i, 1);
+    if (!lanes.has(e.l.v)) continue;
+    // it lands: the rock burns for good and blocks the tile
+    const fire = new THREE.Mesh(FIRE_GEO, VCOL); fire.rotation.order = 'ZYX'; place(fire, e.p, 0, 0); e.l.group.add(fire);
+    (e.l.fires = e.l.fires || new Map()).set(e.p, fire); e.l.blocked.add(e.p);
+    if (e.l.coins.has(e.p)) { const c = e.l.coins.get(e.p); if (c) e.l.group.remove(c); e.l.coins.delete(e.p); }
+    debris(e.p, e.l.v, 0xff7a2a, 6, 3);
+    if (game.mode === 'play' && !player.hop && player.v === e.l.v && wrapP(Math.round(player.pf)) === e.p) die('fire');
+  }
+  // the fires flicker
+  for (const l of lanes.values()) if (l.fires) for (const [p, m] of l.fires) { const k = 0.9 + 0.12 * Math.sin(clock * 14 + p * 1.7); m.scale.set(1, k, 1); }
+}
+function clearEmbers() { for (const e of embers) { scene.remove(e.mesh); e.l.group.remove(e.mark); } embers.length = 0; }
+// ---------------- the king's earthquake (chasms) ----------------
+const chasms = [];
+const QUAKE_CRACK_GEO = (() => { const m = new Merge(), eh = CHASM.height, k = 0x1b1a20;
+  m.part(k, -0.15, eh + 0.035, 0.05, 0.42, 0.02, 0.05); m.part(k, 0.12, eh + 0.035, -0.12, 0.05, 0.02, 0.36);
+  m.part(k, 0.0, eh + 0.035, 0.2, 0.3, 0.02, 0.05); m.part(k, 0.22, eh + 0.035, 0.12, 0.05, 0.02, 0.2); return m.geometry(); })();
+const QUAKE_DUST_GEO = (() => { const m = new Merge();
+  m.part(0xb9b3aa, 0, -0.1, 0, 0.5, 0.3, 0.5); m.part(0xcfc9c0, 0.18, 0.12, 0.1, 0.3, 0.26, 0.3);
+  m.part(0xa9a39a, -0.2, 0.05, -0.12, 0.28, 0.22, 0.28); m.part(0xd9d3ca, 0.02, 0.3, 0.02, 0.2, 0.18, 0.2); return m.geometry(); })();
+const gravity = { on: false, cast: false, c: null, t: 0, beam: 0, recastAt: 0 };
+const auraGroup = (() => {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.75, 14, 10), new THREE.MeshBasicMaterial({ color: 0xb55cff, transparent: true, opacity: 0.22, depthWrite: false, fog: false })));
+  const mote = new THREE.BoxGeometry(0.12, 0.12, 0.12), moteMat = new THREE.MeshBasicMaterial({ color: 0xe2b8ff, fog: false });
+  for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(mote, moteMat); m.userData.i = i; g.add(m); }
+  g.visible = false; scene.add(g); return g;
+})();
+const magicRing = (() => {
+  const g = new THREE.Group(), geo = new THREE.BoxGeometry(0.14, 0.04, 0.14);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xd08bff, fog: false });
+  for (let i = 0; i < MAGIC.marks; i++) { const a = i / MAGIC.marks * Math.PI * 2, m = new THREE.Mesh(geo, mat); m.position.set(Math.sin(a) * 0.62, 0.04, -Math.cos(a) * 0.62); m.rotation.y = -a; g.add(m); }
+  g.visible = false; scene.add(g); return g;
+})();
+const beamMesh = (() => {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1, 8), new THREE.MeshBasicMaterial({ color: 0xd08bff, transparent: true, opacity: 0.8, depthWrite: false, fog: false }));
+  m.visible = false; scene.add(m); return m;
+})();
+function updateGravity(dt) {
+  if (gravity.cast) {
+    gravity.t += dt;
+    const c = gravity.c;
+    // it takes hold MAGIC.delay seconds after the cast; before that a hop forward is just a hop, into the pit
+    if (!gravity.on && gravity.t >= MAGIC.delay && gravity.t < MAGIC.delay + MAGIC.last) { gravity.on = true; SFX.ghost && SFX.ghost(); }
+    // ran out: no magic for MAGIC.recastGap seconds, then he casts it again
+    if (gravity.on && gravity.t >= MAGIC.delay + MAGIC.last) {
+      Object.assign(gravity, { on: false, cast: false, recastAt: clock + MAGIC.recastGap });
+      SFX.bump();
+    }
+    // fades out once you're on the far edge (or if you go back past the near one)
+    if (game.mode !== 'play' || player.v >= c.far || player.v < c.edge) { gravity.on = false; gravity.cast = false; }
+  }
+  if (!gravity.cast && gravity.recastAt && clock >= gravity.recastAt) {
+    const c = gravity.c;
+    gravity.recastAt = 0;
+    if (c && game.mode === 'play' && player.v >= c.edge && player.v < c.far) {
+      Object.assign(gravity, { on: false, cast: true, t: 0, beam: MAGIC.delay });
+      if (boss) boss.wave = 1;
+    }
+  }
+  auraGroup.visible = gravity.cast;
+  // the timer ring: marks go out one by one as the magic runs down, and flash at the end
+  magicRing.visible = gravity.on;
+  if (gravity.on) {
+    const left = MAGIC.delay + MAGIC.last - gravity.t, n = Math.ceil(left / MAGIC.last * MAGIC.marks);
+    const flash = left < MAGIC.warn && Math.sin(clock * 18) < 0;
+    magicRing.children.forEach((m, i) => { m.visible = i < n && !flash; });
+    magicRing.position.copy(spyMesh.position); magicRing.rotation.copy(spyMesh.rotation);
+  }
+  if (gravity.cast) {
+    const k = Math.min(1, gravity.t / MAGIC.delay);                   // the glow gathers while it charges
+    auraGroup.position.copy(spyMesh.position); auraGroup.rotation.copy(spyMesh.rotation);
+    auraGroup.scale.setScalar(0.35 + 0.65 * k);
+    auraGroup.children[0].material.opacity = gravity.on ? 0.16 + 0.08 * Math.sin(clock * 6) : 0.06 + 0.12 * k;
+    for (const m of auraGroup.children) if (m.userData.i !== undefined) {
+      const a = clock * 2.5 + m.userData.i * Math.PI / 4;
+      m.position.set(Math.cos(a) * 0.65, 0.35 + Math.sin(clock * 3 + m.userData.i) * 0.25, Math.sin(a) * 0.65);
+    }
+  }
+  // the beam from his wand to you, for a moment when he casts
+  gravity.beam = Math.max(0, gravity.beam - dt);
+  const tip = gravity.beam > 0 ? bossWandTip() : null;
+  beamMesh.visible = !!tip;
+  if (tip) {
+    const to = spyMesh.position.clone(); to.y += 0.4;
+    const mid = tip.clone().add(to).multiplyScalar(0.5), len = tip.distanceTo(to);
+    beamMesh.position.copy(mid); beamMesh.scale.set(1, len, 1);
+    beamMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(tip).normalize());
+    beamMesh.material.opacity = 0.9 * Math.min(1, gravity.beam / 0.25);
+  }
+}
+const pillarRowsOf = c => { const rows = []; for (let v = c.edge + 2; v < c.far; v += 2) rows.push(v); return rows; };
+// a way through on every face: from any pillar in the first row, across slots and rows, to the last row
+function chasmPassable(c, isPillar) {
+  const rows = pillarRowsOf(c);
+  for (let f = 0; f < 4; f++) {
+    let reach = null;
+    for (const v of rows) {
+      const cur = new Set();
+      SLOTS.forEach((u, i) => { if (isPillar(v, f * W + u) && (reach === null || reach.has(i))) cur.add(i); });
+      let grew = true;
+      while (grew) { grew = false; for (const i of [...cur]) for (const j of [i - 1, i + 1]) if (j >= 0 && j < SLOTS.length && !cur.has(j) && isPillar(v, f * W + SLOTS[j])) { cur.add(j); grew = true; } }
+      if (!cur.size) return false;
+      reach = cur;
+    }
+  }
+  return true;
+}
+// The quake's new grid is a thin one: on each face a single chain of pillars, sliding one slot per row, no
+// decoys. Of the fair candidates (a way through on every face; if your pillar sinks, a pillar that stays up
+// one leap away) it picks the hardest: your pillar sinks if you're on one, with as few escapes as possible,
+// and as few pillars as possible.
+function planQuake(c) {
+  const rows = pillarRowsOf(c), here = wrapP(Math.round(player.pf)), hv = player.v;
+  const isUp = (v, p) => { const l = lanes.get(v); return !!l && !l.holes.has(p); };
+  const onPillar = rows.includes(hv) && isUp(hv, here);
+  let best = null, bestScore = -Infinity;
+  for (let tries = 0; tries < 80; tries++) {
+    const layout = makeChasmLayout(rows.length, true), next = new Map();
+    rows.forEach((v, i) => next.set(v, layout[i]));
+    const after = (v, p) => next.has(v) && next.get(v).has(p);
+    if (!chasmPassable(c, after)) continue;
+    let escapes = 0, sinksYou = false;
+    if (onPillar && !after(hv, here)) {
+      sinksYou = true;
+      const f = faceOf(here), i = SLOTS.indexOf(here % W), near = [[hv + 2, here], [hv - 2, here]];
+      for (const j of [i - 1, i + 1]) if (j >= 0 && j < SLOTS.length) near.push([hv, f * W + SLOTS[j]]);
+      const safe = ([v, p]) => { const l = lanes.get(v); return !!l && (l.chasm === 'edge' || (isUp(v, p) && after(v, p))); };
+      escapes = near.filter(safe).length;
+      if (!escapes) continue;
+    }
+    let pillars = 0; for (const set of layout) pillars += set.size;
+    const score = (sinksYou ? 100 : 0) - escapes * 10 - pillars;
+    if (score > bestScore) { bestScore = score; best = next; }
+  }
+  if (!best) return { sink: [], rise: [] };
+  const sink = [], rise = [];
+  for (const v of rows) for (let f = 0; f < 4; f++) for (const u of SLOTS) {
+    const p = f * W + u, now = isUp(v, p), later = best.get(v).has(p);
+    if (now && !later) sink.push([v, p]);
+    if (!now && later) rise.push([v, p]);
+  }
+  return { sink, rise };
+}
+function clearThrow(c) { if (!c.shot) return; const l = lanes.get(c.shot.v); if (l) l.group.remove(c.shot.marker); scene.remove(c.shot.rock); c.shot = null; }
+function clearQuakeMarks(c) { for (const m of c.marks) { const l = lanes.get(m.userData.v); if (l) l.group.remove(m); } c.marks = []; }
+function updateChasms(dt) {
+  if (game.mode !== 'play') return;
+  for (const c of chasms) {
+    const out = player.v > c.edge && player.v < c.far;                  // standing on a pillar row
+    // the king shows up at the edge of each chasm (the tester has no boulder fields, so no other king)
+    if (CHASM_TEST && !c.woke && player.v >= c.edge - 1) {
+      c.woke = true;
+      const z = { start: c.edge + 1, end: c.far, tier: 'field', field: true };
+      z.mesh = new THREE.Mesh(BOULDER_GEO, VCOL); z.mesh.rotation.order = 'ZYX'; z.mesh.scale.setScalar(BOSS.scale); scene.add(z.mesh);
+      bossWakes(z);
+    }
+    // stepping onto the edge: he waves his wand and the gravity magic wraps around you
+    if (player.v === c.edge && !player.hop && (gravity.c !== c || (!gravity.cast && !gravity.recastAt))) {
+      Object.assign(gravity, { on: false, cast: true, c, t: 0, beam: MAGIC.delay });
+      if (boss) boss.wave = 1;
+    }
+    if (c.shot) updateThrow(c, dt);                                     // a throw in the air finishes even if you've moved on
+    if (!out) { if (c.phase === 'warn') { clearQuakeMarks(c); c.phase = 'idle'; } c.quakeT = QUAKE.every / quakeD() - QUAKE.first; c.threw = true; continue; }   // a quake comes first, then throws
+    c.quakeT += dt;
+    if (c.phase === 'idle' && c.quakeT >= QUAKE.every / quakeD() && !c.shot) {
+      // the slam: warning marks on what will sink, dust where new pillars will rise
+      const plan = planQuake(c); c.sink = plan.sink; c.rise = plan.rise; c.phase = 'warn'; c.quakeT = 0;
+      if (boss) boss.wave = 1;
+      SFX.rumble(); camState.shake = Math.max(camState.shake, QUAKE.shake);
+      for (const [v, p] of c.sink) { const m = new THREE.Mesh(QUAKE_CRACK_GEO, VCOL); m.rotation.order = 'ZYX'; m.userData = { v, p, base: true }; place(m, p, 0, 0); lanes.get(v).group.add(m); c.marks.push(m); }
+      for (const [v, p] of c.rise) { const m = new THREE.Mesh(QUAKE_DUST_GEO, VCOL); m.rotation.order = 'ZYX'; m.userData = { v, p }; place(m, p, 0, 0); lanes.get(v).group.add(m); c.marks.push(m); }
+    } else if (c.phase === 'idle' && !c.threw && c.quakeT >= KING_THROW.at / quakeD() && boss) {
+      c.threw = true; planThrow(c);
+    } else if (c.phase === 'warn') {
+      const warn = Math.max(QUAKE.minWarn, QUAKE.warn / quakeD()), k = c.quakeT / warn;
+      for (const m of c.marks) { const j = 0.03 + 0.05 * k; place(m, m.userData.p + (Math.random() - 0.5) * j, m.userData.base ? 0 : 0.1 + 0.4 * k, 0); }
+      camState.shake = Math.max(camState.shake, 0.08);
+      if (c.quakeT >= warn) {
+        // the shift
+        clearQuakeMarks(c);
+        const touched = new Set();
+        for (const [v, p] of c.sink) {
+          const l = lanes.get(v); if (!l) continue; l.holes.add(p); touched.add(l);
+          const piece = new THREE.Mesh(FALL_GEO, new THREE.MeshLambertMaterial({ color: CHASM.pillar }));
+          piece.rotation.order = 'ZYX'; scene.add(piece); fallingPieces.push({ mesh: piece, tile: p, v, t: 0, spin: rand(-2, 2) });
+        }
+        for (const [v, p] of c.rise) { const l = lanes.get(v); if (l) { l.holes.delete(p); touched.add(l); } }
+        for (const l of touched) buildLaneStatic(l);
+        SFX.crumble(); camState.shake = Math.max(camState.shake, QUAKE.shake);
+        // standing on one that sank (not mid-leap) means you go down with it
+        if (!player.hop && c.sink.some(([v, p]) => v === player.v && p === wrapP(Math.round(player.pf)))) die('chasm');
+        c.phase = 'idle'; c.quakeT = 0; c.threw = false;
+      }
+    }
+  }
+}
+function planThrow(c) {
+  const rows = pillarRowsOf(c), up = (v, p) => { const l = lanes.get(v); return !!l && !l.holes.has(p); };
+  const here = wrapP(Math.round(player.pf)), hv = player.v, onPillar = rows.includes(hv) && up(hv, here);
+  const options = [];
+  if (onPillar) {
+    const f = faceOf(here), i = SLOTS.indexOf(here % W), near = [[hv + 2, here], [hv - 2, here]];
+    for (const j of [i - 1, i + 1]) if (j >= 0 && j < SLOTS.length) near.push([hv, f * W + SLOTS[j]]);
+    if (near.some(([v, p]) => { const l = lanes.get(v); return !!l && (l.chasm === 'edge' || up(v, p)); })) options.push([hv, here]);
+  }
+  // otherwise a pillar on your face near you
+  for (const v of rows) for (const u of SLOTS) { const p = faceOf(here) * W + u; if (up(v, p) && Math.abs(v - hv) <= 4 && !(v === hv && p === here)) options.push([v, p]); }
+  for (const [v, p] of options) {
+    if (!chasmPassable(c, (a, b) => up(a, b) && !(a === v && b === p))) continue;
+    const marker = new THREE.Mesh(MARK_GEO, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.5, depthWrite: false }));
+    marker.rotation.order = 'ZYX'; place(marker, p, CHASM.height + 0.03, 0); lanes.get(v).group.add(marker);
+    const rock = new THREE.Mesh(BOULDER_GEO, VCOL); rock.scale.setScalar(0.17); scene.add(rock);
+    const tip = bossWandTip();
+    c.shot = { v, p, t: 0, marker, rock, from: tip ? tip.clone() : null };
+    if (boss) boss.wave = 1;
+    SFX.whistle(KING_THROW.aim);                                       // (a duration is required: without one the sound threw an error and froze the game)
+    return;
+  }
+}
+function updateThrow(c, dt) {
+  const s = c.shot; s.t += dt;
+  const k = Math.min(1, s.t / KING_THROW.aim);
+  s.marker.material.opacity = 0.45 + 0.4 * k * (0.75 + 0.25 * Math.sin(s.t * 18));
+  const f = ringFrame(s.p, CHASM.height + 0.2), to = new THREE.Vector3(f.x, f.y, -s.v);
+  const from = s.from || to.clone().add(new THREE.Vector3(0, KING_THROW.height, -3));
+  s.rock.position.lerpVectors(from, to, k); s.rock.position.y += Math.sin(Math.PI * k) * 1.5;
+  s.rock.rotation.x += dt * 6;
+  if (k < 1) return;
+  // smash
+  lanes.get(s.v).group.remove(s.marker); s.marker.material.dispose(); scene.remove(s.rock);
+  const l = lanes.get(s.v); l.holes.add(s.p); buildLaneStatic(l);
+  const piece = new THREE.Mesh(FALL_GEO, new THREE.MeshLambertMaterial({ color: CHASM.pillar }));
+  piece.rotation.order = 'ZYX'; scene.add(piece); fallingPieces.push({ mesh: piece, tile: s.p, v: s.v, t: 0, spin: rand(-2, 2) });
+  debris(s.p, s.v, CHASM.pillar, 10, 5);
+  SFX.crumble(); camState.shake = Math.max(camState.shake, 0.25);
+  if (game.mode === 'play' && !player.hop && player.v === s.v && wrapP(Math.round(player.pf)) === s.p) die('boulder');
+  c.shot = null;
+}
 function updateCrumble(dt) {
   for (const lane of lanes.values()) {
     if (!lane.fuse.size) continue;
@@ -2701,8 +3426,13 @@ function updateZones(dt) {
   for (const z of zones) {
     if (z.done) continue;
     if (!z.triggered) {
-      if (game.mode !== 'play' || player.v < z.start - ZONE.warnAhead) continue;
+      if (game.mode !== 'play' || player.v < z.start - (z.warn || ZONE.warnAhead)) continue;
       z.triggered = true;
+      // inside a field the king is already guarding: no boulder of its own
+      if (!z.field && boss && boss.state !== 'leave' && boss.z.field && z.start <= boss.z.end + ZONE.joinGap) { z.done = true; continue; }
+      if (z.field && player.v > z.start + 2) { z.done = true; continue; }   // already past where he would land: skip him
+      if (z.field && boss) bossGone();
+      if (z.field && player.v > z.start - 2) z.start = player.v + 2;      // you got there first: land just ahead
       // back-to-back zones are one long field: the king who's already out just carries on into this one,
       // with no second boulder landing and no second king
       const cur = boss && boss.state !== 'leave' ? (boss.next || boss.z) : null;
@@ -2720,11 +3450,24 @@ function updateZones(dt) {
       z.shadow.position.set(sx, sy, -z.start);
       z.shadow.rotation.set(0, 0, z.roll);
       scene.add(z.shadow);
+      // the tiles he lands on (an irregular shape) light up red, like a falling boulder's landing zone
+      const zf = ((Math.round(z.roll / (Math.PI / 2)) % 4) + 4) % 4;
+      z.mid = zf * W + Math.floor(W / 2);
+      z.markMat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.35, depthWrite: false, fog: false });
+      z.marks = [];
+      const flipU = Math.random() < 0.5 ? -1 : 1, flipV = Math.random() < 0.5 ? -1 : 1;
+      z.shape = pick(KING_SHAPES).map(([dv, du]) => [dv * flipV, du * flipU]);
+      for (const [dv, du] of z.shape) {
+        const m = new THREE.Mesh(MARK_GEO, z.markMat), f = ringFrame(wrapP(z.mid + du), 0.02);
+        m.rotation.order = 'ZYX'; m.position.set(f.x, f.y, -(z.start + dv)); m.rotation.set(0, 0, f.roll);
+        scene.add(m); z.marks.push(m);
+      }
     }
     z.t += dt;
     const k = clamp01(z.t / ZONE.rockFall);
     const h = lerp(W - 2.5, 0, k * k);                    // falls from near the far wall, speeding up
     z.shadow.material.opacity = 0.15 + 0.4 * k;
+    z.markMat.opacity = 0.35 + 0.45 * k * (0.75 + 0.25 * Math.sin(z.t * 18));
     z.shadow.scale.setScalar(0.4 + 0.8 * k);
     const [x, y] = toWorld(z.roll, 0, h);
     z.mesh.position.set(x, y, -z.start);
@@ -2733,8 +3476,22 @@ function updateZones(dt) {
       z.done = true;
       scene.remove(z.shadow);
       z.shadow.geometry.dispose(); z.shadow.material.dispose();
+      for (const m of z.marks) scene.remove(m);
+      z.markMat.dispose(); z.marks = null;
       rubble(z.roll, z.start);
-      crater(z);
+      // the landing smashes everything standing in the red shape (trees, rocks, gravestones, cars, skeletons,
+      // zombies) but never the floor: no holes, and train tracks and trains are left alone
+      const byRow = new Map();
+      for (const [dv, du] of z.shape) {
+        if (!byRow.has(dv)) byRow.set(dv, new Set());
+        byRow.get(dv).add(wrapP(z.mid + du));
+      }
+      for (const [dv, tiles] of byRow) { const lane = lanes.get(z.start + dv); if (lane) smashTiles(lane, tiles); }
+      // ...and anyone standing in it (the tile you're on, or mostly on mid-hop)
+      if (game.mode === 'play') {
+        const [ppf, pv] = playerNow(), rv = Math.round(pv) - z.start, rp = wrapP(Math.round(ppf));
+        if (byRow.has(rv) && byRow.get(rv).has(rp)) die('king');
+      }
       bossWakes(z);                                   // the big boulder gets up and follows you through the field
       camState.shake = 0.55;
       SFX.boom(2);
@@ -2742,18 +3499,34 @@ function updateZones(dt) {
   }
 }
 
-// The big boulder breaks the cracked ground where it lands: the middle three tiles of the face on the
-// zone's first row, the middle tile of the next row, and sometimes one more beside that. The rest of the
-// face (and every other face) stays whole, so there's always a way in.
-function crater(z) {
-  const f = ((Math.round(z.roll / (Math.PI / 2)) % 4) + 4) % 4, mid = f * W + Math.floor(W / 2);
-  const tiles = [[0, -1], [0, 0], [0, 1], [1, 0]];
-  if (Math.random() < 0.6) tiles.push([1, pick([-1, 1])]);
-  for (const [dv, du] of tiles) {
-    const lane = lanes.get(z.start + dv), t = wrapP(mid + du);
-    if (!lane || !crackedAt(lane, t) || lane.holes.has(t) || lane.coins.has(t)) continue;
-    if (player.v === z.start + dv && wrapP(Math.round(player.pf)) === t) continue;
-    collapse(lane, t);
+// Smash everything standing on these tiles of one row: trees, rocks and gravestones, cars and other
+// vehicles, skeletons and zombies. The floor stays (no holes), and rail rows are left alone.
+function smashTiles(lane, tiles) {
+  if (lane.type === 'rail' || isWater(lane)) return;
+  let rebuild = false;
+  for (const [p, t] of [...lane.trees]) {
+    if (!tiles.has(p)) continue;
+    lane.trees.delete(p); lane.blocked.delete(p); rebuild = true;
+    debris(p, lane.v, t < 0 ? GRAVE.stone[0] : 0x5aa83c, 6, 4);
+  }
+  if (rebuild) buildLaneStatic(lane);
+  const hits = c => [...tiles].some(p => ringDist(p, c) < 1);
+  for (let i = lane.vehicles.length - 1; i >= 0; i--) {
+    const veh = lane.vehicles[i], c = vehicleCenter(lane, veh);
+    if (!hits(c) && !hits(c - veh.len / 2 + 0.3) && !hits(c + veh.len / 2 - 0.3)) continue;
+    for (const part of veh.parts) { lane.group.remove(part.mesh); if (part.mesh.geometry) part.mesh.geometry.dispose(); }
+    lane.vehicles.splice(i, 1);
+    debris(c, lane.v, veh.color || 0xdddddd, 10, 5);
+  }
+  if (lane.risers) for (let i = lane.risers.length - 1; i >= 0; i--) {
+    const rz = lane.risers[i]; if (!tiles.has(rz.pos)) continue;
+    lane.group.remove(rz.mound, rz.mesh); lane.blocked.delete(rz.pos); lane.risers.splice(i, 1);
+    debris(rz.pos, lane.v, GRAVE.dirt, 8, 4);
+  }
+  if (lane.skels) for (let i = lane.skels.length - 1; i >= 0; i--) {
+    const sk = lane.skels[i]; if (!tiles.has(wrapP(Math.round(sk.pos)))) continue;
+    lane.group.remove(sk.mesh); sk.eyeMat.dispose(); lane.skels.splice(i, 1);
+    debris(sk.pos, lane.v, GRAVE.bone, 8, 4);
   }
 }
 // ---------------- the boulder boss ----------------
@@ -2967,7 +3740,8 @@ function updateDrops(dt) {
       z.nextDrop -= dt;
       if (z.nextDrop <= 0 && drops.length < BOULDERS.maxActive) {
         trySpawnDrop(z);
-        z.nextDrop = rand(BOULDERS.interval[0], BOULDERS.interval[1]);
+        const zb = biomeAt(z.start), plain = !CHASM_TEST && zb.cur === 1 && fieldSpecial(zb.seg) === 'none';
+        z.nextDrop = rand(BOULDERS.interval[0], BOULDERS.interval[1]) / (plain ? FIELD_SPECIAL.plainThrowRate : 1);
       }
     }
   }
@@ -3009,6 +3783,11 @@ function updateDrops(dt) {
           pp = lerp(hf, ht, t);
         }
         if (d.keys.has(key(pv, Math.round(pp)))) die('boulder');
+      }
+      // the boulder smashes any crumbling ground it lands on: those tiles fall away, leaving holes
+      for (const k of d.keys) {
+        const [kv, kp] = String(k).split(':').map(Number), l = lanes.get(kv);
+        if (l && crackedAt(l, kp) && !l.holes.has(kp)) collapse(l, kp);
       }
       const f = ringFrame(d.p, 0);
       rubble(f.roll, d.row, ringLocalX(d.p), 0.3 + d.size.r * 0.35);
@@ -3070,7 +3849,7 @@ function update(dt) {
 
     if (player.hop) {
       const h = player.hop;
-      h.t += dt / HOP_TIME;
+      h.t += dt / (HOP_TIME * (h.leap ? CHASM.leapTime : 1));
       // traffic can catch you mid-hop: check the lane you are over right now
       const t = clamp01(h.t);
       const lv = t < 0.5 ? h.fv : h.tv;
@@ -3133,6 +3912,9 @@ function update(dt) {
   updateRollers(dt);
   updateParticles(dt);
   updateCrumble(dt);
+  updateChasms(dt);
+  updateEmbers(dt);
+  updateGravity(dt);
   updateZones(dt);
   updateBoss(dt);
   updateDrops(dt);
@@ -3143,7 +3925,7 @@ function updateVisuals(dt) {
   let pf = player.pf, vz = player.v, h = 0;
   let sx = 1, sy = 1, sz = 1;
   const laneNow = lanes.get(player.v);
-  let base = player.onLog ? LOG_TOP - Math.min(0.3, logDepth(player.onLog)) : 0;
+  let base = player.onLog ? LOG_TOP - Math.min(0.3, logDepth(player.onLog)) : raisedAt(laneNow, player.pf) ? CHASM.height : 0;
 
   if (player.hop) {
     const t = clamp01(player.hop.t);
@@ -3151,10 +3933,10 @@ function updateVisuals(dt) {
     const [hf, ht] = hopEnds(player.hop);
     pf = lerp(hf, ht, e);
     vz = lerp(player.hop.fv, player.hop.tv, e);
-    const fromBase = lanes.get(player.hop.fv) && lanes.get(player.hop.fv).type === 'river' ? LOG_TOP : 0;
-    const toBase = lanes.get(player.hop.tv) && lanes.get(player.hop.tv).type === 'river' ? LOG_TOP : 0;
+    const baseOf = (v, p) => { const l = lanes.get(v); return l && l.type === 'river' ? LOG_TOP : raisedAt(l, p) ? CHASM.height : 0; };
+    const fromBase = baseOf(player.hop.fv, hf), toBase = baseOf(player.hop.tv, ht);
     base = lerp(fromBase, toBase, t);
-    h = Math.sin(Math.PI * t) * HOP_HEIGHT;
+    h = Math.sin(Math.PI * t) * (player.hop.leap ? CHASM.leapHeight : HOP_HEIGHT);
     const takeoff = clamp01(1 - t / 0.3), air = Math.sin(Math.PI * t);
     sy = 1 - 0.22 * takeoff + 0.12 * air;
     sx = sz = 1 + 0.12 * takeoff - 0.06 * air;
@@ -3212,7 +3994,7 @@ function updateVisuals(dt) {
       const f2 = ringFrame(player.pf, -t * 1.2);
       px = f2.x; py = f2.y;
       show = t < 0.8;
-    } else if (game.death === 'crumble') {
+    } else if (game.death === 'crumble' || game.death === 'chasm') {
       const drop = -0.5 * 9 * t * t;
       const f2 = ringFrame(player.pf, drop);
       px = f2.x; py = f2.y;
@@ -3362,7 +4144,7 @@ function showCenter(title, sub, sub2, dim) {
   elCenter.className = dim ? 'dim' : '';
 }
 function updateHUD() {
-  const seg = Math.floor(player.v / BIOME.len);
+  const seg = biomeAt(player.v).seg;
   if (game.mode === 'play' && !test.on && seg > (game.biomeSeg || 0)) {
     game.biomeSeg = seg;
     document.getElementById('lap').textContent = BIOMES[biomeAt(player.v).cur].name;
@@ -3388,10 +4170,10 @@ function gameOver() {
   game.mode = 'over';
   SFX.gameOver();
   const why = { car: 'Hit by a car', train: 'Hit by a train', water: 'Fell in the water',
-                crumble: 'The ground gave way', boulder: 'Crushed by a boulder', roll: 'Flattened by a rolling boulder', crack: 'The log cracked',
+                crumble: 'The ground gave way', chasm: 'Fell into the chasm', fire: 'Hit by burning coal', boulder: 'Crushed by a boulder', roll: 'Flattened by a rolling boulder', crack: 'The log cracked',
                 grab: 'Pulled off the screen', slap: 'Slapped for standing still',
-                skeleton: 'Caught by a skeleton', zombie: 'A zombie came up under you', ghost: ghost.name ? ghost.name + '\u2019s ghost got you' : 'The ghost got you',
-                sink: 'Sank with the log', roller: 'Flattened by a steamroller' }[game.death] || '';
+                skeleton: 'Caught by a skeleton', zombie: 'A zombie came up under you', king: 'The boulder king landed on you', ghost: ghost.name ? ghost.name + '\u2019s ghost got you' : 'The ghost got you',
+                sink: 'Sank with the log', roller: lastRollerKind === 'stone' ? 'Flattened by the stone roller' : 'Flattened by a steamroller' }[game.death] || '';
   showCenter('GAME OVER', why + '  ·  Score ' + game.score,
              test.on ? 'Press R or tap to retry the test  ·  T to change it' : 'Press R or tap to play again', true);
   lbRunOver();
@@ -3417,7 +4199,8 @@ function reset() {
   Object.assign(handState, { phase: 'idle', t: 0, dur: 1 });
   hand.visible = false;
   pops.lap = 0; pops.bonus = 0;
-  gen.type = 'grass'; gen.left = 0; gen.queue = []; gen.lastFam = null; gen.lastJam = false; gen.lastPark = false; gen.zone = null; gen.lastZoneEnd = -999;
+  bSegs.length = 0;
+  gen.type = 'grass'; gen.left = 0; gen.queue = []; gen.chasmSeg = -1; gen.graveSeg = -1; gen.testStep = -1; gen.fieldSpecials = {}; gen.rollerSegs = {}; gen.lastFam = null; gen.lastJam = false; gen.lastPark = false; gen.zone = null; gen.lastZoneEnd = -999;
   gen.calmFrom = -1; gen.calmTo = -2;
   gen.blockHard = false; gen.blockBiome = 0; gen.blockBoulder = false;
   darkZones.length = 0;
@@ -3432,7 +4215,11 @@ function reset() {
   elGhostName.style.display = 'none';
   ghostMesh.visible = false;
   clock = 0;
-  for (const z of zones) { if (z.mesh) scene.remove(z.mesh); if (z.shadow) scene.remove(z.shadow); }
+  for (const c of chasms) { clearQuakeMarks(c); clearThrow(c); }
+  clearEmbers();
+  Object.assign(gravity, { on: false, cast: false, c: null, beam: 0, recastAt: 0 });
+  chasms.length = 0;
+  for (const z of zones) { if (z.mesh) scene.remove(z.mesh); if (z.shadow) scene.remove(z.shadow); if (z.marks) { for (const m of z.marks) scene.remove(m); z.markMat.dispose(); } }
   zones.length = 0;
   bossGone();
   for (const d of drops) clearDrop(d);
@@ -3824,8 +4611,8 @@ function logDeath() {
 const elStats = document.getElementById('stats'), elStatsCard = document.getElementById('statsCard');
 const statsOpen = () => !!(elStats && elStats.className === 'show');
 const ST = { rows: null, range: 'week', err: '' };
-const CAUSE = { car: 'Car', train: 'Train', water: 'Water', crumble: 'Ground gave way', boulder: 'Falling boulder', roll: 'Rolling boulder', crack: 'Log cracked',
-  grab: 'Hand (grabbed)', slap: 'Hand (slapped)', skeleton: 'Skeleton', zombie: 'Zombie', ghost: 'Ghost', sink: 'Sank with log', roller: 'Steamroller' };
+const CAUSE = { car: 'Car', train: 'Train', water: 'Water', crumble: 'Ground gave way', chasm: 'Fell into the chasm', fire: 'Burning coal', boulder: 'Falling boulder', roll: 'Rolling boulder', crack: 'Log cracked',
+  grab: 'Hand (grabbed)', slap: 'Hand (slapped)', skeleton: 'Skeleton', zombie: 'Zombie', king: 'Boulder king (landing)', ghost: 'Ghost', sink: 'Sank with log', roller: 'Steamroller' };
 function closeStats() {
   elStats.className = '';
   if (location.hash === '#stats' && history.replaceState) history.replaceState(null, '', location.pathname + location.search);
@@ -4221,6 +5008,28 @@ muteBtn.addEventListener('click', () => { SFX.unlock(); SFX.toggleMute(); syncMu
 // open the sound on any first touch, click or key, wherever it lands
 if (document.addEventListener) for (const ev of ['pointerdown', 'touchend', 'mousedown', 'click', 'keydown'])
   document.addEventListener(ev, () => SFX.unlock(), { capture: true, passive: true });
+// ---------------- patch notes ----------------
+// Bump PATCH_VERSION (and edit the list in #notes) for each update: everyone sees the notes once, on their next visit.
+const PATCH_VERSION = '2026-10-biomes';
+const elNotes = document.getElementById('notes');
+const notesOpen = () => !elNotes.hidden;
+function closeNotes() { elNotes.hidden = true; lbStore('seenPatch', PATCH_VERSION); }
+if (lbLoad('seenPatch') !== PATCH_VERSION) {
+  elNotes.hidden = false;
+  try { document.getElementById('notesOk').focus({ preventScroll: true }); } catch (e) {}
+}
+document.getElementById('notesOk').addEventListener('click', e => { e.stopPropagation(); closeNotes(); });
+window.addEventListener('keydown', e => {
+  if (!notesOpen()) return;
+  if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') { e.preventDefault(); closeNotes(); }
+  e.stopImmediatePropagation();                         // no hopping while the notes are up
+}, true);
+// while the notes are up the game never sees a tap; a tap outside the card closes them
+for (const ev of ['pointerdown', 'pointerup']) window.addEventListener(ev, e => {
+  if (!notesOpen()) return;
+  if (ev === 'pointerdown' && e.target === elNotes) closeNotes();
+  e.stopImmediatePropagation();                       // (the Got it button still gets its click)
+}, true);
 window.addEventListener('keydown', e => {
   SFX.unlock();
   if (e.code === 'KeyM' && !e.repeat && !(e.target && e.target.tagName === 'INPUT')) { SFX.toggleMute(); syncMute(); return; }
