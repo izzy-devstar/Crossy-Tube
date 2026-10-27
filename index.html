@@ -253,13 +253,13 @@
   .lbcard h3, #testPanel h3 { font: 700 15px/1 var(--px); color: var(--clayDark); letter-spacing: 0; }
   #testPanel h2 { font: 700 24px/1 var(--px); color: var(--clayDark); letter-spacing: 0; margin-bottom: 8px; }
   #testPanel .note, .lbcard .muted { color: var(--soft); font-size: 11px; }
-  .lbcard button, #testPanel button, #testBtn, #muteBtn {
+  .lbcard button, #testPanel button, #testBtn, #notesBtn, #pauseBtn, #muteBtn {
     font: 700 12px var(--px); color: var(--text); background: var(--paper2); border: 0; border-radius: 0; padding: 7px 10px;
     box-shadow: 0 -3px 0 0 var(--ink), 0 3px 0 0 var(--ink), -3px 0 0 0 var(--ink), 3px 0 0 0 var(--ink); margin: 3px;
     text-shadow: none;
   }
   .lbcard button[aria-pressed="true"], #testPanel button[aria-pressed="true"] { background: var(--orange); color: var(--ink); }
-  .lbcard button:active, #testPanel button:active, #testBtn:active, #muteBtn:active { transform: translateY(2px); }
+  .lbcard button:active, #testPanel button:active, #testBtn:active, #notesBtn:active, #muteBtn:active { transform: translateY(2px); }
   #testPanel #testStart, #lbName .go {
     font: 700 18px var(--px); letter-spacing: 0; background: var(--orange); color: var(--ink); padding: 10px 18px;
     box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 4px var(--clayDark);
@@ -301,6 +301,21 @@
   #notes li b { color: var(--clayDark); }
   #notes button { font: 700 16px var(--px); background: var(--orange); color: var(--ink); border: 0; padding: 10px 18px; margin: 4px; cursor: pointer;
     box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 4px var(--clayDark); }
+  #notesBtn { position: fixed; left: 18px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); display: none; z-index: 5; cursor: pointer; font-size: 14px; padding: 10px 14px;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 0 var(--ink); }
+  #notesBtn:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+  #pauseBtn { position: fixed; right: 84px; top: calc(70px + env(safe-area-inset-top, 0px)); z-index: 5; cursor: pointer; display: none; padding: 8px; line-height: 0;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 0 var(--ink); }
+  #pauseBtn:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+  #pauseOv { position: fixed; inset: 0; z-index: 55; display: flex; align-items: center; justify-content: center; background: rgba(42, 22, 16, .78); }
+  #pauseOv[hidden] { display: none; }
+  #pauseOv .card { background: var(--paper); color: var(--text); padding: 22px 34px 16px; text-align: center; font: 12px/1.5 var(--px);
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 12px 0 0 var(--ink); }
+  #pauseOv h2 { font: 700 26px/1.1 var(--px); color: var(--clayDark); margin: 0 0 14px; }
+  #pauseOv button { font: 700 16px var(--px); background: var(--orange); color: var(--ink); border: 0; padding: 10px 22px; margin: 4px; cursor: pointer;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 4px var(--clayDark); }
+  #pauseOv button:focus-visible { outline: 3px solid var(--orange); outline-offset: 6px; }
+  #pauseOv p { margin: 14px 0 0; color: var(--text); opacity: .8; }
   #notes button:focus-visible { outline: 3px solid var(--orange); outline-offset: 6px; }
 </style>
 </head>
@@ -312,7 +327,12 @@
 <div id="lap" class="pop"></div>
 <div id="bonus" class="pop"></div>
 <button id="testBtn" type="button">Test mode</button>
+<button id="notesBtn" type="button">Patch notes</button>
 <button id="muteBtn" type="button" aria-label="Sound on or off (M)" title="Sound (M)"></button>
+<button id="pauseBtn" type="button" aria-label="Pause (P)" title="Pause (P)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" fill="#3a2216"/><rect x="14" y="4" width="5" height="16" fill="#3a2216"/></svg></button>
+<div id="pauseOv" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
+  <div class="card"><h2 id="pauseTitle">Paused</h2><button type="button" id="pauseGo">Resume</button><p>P or Esc to resume</p></div>
+</div>
 <div id="testTag"></div>
 <div id="testPanel" role="dialog" aria-label="Test mode">
   <div class="card">
@@ -358,15 +378,15 @@
 <div id="board"><div id="boardCard" class="lbcard" role="dialog" aria-label="Leaderboard"></div></div>
 <div id="notes" role="dialog" aria-modal="true" aria-labelledby="notesTitle" hidden>
   <div class="card">
-    <div class="notesTag">NEW UPDATE</div>
+    <div class="notesTag">PATCH 1.1</div>
     <h2 id="notesTitle">What's new</h2>
     <ul>
-      <li><b>Three areas.</b> The tube now runs through the grassland, the boulder field and the graveyard, each blending into the next.</li>
-      <li><b>Boulder field.</b> Crumbling ground and the Boulder King. Some fields have a chasm: wait for his gravity magic, then leap pillar to pillar before his earthquakes shift them. Some have a stone-age roller. Watch for red-hot coal trains.</li>
-      <li><b>Graveyard.</b> A fenced graveyard full of skeletons and zombies, between rivers of spooky logs.</li>
-      <li><b>Record ghost.</b> Beat this week's #1 and their ghost comes after you.</li>
+      <li><b>Reworked areas.</b> The boulder field and graveyards have been extended with new obstacles. Go see for yourself!</li>
+      <li><b>Record ghost.</b> Beat the current #1 and their ghost comes after you.</li>
       <li><b>Scoring.</b> Only full laps give bonus points now. Difficult obstacles no longer do.</li>
       <li><b>New look.</b> Pixel menus and the Crossy Tube logo.</li>
+      <li><b>Pause.</b> Press P or the pause button to take a break mid-run.</li>
+      <li><b>Leaderboard.</b> Current shows scores from this update. Every score from before is on Legacy.</li>
     </ul>
     <button type="button" id="notesOk">Got it</button>
   </div>
@@ -379,6 +399,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 'use strict';
+// The game's version (the one players see, e.g. on the patch notes), and RELEASE: the key for the patch notes
+// everyone sees once (PATCH_VERSION) and for the Current leaderboard. Changing RELEASE shows the notes again to
+// everyone AND starts a fresh Current board (every old score stays on Legacy). For a new update set both, e.g.
+// GAME_VERSION '1.2' and RELEASE '1.2'; to re-release the same version with a board reset, add a suffix ('1.1-2').
+// RELEASE can be at most 9 characters.
+const GAME_VERSION = '1.1';
+const RELEASE = '1.1-2';
 // =====================================================================
 // Crossy Road inside a square tube. Every lane is a ring around all four
 // inner faces. Walking off the side of a face carries you onto the next
@@ -455,7 +482,9 @@ const START_SAFE = 5;            // rows 0..4 have no traffic
 // so every pillar is exactly one leap from its neighbours and none touch a corner. A sideways leap that
 // would go round a corner onto the next face just bumps.
 // The king's gravity magic: as you step onto a chasm's edge he waves his wand and a purple glow wraps around
-// you; it's what lets you leap 2 at a time, and it fades when you reach the far edge.
+// you; it's what lets you leap 2 at a time. Once it takes hold it lasts its full MAGIC.last seconds even if you
+// leave the chasm, and while it holds you can also leap over a train track (2 rows: the train can't touch you).
+// A leap that's in the air when it runs out still finishes as a leap.
 // The king's earthquake: while you're out on the pillars he slams his wand every QUAKE.every seconds. For
 // QUAKE.warn seconds the pillars about to sink crack and shake and dust rises from the empty slots where new
 // ones will come up; then they shift. Every shift leaves a way through on every face, and if your own pillar
@@ -578,9 +607,11 @@ const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2, graveDark: 0.35,
 const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5 };
 // The boulder field's red train is the red-hot coal train: it goes round only once, and as it passes it flings
 // EMBERS.count burning coals onto rock 1-2 rows either side of the track. A red glow marks where each will land;
-// the tile then burns for good and blocks you like a tree. Never on your tile when thrown, never more than a
+// the tile then burns for good: step onto it and you burn (it doesn't stop you, it kills you). Each burning coal
+// is a fire sprite: a little living flame that leaps out of the coal heap, flies to its tile and settles into the
+// fire there. Never on your tile when thrown, never more than a
 // face can spare (each face of a row keeps EMBERS.keepOpen open tiles), never into a chasm or a hole.
-const EMBERS = { count: [3, 5], flight: 0.7, keepOpen: 6, reach: 3 };
+const EMBERS = { count: [5, 8], flight: 0.7, keepOpen: 6, reach: 3, speed: 0.6 };   // speed: x a normal train's
 // Graveyard (the difficult park): 9 rows of dark grass. Gravestones sit on 15% of tiles and block you like
 // trees; every graveyard is checked to have a way through. Each face has one skeleton per 2 rows. A skeleton
 // on the face you're on, from 1 row behind you to 3 ahead, wakes up: its eyes glow for 0.6 s, then it dashes
@@ -590,7 +621,7 @@ const EMBERS = { count: [3, 5], flight: 0.7, keepOpen: 6, reach: 3 };
 // stay passable even with every mound up). A mound on your face near your row shakes for 1 s, then a zombie
 // rises and stands there 2.5 s, blocking the tile like a gravestone, then sinks. Being on the mound when he
 // rises kills you.
-// The record ghost: beat this week's #1 score (only if it's at least 100) and that player's ghost rises with
+// The record ghost: beat the Current board's #1 score (only if it's at least 100) and that player's ghost rises with
 // their name over him. He appears on the face to your left or right, level with you, and floats straight at
 // you through everything, the short way round the tube, at 2.25 tiles/s x the speed multiplier (never above
 // 3.375; your hop is about 6.7): 25% slower than the old graveyard ghost. Over a river or lily-pad row, and in
@@ -978,6 +1009,19 @@ function coalTrainGeometry(front, red = false) {
   }
   return m.geometry();
 }
+// the flame sprite: a little living fire with a face, riding the hot coal train and flinging coals
+const FLAME_SPRITE_GEO = (() => {
+  const m = new Merge(), o = 0xff6a1a, y = 0xffb43a, w = 0xffe27a, k = 0x2a1208;
+  m.part(o, 0, 0.22, 0, 0.42, 0.4, 0.36);                       // body
+  m.part(y, 0, 0.26, 0.04, 0.3, 0.3, 0.3);
+  m.part(o, 0, 0.5, 0, 0.3, 0.24, 0.28); m.part(y, 0.02, 0.62, 0, 0.18, 0.2, 0.18); m.part(w, 0, 0.76, 0, 0.08, 0.14, 0.08);   // flame tip
+  m.part(o, -0.16, 0.48, 0.02, 0.1, 0.16, 0.1); m.part(o, 0.17, 0.44, -0.02, 0.1, 0.14, 0.1);   // side licks
+  m.part(k, -0.08, 0.3, 0.19, 0.07, 0.1, 0.01); m.part(k, 0.08, 0.3, 0.19, 0.07, 0.1, 0.01);   // eyes
+  m.part(w, -0.07, 0.32, 0.195, 0.025, 0.03, 0.005); m.part(w, 0.09, 0.32, 0.195, 0.025, 0.03, 0.005);
+  m.part(k, 0, 0.17, 0.19, 0.14, 0.04, 0.01);                   // grin
+  m.part(o, -0.27, 0.3, 0, 0.12, 0.08, 0.08); m.part(o, 0.27, 0.36, 0, 0.12, 0.08, 0.08);    // little arms
+  return m.geometry();
+})();
 function classicTrainGeometry(front, red = false) {
   const m = new Merge();
   m.part(red ? (front ? 0xb3201a : 0xd8302a) : (front ? 0xd8433b : 0x3d6fd6), 0, 0.6, 0, 0.96, 0.9, 0.86);
@@ -1323,7 +1367,7 @@ function planEscorts(pat) {
   return { dir: pat.dir, cars: [al, al], worst: 0, fallback: true };
 }
 
-// One row of a crumble zone: crumbling ground all the way, broken up by single train tracks.
+// One row of a crumble zone: starts and ends on cracked ground, with rolling-boulder road and rail blocks in between.
 function zoneSpec(v) {
   const z = gen.zone;
   z.left--;
@@ -1332,10 +1376,11 @@ function zoneSpec(v) {
   if (first || last) kind = 'ground';
   else if (z.blockLeft > 0) { z.blockLeft--; kind = z.block; }
   else if (z.block !== 'ground') { z.block = 'ground'; z.blockLeft = randInt(0, 1); kind = 'ground'; }
-  else if (Math.random() < 0.7 || (GRAVE.calm.noRails && inCalm(v))) { z.block = 'ground'; z.blockLeft = 0; kind = 'ground'; }
-  else { z.block = 'rail'; z.blockLeft = 0; kind = 'rail'; }
+  else if (Math.random() < 0.7) { z.block = 'road'; z.blockLeft = randInt(0, 2); kind = 'road'; }
+  else if (!(GRAVE.calm.noRails && inCalm(v))) { z.block = 'rail'; z.blockLeft = 0; kind = 'rail'; }
+  else { z.block = 'road'; z.blockLeft = 0; kind = 'road'; }
   if (last) { gen.zone = null; gen.lastZoneEnd = v; gen.type = 'zone'; gen.left = 0; }
-  return { type: kind === 'rail' ? 'rail' : 'grass', cracked: kind === 'ground', inZone: true, zoneFirst: first, zoneLen: z.len, zoneTier: z.tier, biome: z.biome };
+  return { type: kind === 'ground' ? 'grass' : kind, cracked: kind !== 'rail', inZone: true, zoneFirst: first, zoneLen: z.len, zoneTier: z.tier, biome: z.biome };
 }
 
 // Can you get from the first row of a graveyard to its last, going round gravestones?
@@ -1812,7 +1857,7 @@ function makeLane(v) {
       lane.trainSpeed = (lane.laps * P - lane.trainLen) / RED_TRAIN.coverSeconds;
       if (lane.biome === 1) {                                 // the red-hot coal train: once round, throwing embers
         lane.laps = 1; lane.embers = true;
-        lane.trainSpeed = 26 * mul;                          // the same speed as a normal train
+        lane.trainSpeed = 26 * mul * EMBERS.speed;           // slower than a normal train, so it throws more
       }
       bonuses.push({ row: v + 1, points: BONUS.rail, label: 'RED LINE' });
     } else {
@@ -2148,6 +2193,7 @@ function buildLaneDynamic(lane) {
       lane.wagons.push(mesh);
       lane.group.add(mesh);
     }
+
     // warning lamps along both edges of the line, on every face
     lane.lampMat = new THREE.MeshBasicMaterial({ color: 0x4a1210, fog: false });
     const lm = new Merge();
@@ -2451,7 +2497,7 @@ function ghostDist() {
   let dp = wrapP(pp - ghost.gpf); if (dp > P / 2) dp -= P;
   return { dp, dv: pv - ghost.gv, d: Math.hypot(dp, pv - ghost.gv) };
 }
-// the score the record ghost is waiting for: this week's #1, if it's at least GRAVE.ghost.floor.
+// the score the record ghost is waiting for: the Current board's #1, if it's at least GRAVE.ghost.floor.
 // Test mode (Record ghost): a fake one at a low score. Runs that can't go on the board get no ghost.
 function ghostTarget() {
   const G = GRAVE.ghost;
@@ -2473,7 +2519,7 @@ function updateGhost(dt) {
       g.left = true;
       SFX.graveTune(true, 0.35);     // starts just after the GRAVEYARD bonus jingle, not on top of it
     }
-    // beat this week's #1 and their ghost rises (once per run)
+    // beat the Current #1 and their ghost rises (once per run)
     if (!ghost.done && game.score !== ghost.lastScore) {
       ghost.lastScore = game.score;
       const tg = ghostTarget();
@@ -2532,7 +2578,10 @@ function waterRunAt(v) {
 const shortWater = v => { const n = waterRunAt(v); return n > 0 && n <= ROLLER.maxCross; };
 const rollerPath = v => rollable(lanes.get(v)) || shortWater(v);
 // the stone roller doesn't stop for tracks (it rumbles over them), so it can run inside a boulder field
-const rollableFor = (r, l) => r && r.kind === 'stone' ? !!l && !l.chasm && (l.type === 'grass' || l.type === 'road' || l.type === 'rail') : rollable(l);
+// the normal steamroller treats rock (boulder field rows, and grass rows that have started fading to rock) like
+// tracks: it never spawns into them and stops at their edge, so the only roller you see on rock is the stone one
+const rocky = l => l.biome === 1 || !!(l.tileB && l.tileB.includes(1));
+const rollableFor = (r, l) => r && r.kind === 'stone' ? !!l && !l.chasm && (l.type === 'grass' || l.type === 'road' || l.type === 'rail') : rollable(l) && !rocky(l);
 const rollerPathFor = (r, v) => rollableFor(r, lanes.get(v)) || shortWater(v);
 const rollerDeadly = r => !r.stopped && !(r.sinking && r.sinkT > r.R.sinkTime * 0.5);
 function rollerFaces(r) { return r.faces.map(f => ((f % 4) + 4) % 4); }
@@ -2572,6 +2621,8 @@ function trySpawnRoller() {
   let run = 0;
   while (run < R.maxAhead && rollerPathFor(probe, player.v + run)) run++;
   while (run > 0 && !rollableFor(probe, lanes.get(player.v + run - 1))) run--;     // it starts on land, not in water
+  // the steamroller's back end sticks out 2 rows behind it: keep all of it off rock
+  if (kind !== 'stone') while (run > 0 && [0, 1].some(k => { const l = lanes.get(player.v + run + k); return l && rocky(l); })) run--;
   if (run < R.minRun) return;
   // one big thing at a time: no steamroller during a ghost chase, in the dark, or through a boulder field
   if (!test.on) {
@@ -2800,7 +2851,7 @@ function updateLanes(dt) {
         const tRun = st.travelled / lane.trainSpeed;
         while (lane.emberPlan.length && lane.emberPlan[0] <= tRun) {
           lane.emberPlan.shift();
-          const head = wagonPos(lane, st, Math.min(lane.trainLen - 1, randInt(0, 4)));
+          const head = wagonPos(lane, st, Math.min(lane.trainLen - 1, randInt(1, 6)));   // out of one of the first coal wagons
           if (head !== null) throwEmber(lane, head);
         }
       }
@@ -2843,7 +2894,7 @@ const player = {
 };
 const camState = { v: 0, want: 0, roll: 0, lean: 0, shake: 0 };
 let clock = 0;
-const game = { mode: 'ready', score: 0, dist: 0, bonus: 0, best: 0, coins: 0, started: false, death: null, deathT: 0 };
+const game = { mode: 'ready', score: 0, dist: 0, bonus: 0, best: 0, coins: 0, started: false, death: null, deathT: 0, paused: false };
 const particles = [];
 const bonuses = [];          // difficult obstacles waiting to be cleared: { row, points, label, done }
 const lap = { face: 0, dir: 0, steps: 0, startRow: 0, entryRow: 0 };   // entryRow: row where you arrived on your current face
@@ -2957,8 +3008,11 @@ function tryMove(dp, dv) {
   if (tv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
   let lane = laneAt(tv);
   // off something raised, forward or back over a pit row: leap 2 rows
-  const leap = sideLeap || (gravity.on && dv !== 0 && lane.chasm === 'pit' && raisedAt(here, Math.round(player.pf)));
-  if (leap && !sideLeap) { tv += dv; lane = laneAt(tv); }
+  const leap = sideLeap || (gravity.on && dv !== 0 && ((lane.chasm === 'pit' && raisedAt(here, Math.round(player.pf))) || lane.type === 'rail'));
+  if (leap && !sideLeap) {
+    if (tv + dv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
+    tv += dv; lane = laneAt(tv);
+  }
   const tw = wrapP(tp);
   // holes don't stop you: hop into one and you fall (easy to do by accident in a crumbling field)
   if (lane.blocked.has(tw)) { player.bump = 0.14; SFX.bump(); return; }
@@ -2977,6 +3031,7 @@ function finishHop() {
   player.pf = hopEnds(h)[1];
   player.landT = LAND_TIME;
   const lane = laneAt(player.v);
+  if (lane.fires && lane.fires.has(wrapP(Math.round(player.pf)))) { die('fire'); return; }
   if (lane.type === 'pads' && !lane.pads.has(wrapP(Math.round(player.pf)))) { die('water'); return; }
   if (lane.type === 'river' && h.along) {
     if (h.along.slot < 0 || h.along.slot >= h.along.log.len) { die('water'); return; }
@@ -3138,31 +3193,37 @@ function throwEmber(lane, head) {
       if (l.v === player.v && (p === here || p === hopTo)) continue;
       if (player.hop && l.v === player.hop.tv && p === hopTo) continue;
       const f = faceOf(p); let open = 0;
-      for (let u = 0; u < W; u++) if (!l.blocked.has(f * W + u) && !l.holes.has(f * W + u)) open++;
+      for (let u = 0; u < W; u++) if (!l.blocked.has(f * W + u) && !l.holes.has(f * W + u) && !(l.fires && l.fires.has(f * W + u))) open++;
       if (open - 1 < EMBERS.keepOpen) continue;
       options.push([l, p, Math.abs(dv)]);
     }
   }
   if (!options.length) return;
   const near = options.filter(o => o[2] === 1), [l, p] = pick(near.length && Math.random() < 0.65 ? near : options);
-  const from = ringFrame(head, 0.9), mesh = new THREE.Mesh(EMBER_GEO, VCOL), mark = new THREE.Mesh(MARK_GEO, emberMarkMat);
+  const from = ringFrame(head, 0.95), mesh = new THREE.Mesh(FLAME_SPRITE_GEO, VCOL), mark = new THREE.Mesh(MARK_GEO, emberMarkMat);
+  mesh.rotation.order = 'ZYX'; mesh.scale.setScalar(0.75);
   mesh.position.set(from.x, from.y, -lane.v); scene.add(mesh);
+  debris(head, lane.v, 0xff7a2a, 4, 3);                       // a puff of sparks as it jumps out of the coal
   mark.rotation.order = 'ZYX'; place(mark, p, 0.02, 0); l.group.add(mark);
-  embers.push({ l, p, t: 0, from: mesh.position.clone(), mesh, mark });
+  embers.push({ l, p, t: 0, from: mesh.position.clone(), roll0: from.roll, spin: Math.random() < 0.5 ? -1 : 1, mesh, mark });
   SFX.rattle();
 }
 function updateEmbers(dt) {
   for (let i = embers.length - 1; i >= 0; i--) {
     const e = embers[i]; e.t += dt;
     const k = Math.min(1, e.t / EMBERS.flight), f = ringFrame(e.p, 0.2);
-    e.mesh.position.set(lerp(e.from.x, f.x, k), lerp(e.from.y, f.y, k) + Math.sin(Math.PI * k) * 1.2, lerp(e.from.z, -e.l.v, k));
-    e.mesh.rotation.x += dt * 9; e.mesh.rotation.z += dt * 7;
+    // it arcs up off the tile it's landing on (along that face's "up"), flame-first, wiggling as it flies
+    const arc = Math.sin(Math.PI * k) * 1.2, ux = -Math.sin(f.roll), uy = Math.cos(f.roll);
+    e.mesh.position.set(lerp(e.from.x, f.x, k) + ux * arc, lerp(e.from.y, f.y, k) + uy * arc, lerp(e.from.z, -e.l.v, k));
+    e.mesh.rotation.set(-0.5 * Math.cos(Math.PI * k), Math.sin(clock * 10) * 0.4, lerp(e.roll0, f.roll, k) + e.spin * Math.sin(Math.PI * k) * 0.5);
+    const fl = 0.75 * (1 + 0.12 * Math.sin(clock * 22 + i));
+    e.mesh.scale.set(fl, fl * (1 + 0.25 * Math.sin(Math.PI * k)), fl);
     if (k < 1) continue;
     scene.remove(e.mesh); e.l.group.remove(e.mark); embers.splice(i, 1);
     if (!lanes.has(e.l.v)) continue;
     // it lands: the rock burns for good and blocks the tile
     const fire = new THREE.Mesh(FIRE_GEO, VCOL); fire.rotation.order = 'ZYX'; place(fire, e.p, 0, 0); e.l.group.add(fire);
-    (e.l.fires = e.l.fires || new Map()).set(e.p, fire); e.l.blocked.add(e.p);
+    (e.l.fires = e.l.fires || new Map()).set(e.p, fire);   // not blocked: you can step onto it, and burn
     if (e.l.coins.has(e.p)) { const c = e.l.coins.get(e.p); if (c) e.l.group.remove(c); e.l.coins.delete(e.p); }
     debris(e.p, e.l.v, 0xff7a2a, 6, 3);
     if (game.mode === 'play' && !player.hop && player.v === e.l.v && wrapP(Math.round(player.pf)) === e.p) die('fire');
@@ -3208,8 +3269,8 @@ function updateGravity(dt) {
       Object.assign(gravity, { on: false, cast: false, recastAt: clock + MAGIC.recastGap });
       SFX.bump();
     }
-    // fades out once you're on the far edge (or if you go back past the near one)
-    if (game.mode !== 'play' || player.v >= c.far || player.v < c.edge) { gravity.on = false; gravity.cast = false; }
+    // it holds for its full time wherever you go; only dying (or a new run) ends it early
+    if (game.mode !== 'play') { gravity.on = false; gravity.cast = false; }
   }
   if (!gravity.cast && gravity.recastAt && clock >= gravity.recastAt) {
     const c = gravity.c;
@@ -4160,6 +4221,8 @@ function updateHUD() {
   bonusEl.className = 'pop' + (pops.bonus > 0 ? ' show' : '');
   bonusEl.style.color = bonusEl.dataset && bonusEl.dataset.hit ? '#ff6a5a' : '';
   document.getElementById('testBtn').style.display = game.mode === 'ready' || game.mode === 'over' ? 'block' : 'none';
+  document.getElementById('pauseBtn').style.display = game.mode === 'play' && game.started && !game.paused ? 'block' : 'none';
+  document.getElementById('notesBtn').style.display = (game.mode === 'ready' || game.mode === 'over') && !notesOpen() ? 'block' : 'none';
   syncMute();
   const tag = document.getElementById('testTag');
   tag.style.display = test.on && game.mode === 'play' ? 'block' : 'none';
@@ -4237,7 +4300,7 @@ function reset() {
 
 // ---------------- leaderboard ----------------
 // ONLINE VERSION (GitHub Pages + Firebase). Scores: one row per player at scores/<NAME>, holding their all-time
-// best run and their best run this week (weeks start Monday). Players pick a name (1-6 letters/digits) and a
+// best run (Legacy) and their best run in this version of the game (Current). Players pick a name (1-6 letters/digits) and a
 // 4-digit PIN. A score is only ever posted from gameOver(), built from what the game measured during the run
 // (rows, bonuses by value, forward hops, seconds played), never from a number anyone types. Test runs never post.
 // Every row is checked again when the board is drawn, and rows that break the game's rules are not shown.
@@ -4261,7 +4324,7 @@ const LBV = {
   obsSlack: 6,
   show: 10, fetch: 50, fetchWeek: 200
 };
-const LB = { state: 'loading', view: 'hidden', tab: 'all', db: null, uid: null, name: '', mine: null, all: [], week: [], wk: '',
+const LB = { state: 'loading', view: 'hidden', tab: 'week', db: null, uid: null, name: '', mine: null, all: [], week: [], wk: '',
              last: null, pending: null, askName: false, editName: false, switching: false, needPin: false, busy: false, err: '', unsub: [] };
 
 const lbLocal = (() => { try { return window.localStorage || null; } catch (e) { return null; } })();
@@ -4269,7 +4332,11 @@ function lbStore(k, v) { try { if (lbLocal) lbLocal.setItem('crd2.' + k, String(
 function lbLoad(k) { try { return lbLocal ? lbLocal.getItem('crd2.' + k) : null; } catch (e) { return null; } }
 game.best = Math.max(0, Math.floor(+lbLoad('best') || 0));
 
-function weekKey(t = Date.now()) {
+// The Current board's key: scores keep their "best this period" in the week/wBest/wRun/wAt fields (from when the
+// board was weekly), and the period is now the release, e.g. 'v1.1-2----' (the database wants 10 characters).
+function weekKey() { return ('v' + RELEASE).padEnd(10, '-').slice(0, 10); }
+// the calendar week (Mondays), still used to tag the anonymous run log
+function dateWeekKey(t = Date.now()) {
   const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
@@ -4486,7 +4553,7 @@ function lbShow(view) {
 }
 function lbList(tab, n) {
   const rows = lbRows(tab).slice(0, n);
-  if (!rows.length) return '<p class="muted">' + (tab === 'week' ? 'No scores this week yet.' : 'No scores yet. Be the first!') + '</p>';
+  if (!rows.length) return '<p class="muted">' + (tab === 'week' ? 'No scores in this update yet.' : 'No scores yet. Be the first!') + '</p>';
   return '<ol><li class="hd"><span class="rk"></span><span class="nm"></span><span class="sp">rows + bonus</span><span class="sc"></span></li>' +
     rows.map((d, i) => {
       const r = tab === 'week' ? d.wRun : d.run, sc = tab === 'week' ? d.wBest : d.best;
@@ -4500,8 +4567,8 @@ function lbRender() {
   if (LB.view === 'title' && usable && !test.on && elMini.style.display !== 'block') elMini.style.display = 'block';
   if ((LB.view === 'side' || LB.view === 'modal') && usable && !elBoard.className) lbShow(LB.view);
   if (LB.view === 'title' && usable) {
-    const me = LB.name ? lbRows('all').findIndex(d => d.id === LB.name) : -1;
-    elMini.innerHTML = '<h3>Top 3 \u00b7 all time</h3>' + lbList('all', 3, false) +
+    const me = LB.name ? lbRows('week').findIndex(d => d.id === LB.name) : -1;
+    elMini.innerHTML = '<h3>Top 3 \u00b7 current</h3>' + lbList('week', 3, false) +
       '<div class="row2"><span class="muted">' + (me >= 0 ? 'You: #' + (me + 1) : '') +
       '</span><button type="button" data-act="open">Leaderboard</button></div>';
   }
@@ -4515,19 +4582,19 @@ function lbRender() {
     else if (!L.ranked) place = '';
     else {
       const rk = (n, when) => n <= LBV.show ? '<span class="y">#' + n + '</span> ' + when : 'outside the top ' + LBV.show + ' ' + when;
-      const a = rk(lbPlace('all', L.score), 'all time'), w = rk(lbPlace('week', L.score), 'this week');
+      const a = rk(lbPlace('all', L.score), 'legacy'), w = rk(lbPlace('week', L.score), 'current');
       // your numbers come from your row on the board itself (it can update before the save is confirmed)
       const mine = d => LB.name && d.id === LB.name, ra = lbRows('all'), rw = lbRows('week');
       const myAll = ra.findIndex(mine) + 1, myWk = rw.findIndex(mine) + 1;
       const bestAll = myAll ? ra[myAll - 1].best : 0, bestWk = myWk ? rw[myWk - 1].wBest : 0;
-      if (L.newBest) place = '<span class="y">New best!</span> ' + L.score + ' \u00b7 ' + a + ' \u00b7 ' + w;
+      if (L.newBest) place = '<span class="y">New best!</span> ' + L.score + ' \u00b7 ' + w + ' \u00b7 ' + a;
       else if (L.wkBest)
-        place = '<span class="y">Best this week!</span> ' + L.score + ' \u00b7 ' + w +
-          (myAll ? '<br><span class="muted">All-time best: ' + bestAll + ' (#' + myAll + ')</span>' : '');
+        place = '<span class="y">Best this update!</span> ' + L.score + ' \u00b7 ' + w +
+          (myAll ? '<br><span class="muted">Legacy best: ' + bestAll + ' (#' + myAll + ')</span>' : '');
       else
         place = 'This run: ' + L.score +
-          (myAll ? '<br><span class="muted">Your best: ' + bestAll + ' \u00b7 #' + myAll + ' all time' +
-            (myWk ? ' \u00b7 this week ' + bestWk + ' (#' + myWk + ')' : '') + '</span>' : '');
+          (myAll ? '<br><span class="muted">Your best: ' + bestAll + ' \u00b7 #' + myAll + ' legacy' +
+            (myWk ? ' \u00b7 current ' + bestWk + ' (#' + myWk + ')' : '') + '</span>' : '');
     }
   }
   const ask = LB.state === 'ok' && (LB.askName || LB.editName);
@@ -4541,8 +4608,8 @@ function lbRender() {
     LB.editName && LB.name ? 'Your scores move to the new name, and ' + LB.name + ' is freed up.' :
     'Pick a name (up to 6 letters or numbers) and a 4-number PIN. The PIN lets you use your name on any computer.';
   elCard.innerHTML =
-    '<div class="tabs"><button type="button" data-tab="all" aria-pressed="' + (LB.tab === 'all') + '">All time</button>' +
-    '<button type="button" data-tab="week" aria-pressed="' + (LB.tab === 'week') + '">This week</button>' +
+    '<div class="tabs"><button type="button" data-tab="week" aria-pressed="' + (LB.tab === 'week') + '">Current</button>' +
+    '<button type="button" data-tab="all" aria-pressed="' + (LB.tab === 'all') + '">Legacy</button>' +
     (LB.view === 'modal' ? '<button type="button" class="x" data-act="close">Close</button>' : '') + '</div>' +
     (place ? '<p id="lbPlace">' + place + '</p>' : '') +
     (ask ? '<div id="lbName"><h3>' + title + '</h3>' +
@@ -4603,7 +4670,7 @@ function logDeath() {
   try {
     LB.db.collection('deaths').add({
       cause: String(game.death || 'unknown').slice(0, 20), row: Math.max(0, game.dist | 0), score: Math.max(0, game.score | 0),
-      secs: Math.round(run.secs * 10) / 10, lane: String(ln ? ln.type : 'none').slice(0, 20), week: weekKey(), uid: LB.uid,
+      secs: Math.round(run.secs * 10) / 10, lane: String(ln ? ln.type : 'none').slice(0, 20), week: dateWeekKey(), uid: LB.uid,
       at: window.firebase.firestore.FieldValue.serverTimestamp()
     }).catch(() => {});
   } catch (e) {}
@@ -4991,7 +5058,7 @@ testPanel.addEventListener('click', e => {
   }
 });
 document.getElementById('testBtn').addEventListener('click', openTestPanel);
-const inTestUI = e => statsOpen() || (e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #muteBtn, #stats'));
+const inTestUI = e => statsOpen() || (e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #notesBtn, #pauseBtn, #pauseOv, #muteBtn, #stats'));
 
 const muteBtn = document.getElementById('muteBtn');
 // speaker: on, muted, or a quiet speaker while the browser hasn't let sound start yet
@@ -5009,8 +5076,9 @@ muteBtn.addEventListener('click', () => { SFX.unlock(); SFX.toggleMute(); syncMu
 if (document.addEventListener) for (const ev of ['pointerdown', 'touchend', 'mousedown', 'click', 'keydown'])
   document.addEventListener(ev, () => SFX.unlock(), { capture: true, passive: true });
 // ---------------- patch notes ----------------
-// Bump PATCH_VERSION (and edit the list in #notes) for each update: everyone sees the notes once, on their next visit.
-const PATCH_VERSION = '2026-10-biomes';
+// Bump PATCH_VERSION (and edit the list in #notes, and the PATCH x.y tag) for each update: everyone sees the notes once, on their next visit.
+// The Patch notes button on the title and game over screens opens them again any time.
+const PATCH_VERSION = RELEASE;
 const elNotes = document.getElementById('notes');
 const notesOpen = () => !elNotes.hidden;
 function closeNotes() { elNotes.hidden = true; lbStore('seenPatch', PATCH_VERSION); }
@@ -5019,6 +5087,7 @@ if (lbLoad('seenPatch') !== PATCH_VERSION) {
   try { document.getElementById('notesOk').focus({ preventScroll: true }); } catch (e) {}
 }
 document.getElementById('notesOk').addEventListener('click', e => { e.stopPropagation(); closeNotes(); });
+document.getElementById('notesBtn').addEventListener('click', e => { e.stopPropagation(); elNotes.hidden = false; try { document.getElementById('notesOk').focus({ preventScroll: true }); } catch (err) {} });
 window.addEventListener('keydown', e => {
   if (!notesOpen()) return;
   if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') { e.preventDefault(); closeNotes(); }
@@ -5030,6 +5099,30 @@ for (const ev of ['pointerdown', 'pointerup']) window.addEventListener(ev, e => 
   if (ev === 'pointerdown' && e.target === elNotes) closeNotes();
   e.stopImmediatePropagation();                       // (the Got it button still gets its click)
 }, true);
+// ---------------- pause ----------------
+// P or the pause button during a run. While paused the game doesn't update at all (the clock stops, so trains,
+// timers and the king's magic all wait), the screen is dimmed, and nothing but Resume, P/Esc and mute does anything.
+const elPause = document.getElementById('pauseOv');
+function setPaused(on) {
+  on = !!on && game.mode === 'play' && game.started;
+  game.paused = on; elPause.hidden = !on;
+  if (on) { try { document.getElementById('pauseGo').focus({ preventScroll: true }); } catch (e) {} }
+}
+document.getElementById('pauseBtn').addEventListener('click', e => { e.stopPropagation(); setPaused(true); });
+document.getElementById('pauseGo').addEventListener('click', e => { e.stopPropagation(); setPaused(false); });
+window.addEventListener('keydown', e => {
+  if (notesOpen() || (e.target && e.target.tagName === 'INPUT')) return;
+  if (e.code === 'KeyP' && !e.repeat) { e.preventDefault(); setPaused(!game.paused); e.stopImmediatePropagation(); return; }
+  if (!game.paused) return;
+  if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); setPaused(false); }
+  if (e.code !== 'KeyM') e.stopImmediatePropagation();     // no hopping while paused (M still mutes)
+}, true);
+for (const ev of ['pointerdown', 'pointerup']) window.addEventListener(ev, e => {
+  if (!game.paused) return;
+  if (e.target && e.target.closest && e.target.closest('#pauseGo, #muteBtn')) return;
+  e.stopImmediatePropagation();
+}, true);
+if (document.addEventListener) document.addEventListener('visibilitychange', () => { if (document.hidden && game.mode === 'play' && game.started) setPaused(true); });
 window.addEventListener('keydown', e => {
   SFX.unlock();
   if (e.code === 'KeyM' && !e.repeat && !(e.target && e.target.tagName === 'INPUT')) { SFX.toggleMute(); syncMute(); return; }
@@ -5069,8 +5162,8 @@ function frame() {
   const now = performance.now() / 1000;
   const dt = Math.min(0.05, now - last);
   last = now;
-  update(dt);
-  updateVisuals(dt);
+  if (game.paused && game.mode !== 'play') setPaused(false);       // (a run that ended can't stay paused)
+  if (!game.paused) { update(dt); updateVisuals(dt); }
   updateHUD();
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
