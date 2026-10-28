@@ -462,6 +462,7 @@ const KING_SHAPES = [
 const ZONE = {
   rows: 20, fromRow: 40, minSpacing: 30,   // the hard variant (falling boulders) comes from the difficulty roll
   fuse: 0.8,          // seconds from stepping on a tile until it falls (was 2.0)
+  volatileFuse: 0.5,  // the same for volatile rock (rock the stone roller has rolled over: it shows a small crack)
   warnAhead: 7,       // the boulder drops when the zone is this many rows ahead of you
   joinGap: 4,         // a zone starting this close after the last one is the same field: no second king
   rockFall: 1.1       // seconds for the boulder to fall
@@ -483,7 +484,8 @@ const START_SAFE = 5;            // rows 0..4 have no traffic
 // would go round a corner onto the next face just bumps.
 // The king's gravity magic: as you step onto a chasm's edge he waves his wand and a purple glow wraps around
 // you; it's what lets you leap 2 at a time. Once it takes hold it lasts its full MAGIC.last seconds even if you
-// leave the chasm, and while it holds you can also leap over a train track (2 rows: the train can't touch you).
+// leave the chasm, and while it holds every hop forward or back is a 2-row leap over whatever is in between
+// (cars, trains, rivers, boulders: the row you fly over can't touch you; where you land still counts).
 // A leap that's in the air when it runs out still finishes as a leap.
 // The king's earthquake: while you're out on the pillars he slams his wand every QUAKE.every seconds. For
 // QUAKE.warn seconds the pillars about to sink crack and shake and dust rises from the empty slots where new
@@ -608,10 +610,10 @@ const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5
 // The boulder field's red train is the red-hot coal train: it goes round only once, and as it passes it flings
 // EMBERS.count burning coals onto rock 1-2 rows either side of the track. A red glow marks where each will land;
 // the tile then burns for good: step onto it and you burn (it doesn't stop you, it kills you). Each burning coal
-// is a fire sprite: a little living flame that leaps out of the coal heap, flies to its tile and settles into the
-// fire there. Never on your tile when thrown, never more than a
+// is a fireball with an angry face that bursts out of the coal heap, flies a high arc trailing flames, and lands
+// as the fire on its tile. Never on your tile when thrown, never more than a
 // face can spare (each face of a row keeps EMBERS.keepOpen open tiles), never into a chasm or a hole.
-const EMBERS = { count: [5, 8], flight: 0.7, keepOpen: 6, reach: 3, speed: 0.6 };   // speed: x a normal train's
+const EMBERS = { count: [8, 12], flight: 0.95, arc: 2.6, keepOpen: 6, reach: 3, speed: 0.6 };   // speed: x a normal train's; arc: peak height in tiles   // speed: x a normal train's
 // Graveyard (the difficult park): 9 rows of dark grass. Gravestones sit on 15% of tiles and block you like
 // trees; every graveyard is checked to have a way through. Each face has one skeleton per 2 rows. A skeleton
 // on the face you're on, from 1 row behind you to 3 ahead, wakes up: its eyes glow for 0.6 s, then it dashes
@@ -686,7 +688,7 @@ const COLORS = {
   log: 0x8f5d36, logTop: 0xa66d40, logEnd: 0xc89462,
   gravel: [0x7d7c86, 0x75747e], tie: 0x6b4a33, rail: 0xc8ccd4,
   coin: 0xffd23f, sky: 0x9cd8ff,
-  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, crackHard: 0x6a1010, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a], rollBoulder: [0x4a4b52, 0x3e3f46, 0x56575f]
+  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, crackHard: 0x6a1010, volatile: [0xb24a30, 0xa3402a], volatileCrack: 0x3a0906, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a], rollBoulder: [0x4a4b52, 0x3e3f46, 0x56575f]
 };
 const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 0x2bb3b3];
 
@@ -1009,7 +1011,21 @@ function coalTrainGeometry(front, red = false) {
   }
   return m.geometry();
 }
-// the flame sprite: a little living fire with a face, riding the hot coal train and flinging coals
+// a fireball with a face (the thrown coals), and the bits of its flame trail
+const FIREBALL_GEO = (() => {
+  const m = new Merge(), r = 0xd8340f, o = 0xff6a1a, y = 0xffb43a, w = 0xffe9a0, k = 0x2a0e06;
+  m.part(r, 0, 0, 0, 0.5, 0.36, 0.5); m.part(r, 0, 0, 0, 0.36, 0.5, 0.5); m.part(r, 0, 0, 0, 0.5, 0.5, 0.36);   // the round ball
+  m.part(o, 0, 0.02, 0.04, 0.44, 0.4, 0.46); m.part(y, 0, 0.05, 0.12, 0.3, 0.28, 0.32);                        // hot core
+  m.part(o, -0.12, 0.27, -0.02, 0.12, 0.1, 0.12); m.part(y, 0.08, 0.29, 0.02, 0.1, 0.12, 0.1); m.part(o, 0.18, 0.2, -0.06, 0.08, 0.1, 0.08);   // licks on top
+  m.part(w, -0.11, 0.06, 0.26, 0.11, 0.12, 0.02); m.part(w, 0.11, 0.06, 0.26, 0.11, 0.12, 0.02);               // eyes
+  m.part(k, -0.09, 0.05, 0.275, 0.05, 0.08, 0.01); m.part(k, 0.09, 0.05, 0.275, 0.05, 0.08, 0.01);              // pupils
+  m.part(k, -0.12, 0.15, 0.27, 0.14, 0.03, 0.01); m.part(k, 0.12, 0.15, 0.27, 0.14, 0.03, 0.01);                // angry brows
+  m.part(k, 0, -0.12, 0.27, 0.2, 0.08, 0.01); m.part(w, -0.05, -0.1, 0.276, 0.03, 0.03, 0.005); m.part(w, 0.05, -0.1, 0.276, 0.03, 0.03, 0.005);   // grin + teeth
+  return m.geometry();
+})();
+const TRAIL_GEOS = [0xffe27a, 0xff9a2a, 0xe8461a].map(c => { const m = new Merge(); m.part(c, 0, 0, 0, 0.2, 0.2, 0.2); return m.geometry(); });
+const emberTrail = [];
+// the flame sprite: a little living fire with a face (not used by the coal train any more)
 const FLAME_SPRITE_GEO = (() => {
   const m = new Merge(), o = 0xff6a1a, y = 0xffb43a, w = 0xffe27a, k = 0x2a1208;
   m.part(o, 0, 0.22, 0, 0.42, 0.4, 0.36);                       // body
@@ -1740,11 +1756,9 @@ function makeLane(v) {
       // on the way out; other biomes blend evenly
       const nt = bt.next === 1 ? Math.min(1, bt.t / 0.7) : bt.cur === 1 ? Math.max(0, (bt.t - 0.3) / 0.7) : bt.t;
       const tb = lane.tileB[p] = spec.rock ? 1 : Math.random() < nt ? bt.next : bt.cur;     // this tile's look
-      // fading into or out of the boulder field, in three steps: grass, then plain rock, then crumbling rock.
-      // A boulder field tile here is crumbling with a chance that starts once the blend is 30% rock and
-      // reaches every rock tile at the field's edge (mirrored on the way out)
-      const rockShare = bt.next === 1 ? bt.t : 1 - bt.t;
-      if (spec.crackPartial && tb === 1 && !deco && !(v <= START_SAFE) && Math.random() < clamp01((rockShare - 0.3) / 0.7)) {
+      // fading into or out of the boulder field: every rock tile is crumbling rock, the same as in the field
+      // (it looks plain until you step on it); the grass tiles between them stay solid
+      if (spec.crackPartial && tb === 1 && !deco && !(v <= START_SAFE)) {
         if (!lane.crackMask) { lane.crackMask = new Uint8Array(P); lane.cracked = true; }
         lane.crackMask[p] = 1;
       }
@@ -2016,18 +2030,34 @@ function buildLaneStatic(lane) {
     const x = u - H + 0.5, cornerOut = u === 0 ? -1 : u === W - 1 ? 1 : 0;
     const alt = (u + face) % 2;
     if (crackedAt(lane, p)) {
-      m.box(COLORS.cracked[alt], x, -0.2, 0, 1, 0.4, 1, rot);
-      // black cracks: a few short zigzag segments per tile, the same every time for this tile
+      // crumbling ground looks like plain rock; the cracks appear once you've stepped on it. Rock the stone roller
+      // has rolled over (volatile: it falls faster) shows a small crack until then.
+      const hot = lane.volatile && lane.volatile.has(p), RB = BIOMES[1];
+      m.box((v % 2 ? RB.grass : RB.grassAlt)[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      {
+        let sd = (v * 197 + p * 641) >>> 0;
+        const rr = () => ((sd = (sd * 1103515245 + 12345) >>> 0) / 4294967296);
+        if (rr() < 0.55) m.box(0x6c6e76, x - 0.5 + 0.2 + rr() * 0.6, 0.004, 0, 0.05, 0.01, 1, rot);
+        for (let k = 0, n = 1 + Math.floor(rr() * 3); k < n; k++) {
+          const s2 = 0.08 + rr() * 0.1;
+          m.box(rr() < 0.5 ? 0xa2a4ac : 0x74767e, x - 0.35 + rr() * 0.7, s2 / 2, -0.35 + rr() * 0.7, s2, s2, s2 * 1.2, rot);
+        }
+      }
+      const stepped = lane.stepped && lane.stepped.has(p);
+      if (stepped || hot) {
+      // stepped on: black cracks, a few short zigzag segments, the same every time for this tile;
+      // rolled over but not stepped on yet: just the first bit of the same crack
       let seed = (v * 131 + p * 977) >>> 0;
       const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
       let cx = x - 0.32 + rnd() * 0.2, cz = -0.3 + rnd() * 0.2;
-      for (let k = 0; k < 4; k++) {
+      for (let k = 0; k < (stepped ? 4 : 1); k++) {
         const lenX = 0.12 + rnd() * 0.22, lenZ = 0.1 + rnd() * 0.2;
         m.box(COLORS.crack, cx + lenX / 2, 0.006, cz, lenX, 0.012, 0.045, rot);
         cx += lenX;
         m.box(COLORS.crack, cx, 0.006, cz + lenZ / 2, 0.045, 0.012, lenZ, rot);
         cz += lenZ;
         if (cx > x + 0.4 || cz > 0.4) break;
+      }
       }
     } else if (lane.type === 'grass') {
       const B = BIOMES[lane.tileB[p]];
@@ -2657,20 +2687,15 @@ function crushRow(r, lane) {
   const inside = pf => faces.includes(faceOf(pf));
   if (isWater(lane)) return;           // logs and lily pads are left alone: it just sinks
   let rebuild = false;
-  // crumbling ground in its faces breaks away under it and falls, leaving holes
+  // crumbling ground in its faces doesn't break: it gets a small crack and turns volatile, and falls much faster once you
+  // stand on it (ZONE.volatileFuse instead of ZONE.fuse). Ground only ever falls after you stand on it.
   if (lane.cracked) {
     for (let p = 0; p < P; p++) {
       if (!inside(p) || lane.holes.has(p) || !crackedAt(lane, p)) continue;
-      if (lane.fuse.has(p)) {
-        lane.fuse.delete(p);
-        const warn = lane.fuseMeshes.get(p);
-        if (warn) { lane.group.remove(warn); warn.material.dispose(); lane.fuseMeshes.delete(p); }
-      }
-      lane.holes.add(p); rebuild = true;
-      const mesh = new THREE.Mesh(FALL_GEO, new THREE.MeshLambertMaterial({ color: COLORS.cracked[p % 2] }));
-      mesh.rotation.order = 'ZYX';
-      scene.add(mesh);
-      fallingPieces.push({ mesh, tile: p, v: lane.v, t: rand(-0.15, 0), spin: rand(-3, 3) });
+      if (!lane.volatile) lane.volatile = new Set();
+      if (lane.volatile.has(p)) continue;
+      lane.volatile.add(p); rebuild = true;
+      if (lane.fuse.has(p)) lane.fuse.set(p, Math.min(lane.fuse.get(p), clock + ZONE.volatileFuse));
     }
   }
   for (const [p, t] of [...lane.trees]) {
@@ -2999,16 +3024,17 @@ function tryMove(dp, dv) {
   }
   let tp = Math.round(player.pf) + dp;
   let tv = player.v + dv;
-  // sideways off a pillar: leap 2 tiles
-  const sideLeap = gravity.on && dv === 0 && dp !== 0 && here && here.chasm === 'pillars' && raisedAt(here, Math.round(player.pf));
+  // with the magic on, sideways is a 2-tile leap too (from a pillar it can't go round a corner)
+  const sideLeap = gravity.on && dv === 0 && dp !== 0;
   if (sideLeap) {
     tp += dp;
-    if (faceOf(wrapP(tp)) !== faceOf(wrapP(Math.round(player.pf)))) { player.bump = 0.14; SFX.bump(); return; }   // not round a corner
+    const onPillar = here && here.chasm === 'pillars' && raisedAt(here, Math.round(player.pf));
+    if (onPillar && faceOf(wrapP(tp)) !== faceOf(wrapP(Math.round(player.pf)))) { player.bump = 0.14; SFX.bump(); return; }
   }
   if (tv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
   let lane = laneAt(tv);
   // off something raised, forward or back over a pit row: leap 2 rows
-  const leap = sideLeap || (gravity.on && dv !== 0 && ((lane.chasm === 'pit' && raisedAt(here, Math.round(player.pf))) || lane.type === 'rail'));
+  const leap = sideLeap || (gravity.on && dv !== 0);       // with the magic on, every hop forward or back clears a whole row
   if (leap && !sideLeap) {
     if (tv + dv < MIN_V) { player.bump = 0.14; SFX.bump(); return; }
     tv += dv; lane = laneAt(tv);
@@ -3069,7 +3095,7 @@ function finishHop() {
   if (lane.chasm && lane.holes.has(tile)) { die('chasm'); return; }   // missed the pillar
   if (crackedAt(lane, tile)) {
     if (lane.holes.has(tile)) { die('crumble'); return; }       // it fell while you were in the air
-    if (!lane.fuse.has(tile)) lightFuse(lane, tile);
+    if (!lane.fuse.has(tile)) lightFuse(lane, tile, lane.volatile && lane.volatile.has(tile) ? ZONE.volatileFuse : ZONE.fuse);
   }
   const coin = lane.coins.get(tile);
   if (coin) { lane.group.remove(coin); lane.coins.delete(tile); game.coins++; SFX.coin(); }
@@ -3140,8 +3166,9 @@ function rockGeometry(c) {
   return m.geometry();
 }
 
-function lightFuse(lane, tile) {
-  lane.fuse.set(tile, clock + ZONE.fuse);
+function lightFuse(lane, tile, len = ZONE.fuse) {
+  lane.fuse.set(tile, clock + len);
+  (lane.stepped = lane.stepped || new Set()).add(tile); buildLaneStatic(lane);   // the cracks show now
   SFX.fuse();
   const mesh = new THREE.Mesh(FUSE_GEO, new THREE.MeshBasicMaterial({ color: 0x1a0d08, transparent: true, opacity: 0.1, depthWrite: false }));
   mesh.rotation.order = 'ZYX';
@@ -3183,41 +3210,50 @@ const emberMarkMat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent:
 function throwEmber(lane, head) {
   const pf = player.pf, here = wrapP(Math.round(pf));
   const hopTo = player.hop ? wrapP(Math.round(hopEnds(player.hop)[1])) : -1;
-  const options = [];
+  const options = [], flying = new Set(embers.map(e => e.l.v + ':' + e.p));   // tiles a fireball is already headed for
   for (const dv of [-1, 1, -2, 2]) {
     const l = lanes.get(lane.v + dv);
     if (!l || l.type !== 'grass' || l.chasm || l.grave) continue;
     for (let du = -EMBERS.reach; du <= EMBERS.reach; du++) {
       const p = wrapP(Math.round(head) + du);
-      if (l.blocked.has(p) || l.holes.has(p) || (l.fires && l.fires.has(p))) continue;
+      if (l.blocked.has(p) || l.holes.has(p) || (l.fires && l.fires.has(p)) || flying.has(l.v + ':' + p)) continue;
       if (l.v === player.v && (p === here || p === hopTo)) continue;
       if (player.hop && l.v === player.hop.tv && p === hopTo) continue;
       const f = faceOf(p); let open = 0;
-      for (let u = 0; u < W; u++) if (!l.blocked.has(f * W + u) && !l.holes.has(f * W + u) && !(l.fires && l.fires.has(f * W + u))) open++;
+      for (let u = 0; u < W; u++) { const q = f * W + u; if (!l.blocked.has(q) && !l.holes.has(q) && !(l.fires && l.fires.has(q)) && !flying.has(l.v + ':' + q)) open++; }
       if (open - 1 < EMBERS.keepOpen) continue;
       options.push([l, p, Math.abs(dv)]);
     }
   }
   if (!options.length) return;
   const near = options.filter(o => o[2] === 1), [l, p] = pick(near.length && Math.random() < 0.65 ? near : options);
-  const from = ringFrame(head, 0.95), mesh = new THREE.Mesh(FLAME_SPRITE_GEO, VCOL), mark = new THREE.Mesh(MARK_GEO, emberMarkMat);
-  mesh.rotation.order = 'ZYX'; mesh.scale.setScalar(0.75);
+  const from = ringFrame(head, 0.95), mesh = new THREE.Mesh(FIREBALL_GEO, VCOL), mark = new THREE.Mesh(MARK_GEO, emberMarkMat);
+  mesh.rotation.order = 'ZYX'; mesh.scale.setScalar(0.95);
   mesh.position.set(from.x, from.y, -lane.v); scene.add(mesh);
   debris(head, lane.v, 0xff7a2a, 4, 3);                       // a puff of sparks as it jumps out of the coal
   mark.rotation.order = 'ZYX'; place(mark, p, 0.02, 0); l.group.add(mark);
-  embers.push({ l, p, t: 0, from: mesh.position.clone(), roll0: from.roll, spin: Math.random() < 0.5 ? -1 : 1, mesh, mark });
+  embers.push({ l, p, t: 0, from: mesh.position.clone(), roll0: from.roll, spin: Math.random() < 0.5 ? -1 : 1, mesh, mark, puff: 0 });
   SFX.rattle();
 }
 function updateEmbers(dt) {
+  for (let i = emberTrail.length - 1; i >= 0; i--) {
+    const b = emberTrail[i]; b.t += dt;
+    if (b.t >= b.life) { scene.remove(b.m); emberTrail.splice(i, 1); continue; }
+    b.m.scale.setScalar(1 - b.t / b.life); b.m.position.y += dt * 0.6;
+  }
   for (let i = embers.length - 1; i >= 0; i--) {
     const e = embers[i]; e.t += dt;
-    const k = Math.min(1, e.t / EMBERS.flight), f = ringFrame(e.p, 0.2);
-    // it arcs up off the tile it's landing on (along that face's "up"), flame-first, wiggling as it flies
-    const arc = Math.sin(Math.PI * k) * 1.2, ux = -Math.sin(f.roll), uy = Math.cos(f.roll);
+    const k = Math.min(1, e.t / EMBERS.flight), f = ringFrame(e.p, 0.35);
+    // a high arc off the tile it's landing on (along that face's "up"), face toward you, wobbling, trailing flames
+    const arc = Math.sin(Math.PI * k) * EMBERS.arc, ux = -Math.sin(f.roll), uy = Math.cos(f.roll);
     e.mesh.position.set(lerp(e.from.x, f.x, k) + ux * arc, lerp(e.from.y, f.y, k) + uy * arc, lerp(e.from.z, -e.l.v, k));
-    e.mesh.rotation.set(-0.5 * Math.cos(Math.PI * k), Math.sin(clock * 10) * 0.4, lerp(e.roll0, f.roll, k) + e.spin * Math.sin(Math.PI * k) * 0.5);
-    const fl = 0.75 * (1 + 0.12 * Math.sin(clock * 22 + i));
-    e.mesh.scale.set(fl, fl * (1 + 0.25 * Math.sin(Math.PI * k)), fl);
+    e.mesh.rotation.set(0, Math.sin(clock * 9 + i) * 0.25, lerp(e.roll0, f.roll, k) + e.spin * Math.sin(clock * 6) * 0.2);
+    e.mesh.scale.setScalar(0.95 * (1 + 0.1 * Math.sin(clock * 24 + i)));
+    for (e.puff += dt; e.puff > 0.03; e.puff -= 0.03) {          // the flame trail: little bits that shrink away
+      const b = new THREE.Mesh(TRAIL_GEOS[randInt(0, 2)], VCOL);
+      b.position.set(e.mesh.position.x + rand(-0.08, 0.08), e.mesh.position.y + rand(-0.08, 0.08), e.mesh.position.z + rand(-0.08, 0.08));
+      b.rotation.set(rand(0, 3), rand(0, 3), rand(0, 3)); scene.add(b); emberTrail.push({ m: b, t: 0, life: rand(0.25, 0.4) });
+    }
     if (k < 1) continue;
     scene.remove(e.mesh); e.l.group.remove(e.mark); embers.splice(i, 1);
     if (!lanes.has(e.l.v)) continue;
@@ -3231,7 +3267,7 @@ function updateEmbers(dt) {
   // the fires flicker
   for (const l of lanes.values()) if (l.fires) for (const [p, m] of l.fires) { const k = 0.9 + 0.12 * Math.sin(clock * 14 + p * 1.7); m.scale.set(1, k, 1); }
 }
-function clearEmbers() { for (const e of embers) { scene.remove(e.mesh); e.l.group.remove(e.mark); } embers.length = 0; }
+function clearEmbers() { for (const e of embers) { scene.remove(e.mesh); e.l.group.remove(e.mark); } embers.length = 0; for (const b of emberTrail) scene.remove(b.m); emberTrail.length = 0; }
 // ---------------- the king's earthquake (chasms) ----------------
 const chasms = [];
 const QUAKE_CRACK_GEO = (() => { const m = new Merge(), eh = CHASM.height, k = 0x1b1a20;
@@ -3845,11 +3881,7 @@ function updateDrops(dt) {
         }
         if (d.keys.has(key(pv, Math.round(pp)))) die('boulder');
       }
-      // the boulder smashes any crumbling ground it lands on: those tiles fall away, leaving holes
-      for (const k of d.keys) {
-        const [kv, kp] = String(k).split(':').map(Number), l = lanes.get(kv);
-        if (l && crackedAt(l, kp) && !l.holes.has(kp)) collapse(l, kp);
-      }
+      // (it doesn't break the crumbling ground: in the boulder field, ground only falls after you stand on it)
       const f = ringFrame(d.p, 0);
       rubble(f.roll, d.row, ringLocalX(d.p), 0.3 + d.size.r * 0.35);
       camState.shake = Math.max(camState.shake, 0.15 + d.size.r * 0.12);
