@@ -88,97 +88,66 @@
   /* test mode */
   #testBtn {
     position: fixed; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: none;
-    font: 20px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #fff; cursor: pointer;
-    background: #33415c; border: 3px solid #1b1b26; border-radius: 10px; padding: 10px 16px 7px;
-    box-shadow: 0 5px 0 #1b1b26; z-index: 5;
+    letter-spacing: 1px; cursor: pointer; z-index: 5;
   }
   #muteBtn {
     position: fixed; right: 22px; top: calc(70px + env(safe-area-inset-top, 0px)); z-index: 5; cursor: pointer;
-    font-size: 22px; line-height: 1; color: #fff; background: #33415c; border: 3px solid #1b1b26; border-radius: 10px;
-    padding: 8px 10px; box-shadow: 0 5px 0 #1b1b26;
   }
   #muteBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #1b1b26; }
   #muteBtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   #testBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #1b1b26; }
   #testTag {
-    position: fixed; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: none;
-    font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #1b1b26; pointer-events: none;
-    background: #ffd23f; border: 3px solid #1b1b26; border-radius: 8px; padding: 6px 12px 3px;
+    position: fixed; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: none; pointer-events: none;
   }
   #testPanel {
     position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-    background: rgba(10, 14, 24, .55); z-index: 10;
+    z-index: 10;
   }
   #testPanel.open { display: flex; }
   #testPanel .card {
     width: min(760px, 94%); max-height: calc(100% - 24px); overflow-y: auto; box-sizing: border-box; padding: 16px 20px 14px;
-    background: #222a3d; color: #e9edf5; border: 4px solid #1b1b26; border-radius: 16px; box-shadow: 0 10px 0 #1b1b26;
-    font: 15px/1.45 "Segoe UI", system-ui, sans-serif;
   }
-  #testPanel h2 { font: 30px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 0 0 4px; color: #fff; }
-  #testPanel h3 { font: 17px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 12px 0 6px; color: #ffd23f; }
-  #testPanel .note { margin: 0; color: #b9c2d6; font-size: 13px; line-height: 1.35; }
+  #testPanel h2 { margin: 0 0 4px; }
+  #testPanel h3 { margin: 12px 0 6px; }
+  #testPanel .note { margin: 0; line-height: 1.35; }
   #testPanel .opts { display: flex; flex-wrap: wrap; gap: 6px; }
   #testPanel .pair { display: flex; gap: 0 28px; flex-wrap: wrap; }
-  #testPanel button {
-    font: 600 14px "Segoe UI", system-ui, sans-serif; color: #fff; cursor: pointer;
-    background: #33415c; border: 2px solid #1b1b26; border-radius: 9px; padding: 6px 10px;
-  }
-  #testPanel button[aria-pressed="true"] { background: #ffd23f; color: #1b1b26; }
-  #testPanel button:focus-visible, #testBtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  #testPanel button { cursor: pointer; }
   #testPanel .actions { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
-  #testPanel #testStart { font: 22px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px;
-                          background: #3fbf5a; padding: 8px 18px 5px; box-shadow: 0 4px 0 #1b1b26; }
-  #testPanel #testExit { margin-left: auto; background: transparent; color: #b9c2d6; }
+  #testPanel #testExit { margin-left: auto; }
   /* leaderboard */
-  .lbcard {
-    box-sizing: border-box; background: #222a3d; color: #e9edf5; border: 4px solid #1b1b26; border-radius: 16px;
-    box-shadow: 0 10px 0 #1b1b26; font: 15px/1.35 "Segoe UI", system-ui, sans-serif; text-shadow: none; text-align: left;
-  }
-  .lbcard h3 { font: 18px/1 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; margin: 0 0 8px; color: #ffd23f; }
-  .lbcard button {
-    font: 600 14px "Segoe UI", system-ui, sans-serif; color: #fff; cursor: pointer;
-    background: #33415c; border: 2px solid #1b1b26; border-radius: 9px; padding: 6px 10px;
-  }
-  .lbcard button[aria-pressed="true"] { background: #ffd23f; color: #1b1b26; }
-  .lbcard button:focus-visible, .lbcard input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .lbcard { box-sizing: border-box; text-shadow: none; text-align: left; }
+  .lbcard h3 { margin: 0 0 8px; }
+  .lbcard button { cursor: pointer; }
   .lbcard ol { list-style: none; margin: 0; padding: 0; }
-  .lbcard li { display: flex; align-items: baseline; gap: 8px; padding: 3px 8px; border-radius: 8px; }
-  .lbcard li.me { background: #ffd23f; color: #1b1b26; }
-  .lbcard li .rk { width: 26px; font: 16px "Luckiest Guy", "Arial Black", sans-serif; color: #ffd23f; }
-  .lbcard li.me .rk { color: #1b1b26; }
-  .lbcard li .nm { flex: 1; font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; }
-  .lbcard li .sc { font: 18px "Luckiest Guy", "Arial Black", sans-serif; min-width: 2.2em; text-align: right; }
-  .lbcard li .sp { font-size: 12px; opacity: .7; text-align: right; white-space: nowrap; }
+  .lbcard li { display: flex; align-items: baseline; gap: 8px; }
+  .lbcard li .rk { width: 26px; }
+  .lbcard li .nm { flex: 1; }
+  .lbcard li .sc { min-width: 2.2em; text-align: right; }
+  .lbcard li .sp { opacity: .7; text-align: right; white-space: nowrap; }
   #lbMini li .sp { display: none; }
-  .lbcard li .del { width: 22px; padding: 0; font-size: 12px; background: transparent; border-color: #5a6680; }
-  .lbcard li .del.sure { width: auto; padding: 0 6px; background: #d9443f; border-color: #d9443f; color: #fff; }
+  .lbcard li .del { border-color: #5a6680; }
+  .lbcard li .del.sure { border-color: #d9443f; }
   .lbcard li .delGap { width: 22px; flex: none; }
   .lbcard li.hd { padding-top: 0; padding-bottom: 0; }
-  .lbcard li.hd span { font: 11px sans-serif; color: #b9c2d6; opacity: 1; }
+  .lbcard li.hd span { opacity: 1; }
   #lbMini li.hd { display: none; }
-  .lbcard .muted { color: #b9c2d6; font-size: 13px; }
   #lbMini { position: absolute; right: 18px; bottom: 18px; width: 230px; padding: 12px 12px 10px; display: none; z-index: 5; }
   #lbMini .row2 { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
   #board { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 9; pointer-events: none; }
-  #board.modal { display: flex; background: rgba(10, 14, 24, .55); pointer-events: auto; }
+  #board.modal { display: flex; pointer-events: auto; }
   #board.side { display: flex; justify-content: flex-end; align-items: flex-start; padding: 126px 3% 12px 0; box-sizing: border-box; }   /* starts below the mute button */
   #boardCard { width: min(380px, 40%); max-height: 100%; box-sizing: border-box; overflow-y: auto; padding: 16px 16px 12px; pointer-events: auto; }
   #board.modal #boardCard { width: min(420px, 92%); max-height: 92%; }
   #boardCard .tabs { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
-  #boardCard .tabs .x { margin-left: auto; background: transparent; color: #b9c2d6; }
-  #lbPlace { font: 20px/1.15 "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; color: #fff; margin: 0 0 10px; }
-  #lbPlace .y { color: #ffd23f; }
-  #lbName { margin: 0 0 12px; padding: 10px; border-radius: 10px; background: #2c3650; }
-  #lbName input {
-    width: 6.2em; font: 22px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 2px; text-transform: uppercase;
-    background: #1b1b26; color: #ffd23f; border: 2px solid #5a6680; border-radius: 8px; padding: 5px 8px 2px; margin-right: 6px;
-  }
-  #lbName label { display: inline-flex; flex-direction: column; font-size: 12px; color: #b9c2d6; margin-right: 6px; }
+  #boardCard .tabs .x { margin-left: auto; }
+  #lbPlace { margin: 0 0 10px; }
+  #lbName { margin: 0 0 12px; padding: 10px; }
+  #lbName input { width: 6.2em; text-transform: uppercase; }
+  #lbName label { display: inline-flex; flex-direction: column; margin-right: 6px; }
   #lbName input.pin { width: 3.2em; }
   #lbName { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 2px; }
   #lbName h3, #lbName p { flex-basis: 100%; }
-  #lbName .go { font: 18px "Luckiest Guy", "Arial Black", sans-serif; letter-spacing: 1px; background: #3fbf5a; padding: 7px 14px 4px; }
   #lbFoot { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   #center.withBoard { padding-right: 44%; box-sizing: border-box; }
   /* ============ panel style (run stats page) ============
@@ -317,6 +286,14 @@
   #pauseOv button:focus-visible { outline: 3px solid var(--orange); outline-offset: 6px; }
   #pauseOv p { margin: 14px 0 0; color: var(--text); opacity: .8; }
   #notes button:focus-visible { outline: 3px solid var(--orange); outline-offset: 6px; }
+  /* snow: while a blizzard is coming, frost and snowflakes pile in from the screen edges and a countdown shows
+     (all of it works with the sound off); while it hits, the flakes cover the screen */
+  #frost { position: fixed; inset: 0; pointer-events: none; z-index: 4; overflow: hidden; }
+  #frostHaze { position: absolute; inset: 0; opacity: 0;
+    background: radial-gradient(ellipse at center, rgba(240, 248, 255, .25) 20%, rgba(210, 234, 255, .7) 62%, rgba(250, 253, 255, 1) 100%); }
+  #frost .fl { position: absolute; top: 0; opacity: 0; color: #fff; line-height: 1; transition: opacity .25s;
+    text-shadow: 0 0 4px #7fc4ff; animation: flk 2s linear infinite; }
+  @keyframes flk { from { transform: translate(0, -8vh) rotate(0deg); } to { transform: translate(14vw, 108vh) rotate(300deg); } }
 </style>
 </head>
 <body>
@@ -350,6 +327,14 @@
       <button type="button" data-v="sink">Sinking logs</button>
       <button type="button" data-v="roller">Steamroller</button>
       <button type="button" data-v="dark">Darkness</button>
+      <button type="button" data-v="desert">Desert</button>
+      <button type="button" data-v="snake">Snake</button>
+      <button type="button" data-v="tumble">Tumbleweeds</button>
+      <button type="button" data-v="cactus">Cactuses</button>
+      <button type="button" data-v="storm">Dust storm</button>
+      <button type="button" data-v="snowman">Snowmen</button>
+      <button type="button" data-v="lake">Ice lake</button>
+      <button type="button" data-v="blizzard">Blizzard</button>
       <button type="button" data-v="">Nothing difficult</button>
     </div>
     <div class="pair"><div>
@@ -378,21 +363,23 @@
 <div id="board"><div id="boardCard" class="lbcard" role="dialog" aria-label="Leaderboard"></div></div>
 <div id="notes" role="dialog" aria-modal="true" aria-labelledby="notesTitle" hidden>
   <div class="card">
-    <div class="notesTag">PATCH 1.1</div>
+    <div class="notesTag">PATCH 1.2</div>
     <h2 id="notesTitle">What's new</h2>
     <ul>
-      <li><b>Reworked areas.</b> The boulder field and graveyards have been extended with new obstacles. Go see for yourself!</li>
-      <li><b>Record ghost.</b> Beat the current #1 and their ghost comes after you.</li>
-      <li><b>Scoring.</b> Only full laps give bonus points now. Difficult obstacles no longer do.</li>
-      <li><b>New look.</b> Pixel menus and the Crossy Tube logo.</li>
-      <li><b>Pause.</b> Press P or the pause button to take a break mid-run.</li>
-      <li><b>Leaderboard.</b> Current shows scores from this update. Every score from before is on Legacy.</li>
+      <li><b>Bugs.</b> if you find any bugs let izzy know</li>
+      <li><b>Desert biome.</b> new biome. snakes, tumbleweeds, dust storms that push you around and cactuses that shoot spikes at you (one of them aims where you're going so keep moving)</li>
+      <li><b>Snow biome.</b> snow slows you down. snowmen throw snowballs that freeze you and if a different snowman hits you while you're frozen you shatter. giant snowballs roll at you, and the ice lakes don't let you stop. when a blizzard comes get in an igloo or spam keys to break out of the ice</li>
+      <li><b>Coins.</b> coins actually do something now. they save to your account and skins are coming next update so stock up. max is 1000</li>
+      <li><b>Biomes.</b> biomes come in a random order now so every run is different</li>
+      <li><b>Other stuff.</b> beat the #1 score on Current and their ghost chases you. only full laps give bonus points now. new pixel menus. press P to pause</li>
+      <li><b>Leaderboard.</b> Current only shows scores from this update. all the old scores are on Legacy</li>
     </ul>
     <button type="button" id="notesOk">Got it</button>
   </div>
 </div>
 <div id="ghostName"></div>
 <div id="ghostPtr"><div class="arrow"></div><svg viewBox="0 0 36 40"><path d="M3 38V17a15 15 0 0 1 30 0v21l-5-4-5 4-5-4-5 4-5-4z" fill="#f4f6ff" stroke="#1b1b26" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="13" width="5" height="8" fill="#1b1b26"/><rect x="21" y="13" width="5" height="8" fill="#1b1b26"/></svg></div>
+<div id="frost"></div>
 <div id="center"><h1 id="title" class="logo">CROSSY <span class="sq">TUBE</span></h1><p id="sub"></p><p id="sub2"></p></div>
 
 </div>
@@ -404,8 +391,8 @@
 // everyone AND starts a fresh Current board (every old score stays on Legacy). For a new update set both, e.g.
 // GAME_VERSION '1.2' and RELEASE '1.2'; to re-release the same version with a board reset, add a suffix ('1.1-2').
 // RELEASE can be at most 9 characters.
-const GAME_VERSION = '1.1';
-const RELEASE = '1.1-2';
+const GAME_VERSION = '1.2';
+const RELEASE = '1.2';
 // =====================================================================
 // Crossy Road inside a square tube. Every lane is a ring around all four
 // inner faces. Walking off the side of a face carries you onto the next
@@ -526,8 +513,10 @@ const DIFF = { start: 100, scale: 200, calmSpeed: 0.85, maxSpeedUp: 0.8, minHard
 // the run, they show a label instead.
 const test = { on: false, only: 'park', speedRow: 0, god: false, first: false, hitT: {} };
 const TEST_NAMES = { park: 'Graveyard + zombies', ghost: 'Record ghost (beat 15)', rail: 'Red train', road: 'Conveyor road', jam: 'Gridlock', crumble: 'Boulder field',
-                     river: 'Cracked logs', sink: 'Sinking logs', roller: 'Steamroller (1 face, then 2)', dark: 'Darkness (dusk, then dark)', '': 'Nothing difficult' };
-const testFam = () => test.only === 'sink' ? 'river' : test.only === 'roller' || test.only === 'dark' || test.only === 'ghost' ? '' : test.only;   // the obstacle family a test choice belongs to
+                     river: 'Cracked logs', sink: 'Sinking logs', roller: 'Steamroller (1 face, then 2)', dark: 'Darkness (dusk, then dark)',
+                     desert: 'Desert', snake: 'Snake', tumble: 'Tumbleweeds', cactus: 'Cactuses', storm: 'Dust storm', snowman: 'Snowmen', lake: 'Ice lake', blizzard: 'Blizzard', '': 'Nothing difficult' };
+const testFam = () => test.only === 'sink' ? 'river' : ['roller', 'dark', 'ghost', 'desert', 'snake', 'cactus', 'storm', 'snowman', 'lake', 'blizzard'].includes(test.only) ? '' : test.only;   // the obstacle family a test choice belongs to
+const desertTest = () => test.on && ['desert', 'snake', 'tumble', 'cactus', 'storm'].includes(test.only);   // every row is desert
 function progressAt(v) { return v <= DIFF.start ? 0 : 1 - Math.exp(-(v - DIFF.start) / DIFF.scale); }
 function speedMul(v) {
   if (test.on && test.speedRow) v = Math.max(v, test.speedRow);
@@ -613,7 +602,7 @@ const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5
 // is a fireball with an angry face that bursts out of the coal heap, flies a high arc trailing flames, and lands
 // as the fire on its tile. Never on your tile when thrown, never more than a
 // face can spare (each face of a row keeps EMBERS.keepOpen open tiles), never into a chasm or a hole.
-const EMBERS = { count: [8, 12], flight: 0.95, arc: 2.6, keepOpen: 6, reach: 3, speed: 0.6 };   // speed: x a normal train's; arc: peak height in tiles   // speed: x a normal train's
+const EMBERS = { count: [8, 12], flight: 0.95, arc: 2.6, keepOpen: 6, reach: 3, speed: 0.6 };   // speed: x a normal train's; arc: peak height in tiles
 // Graveyard (the difficult park): 9 rows of dark grass. Gravestones sit on 15% of tiles and block you like
 // trees; every graveyard is checked to have a way through. Each face has one skeleton per 2 rows. A skeleton
 // on the face you're on, from 1 row behind you to 3 ahead, wakes up: its eyes glow for 0.6 s, then it dashes
@@ -688,7 +677,7 @@ const COLORS = {
   log: 0x8f5d36, logTop: 0xa66d40, logEnd: 0xc89462,
   gravel: [0x7d7c86, 0x75747e], tie: 0x6b4a33, rail: 0xc8ccd4,
   coin: 0xffd23f, sky: 0x9cd8ff,
-  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, crackHard: 0x6a1010, volatile: [0xb24a30, 0xa3402a], volatileCrack: 0x3a0906, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a], rollBoulder: [0x4a4b52, 0x3e3f46, 0x56575f]
+  cracked: [0x92949c, 0x8a8c94], crack: 0x23232a, boulder: [0x7d7f88, 0x6c6e77, 0x8f919a], rollBoulder: [0x4a4b52, 0x3e3f46, 0x56575f]
 };
 const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 0x2bb3b3];
 
@@ -702,9 +691,15 @@ const CAR_COLORS = [0xe8473c, 0x3a8ee6, 0xf3c623, 0x3fbf5a, 0x9b59d0, 0xf08a2a, 
 // allowed and roads/rivers/tracks are cut short, so nothing spills past the boundary.
 // fam: obstacle families and weights in that biome ('boulder' = a rolling-boulder lane on a dirt track).
 // deco: what blocks tiles there (tree = trees and a few rocks, rock = rocks only, stone = headstones).
-// lens: rows per biome, by biome (grassland, boulder field, graveyard), each including its blend into the next.
-// The boulder field is the long one now; the graveyard biome is a log river section around ONE graveyard
-const BIOME = { lens: [40, 56, 44], blend: 16, order: [0, 1, 2] };
+// lens: rows per biome, by biome (grassland, boulder field, graveyard, desert), each including its blend into the next.
+// The boulder field is the long one now; the graveyard biome is a log river section around ONE graveyard.
+// The desert's real length is random (DESERT.len); its lens entry is only a fallback.
+// Order: the run starts in grassland; after that each biome picks the next one at random (equal chances) from
+// BIOME_NEXT, Izzy's biome graph (rulebook section 1). 0 grassland, 1 boulder field, 2 graveyard, 3 desert.
+// Never boulder field <-> graveyard, never snow -> boulder field, never a biome after itself. 4 is snow.
+const BIOME = { lens: [40, 56, 44, 46, 60], blend: 16 };
+const BIOME_NEXT = { 0: [2, 3, 4], 1: [0, 3, 4], 2: [0, 3, 4], 3: [0, 1], 4: [0] };   // snow -> boulder field removed (Izzy: frozen at the end of the snow, then the field, was impossible)
+const DESERT = { len: [40, 52] };
 const BIOMES = [
   { name: 'GRASSLAND', fam: { road: 34, river: 20, rail: 14, park: 8, jam: 8 }, rollers: true,
     grass: COLORS.grass, grassAlt: COLORS.grassAlt, road: COLORS.road, water: [COLORS.water, COLORS.waterDeep],
@@ -714,8 +709,69 @@ const BIOMES = [
     deco: 'rock', decoChance: 0.12, sky: 0xc9c3b8 },
   { name: 'GRAVEYARD', fam: { river: 24 }, rollers: false,   // spooky log rivers, and one graveyard (placed below) in the middle
     grass: GRAVE.grass, grassAlt: GRAVE.grassAlt, road: [0x484954, 0x41424d], water: [0x4f8c94, 0x447f88],
-    deco: 'stone', decoChance: 0.1, sky: 0xa69cc8 }
+    deco: 'stone', decoChance: 0.1, sky: 0xa69cc8 },
+  { name: 'DESERT', fam: { tumble: 12, rail: 8 }, rollers: false,   // no roads, rivers or parks: rolling tumbleweeds and trains (the snake and the needles come on their own)
+    grass: [0xf2d48c, 0xeacb80], grassAlt: [0xedcf86, 0xe5c67a], road: [0x8f7f66, 0x88785f], water: [COLORS.water, COLORS.waterDeep],
+    deco: 'cactus', decoChance: 0.08, sky: 0xf6dca6 },
+  { name: 'SNOW', fam: { rail: 8 }, rollers: false,   // no cars, no rivers: long stretches of snow (snowmen, igloos, one ice lake) and train tracks
+    grass: [0xf7fafd, 0xf0f5fa], grassAlt: [0xf2f6fb, 0xebf1f8], road: [0x8a96a6, 0x828e9e], water: [COLORS.water, COLORS.waterDeep],
+    deco: 'pine', decoChance: 0.1, sky: 0xdce8f3 }
 ];
+// ---------------- snow (in design, tester only) ----------------
+// Numbers marked (tunable) are starting guesses for Izzy to change after playing the tester.
+const SNOW = {
+  slowMul: 0.85,                 // (tunable) hop speed on snow; ice slides are not slowed
+  warnSec: 3,                    // (tunable) blizzard warning length
+  freezeSec: 4,                  // (tunable) frozen time if caught outside (and from a snowball); a snowball while frozen shatters you
+  blizzardEveryRows: [12, 20],   // (tunable) rows between blizzards
+  snowballFreezes: true,         // Izzy: snowballs freeze, they don't kill
+  firstBlizzard: 10,             // tester: the first blizzard comes at this row
+  layer: 0.14,                   // snow depth: the bottom 10% of the character (1.37 tall) is in it
+  iglooEvery: 5,                 // (tunable) a row with one igloo per face this often
+  manGap: [4, 6],                // (tunable) rows between snowman rows (one snowman per face, sometimes two: twoPerFace)
+  twoPerFace: 0,
+  windup: 0.8,                   // (tunable) seconds the arm is raised before a throw
+  flight: 0.9,                   // (tunable) snowball time in the air; its landing tile is marked the whole time
+  arc: 2.2,                      // snowball peak height above a straight line
+  throwGap: [1.2, 2.2],          // (tunable) seconds before another snowman may start throwing
+  reload: 2.0,                   // (tunable) seconds a snowman takes to scoop up its next snowball
+  team: 0.2,                     // chance a second snowman joins in while one is already throwing (never more than 2)
+  throwRows: [1, 6],             // snowmen this many rows ahead of you, on your face, can throw
+  slideSlowest: 0.5,             // (tunable) on ice you slide at your own hop pace (time between your last hops), at most this slow
+  lakeRows: 15, lakeFirst: 26,   // each face of a snowfield gets one lake, 15 rows long (tester: the lake section starts at row 26)
+  lakeStagger: 6,                // the four lakes start up to this many rows apart (and at their own columns), so they don't line up
+  giantEvery: [4, 7],            // (tunable) seconds between giant snowballs (one or two at a time)
+  giantFirst: 5, giantMax: 3,
+  giantPair: 0, giantAim: 0,     // chance one comes with a partner a few columns over; chance it aims where you're heading
+  giantAhead: 16,                // they start this many rows ahead of you, lined up on your column
+  giantSpeed: 2.4,               // (tunable) rows per second x the speed multiplier
+  giantSize: [0.6, 2.6],         // (tunable) tiles wide at the start, and the most they grow to
+  giantGrow: 0.13,               // tiles wider per row rolled
+  lakeCalm: 6,                   // no blizzard starts on a lake or this many rows before one
+  lakeLead: 6,                   // the lake starts at least this many rows into a snowfield (one lake per snowfield)
+  plainShare: 0.75, plainRows: [4, 8],   // in a snowfield, most picks are a stretch of plain snow; the rest are train tracks
+  blizzardLead: 6,               // no blizzard in a snowfield's first rows, nor in its last few before the fade out
+  holeChance: 0.2,               // (tunable) share of lake tiles that are holes or cracks (both kill)
+  lakeWidth: [5, 9],             // (tunable) tiles wide, on one face, anywhere on it; edges wobble a tile row by row
+  flakes: 450,                   // (tunable) falling snow: one Points object, recycled; 60 normally, all of them in a blizzard
+  screenFlakes: 220,             // (tunable) snowflakes blowing across the screen in a blizzard
+  mashCut: 0.3,                  // (tunable) seconds of freeze each press while frozen breaks off
+  refreezeSec: 0.26,             // (tunable) in a blizzard, breaking free gives you this long before you freeze again: time to start 2 snow hops if you spam
+  prints: 24,                    // footprints kept (oldest is reused)
+  // later in a run snow gets harder: each of these slides from its value above to this one along the game's difficulty
+  // curve (progressAt: nothing before row 100, about 40% at 200, 86% at 500). Test mode uses these hard values.
+  hard: { warnSec: 2.5, blizzardEveryRows: [8, 14], iglooEvery: 7, manGap: [2, 4], twoPerFace: 0.5, windup: 0.6,
+          throwGap: [0.8, 1.4], reload: 1.3, team: 0.55, giantEvery: [2.5, 4.5], giantPair: 0.4, giantAim: 0.6 }
+};
+// a snow setting at row v: its easy value early in a run, sliding to SNOW.hard[key] as the run goes on
+function snowSet(key, v = player.v) {
+  const k = test.on ? 1 : progressAt(v), a = SNOW[key], b = SNOW.hard[key];
+  return Array.isArray(a) ? a.map((x, i) => lerp(x, b[i], k)) : lerp(a, b, k);
+}
+const snowInt = (key, v) => { const r = snowSet(key, v); return randInt(Math.round(r[0]), Math.round(r[1])); };
+const SNOW_TEST = false;         // the snow tester page sets this: every row is snow
+const snowTest = () => test.on && ['snowman', 'lake', 'blizzard'].includes(test.only);   // test mode: every row is snow
+const snowAll = () => SNOW_TEST || snowTest();
 // Biome segments are laid out as the run goes, each with its own length. A boulder field's length depends on
 // its special obstacle (rolled when the segment is made): a short run-up, the special (a chasm of 11-15 rows,
 // or the stone roller's stretch), then FIELD_LEN.tail rows of crumbling ground. Fields with no special are a
@@ -723,8 +779,10 @@ const BIOMES = [
 const FIELD_LEN = { lead: 4, rollerSection: 13, tail: [10, 15], plain: [22, 26] };
 const bSegs = [];
 function makeSeg(i, start) {
-  const n = BIOME.order.length, cur = BIOME.order[i % n], seg = { start, cur, next: BIOME.order[(i + 1) % n], special: null, pr: 0 };
+  // each segment is the biome the one before it picked as its next (the first is grassland)
+  const dt = desertTest(), sa = snowAll(), cur = sa ? 4 : dt ? 3 : i === 0 ? 0 : bSegs[i - 1].next, seg = { start, cur, next: sa ? 4 : dt ? 3 : pick(BIOME_NEXT[cur]), special: null, pr: 0 };
   let pure = BIOME.lens[cur] - BIOME.blend;
+  if (cur === 3) pure = randInt(DESERT.len[0], DESERT.len[1]) - BIOME.blend;
   if (cur === 1) {
     const r = Math.random();
     seg.special = r < FIELD_SPECIAL.chasm ? 'chasm' : r < FIELD_SPECIAL.chasm + FIELD_SPECIAL.roller ? 'roller' : 'none';
@@ -1025,19 +1083,6 @@ const FIREBALL_GEO = (() => {
 })();
 const TRAIL_GEOS = [0xffe27a, 0xff9a2a, 0xe8461a].map(c => { const m = new Merge(); m.part(c, 0, 0, 0, 0.2, 0.2, 0.2); return m.geometry(); });
 const emberTrail = [];
-// the flame sprite: a little living fire with a face (not used by the coal train any more)
-const FLAME_SPRITE_GEO = (() => {
-  const m = new Merge(), o = 0xff6a1a, y = 0xffb43a, w = 0xffe27a, k = 0x2a1208;
-  m.part(o, 0, 0.22, 0, 0.42, 0.4, 0.36);                       // body
-  m.part(y, 0, 0.26, 0.04, 0.3, 0.3, 0.3);
-  m.part(o, 0, 0.5, 0, 0.3, 0.24, 0.28); m.part(y, 0.02, 0.62, 0, 0.18, 0.2, 0.18); m.part(w, 0, 0.76, 0, 0.08, 0.14, 0.08);   // flame tip
-  m.part(o, -0.16, 0.48, 0.02, 0.1, 0.16, 0.1); m.part(o, 0.17, 0.44, -0.02, 0.1, 0.14, 0.1);   // side licks
-  m.part(k, -0.08, 0.3, 0.19, 0.07, 0.1, 0.01); m.part(k, 0.08, 0.3, 0.19, 0.07, 0.1, 0.01);   // eyes
-  m.part(w, -0.07, 0.32, 0.195, 0.025, 0.03, 0.005); m.part(w, 0.09, 0.32, 0.195, 0.025, 0.03, 0.005);
-  m.part(k, 0, 0.17, 0.19, 0.14, 0.04, 0.01);                   // grin
-  m.part(o, -0.27, 0.3, 0, 0.12, 0.08, 0.08); m.part(o, 0.27, 0.36, 0, 0.12, 0.08, 0.08);    // little arms
-  return m.geometry();
-})();
 function classicTrainGeometry(front, red = false) {
   const m = new Merge();
   m.part(red ? (front ? 0xb3201a : 0xd8302a) : (front ? 0xd8433b : 0x3d6fd6), 0, 0.6, 0, 0.96, 0.9, 0.86);
@@ -1048,8 +1093,38 @@ function classicTrainGeometry(front, red = false) {
   m.part(0x26262c, 0, 0.1, 0, 0.8, 0.2, 0.7);
   return m.geometry();
 }
-// coal trains only run in the boulder field; everywhere else it's the classic train
-const trainGeometry = (front, red, biome) => biome === 1 ? coalTrainGeometry(front, red) : classicTrainGeometry(front, red);
+// desert trains: an old Wild-West steam engine (iron boiler, flared stack, brass dome and bell, red cowcatcher, wooden cab, big red
+// wheels) pulling wooden boxcars. The red train's version is red-hot: glowing boiler bands and stack, red-painted cars.
+function westTrainGeometry(front, red = false) {
+  const m = new Merge();
+  const wheels = xs => { for (const x of xs) for (const z of [-0.4, 0.4]) { m.part(red ? 0xff4a2a : 0xc22a22, x, 0.17, z, 0.3, 0.3, 0.08); m.part(0x3a1210, x, 0.17, z * 1.08, 0.1, 0.1, 0.02); } };
+  m.part(0x26262c, 0, 0.17, 0, 0.9, 0.12, 0.62);                                  // chassis
+  if (front) {
+    wheels([-0.28, 0.02, 0.3]);
+    m.part(red ? 0x5a1a14 : 0x2a2a2e, 0.14, 0.52, 0, 0.66, 0.44, 0.5);           // boiler on its side
+    m.part(red ? 0xff6a2a : 0x3c3c44, 0.14, 0.52, 0.255, 0.6, 0.04, 0.01); m.part(red ? 0xff6a2a : 0x3c3c44, 0.14, 0.52, -0.255, 0.6, 0.04, 0.01);   // bands
+    m.part(0x1e1e22, 0.32, 0.88, 0, 0.14, 0.3, 0.14);                           // smokestack
+    m.part(red ? 0x7a2a1a : 0x2a2a2e, 0.32, 1.06, 0, 0.3, 0.1, 0.3);              // its flared top
+    if (red) m.part(0xff6a2a, 0.32, 1.12, 0, 0.18, 0.03, 0.18);
+    m.part(0xd9b84a, 0.06, 0.82, 0, 0.18, 0.12, 0.18);                           // brass dome
+    m.part(0xd9b84a, -0.1, 0.86, 0, 0.1, 0.12, 0.1); m.part(0xb08a2a, -0.1, 0.95, 0, 0.14, 0.05, 0.14);   // bell
+    m.part(0xfff2a8, 0.48, 0.55, 0, 0.03, 0.14, 0.18);                            // headlight
+    m.part(0xd8302a, 0.46, 0.2, 0, 0.08, 0.1, 0.5); m.part(0xd8302a, 0.52, 0.13, 0, 0.08, 0.08, 0.56);   // cowcatcher
+    m.part(red ? 0x8a2a1a : 0x8a5a2e, -0.3, 0.68, 0, 0.4, 0.62, 0.8);             // wooden cab
+    m.part(0x4a2e18, -0.3, 1.02, 0, 0.5, 0.06, 0.9);
+    for (const z of [-0.405, 0.405]) m.part(0xe8d28a, -0.3, 0.76, z, 0.22, 0.2, 0.01);
+  } else {
+    wheels([-0.28, 0.28]);
+    m.part(red ? 0xa8281e : 0x9a6a3a, 0, 0.58, 0, 0.94, 0.62, 0.84);             // boxcar
+    for (const y of [0.4, 0.58, 0.76]) for (const z of [-0.425, 0.425]) m.part(red ? 0x5a1410 : 0x5e3a1c, 0, y, z, 0.94, 0.03, 0.01);   // plank lines
+    for (const z of [-0.425, 0.425]) m.part(red ? 0x5a1410 : 0x5e3a1c, 0.15, 0.58, z, 0.04, 0.62, 0.01);
+    m.part(red ? 0x6a1a14 : 0x6b4424, 0, 0.92, 0, 0.98, 0.06, 0.88);
+    m.part(0x2a1a0e, 0.2, 0.55, 0.425, 0.24, 0.3, 0.01); m.part(0x2a1a0e, 0.2, 0.55, -0.425, 0.24, 0.3, 0.01);   // door
+  }
+  return m.geometry();
+}
+// coal trains run in the boulder field, steam trains in the desert; everywhere else it's the classic train
+const trainGeometry = (front, red, biome) => biome === 1 ? coalTrainGeometry(front, red) : biome === 3 ? westTrainGeometry(front, red) : classicTrainGeometry(front, red);
 const LOG_GEO = (() => {
   const m = new Merge();
   m.part(COLORS.log, 0, -0.04, 0, 1.0, 0.34, 0.7);
@@ -1267,9 +1342,15 @@ const COIN_MAT = new THREE.MeshLambertMaterial({ color: COLORS.coin, emissive: 0
 
 // ---------------- lanes ----------------
 const lanes = new Map();
-const gen = { type: 'grass', left: 0, lastRiverDir: 1, queue: [], lastJam: false, zone: null, lastZoneEnd: -999,
-              calmFrom: -1, calmTo: -2, nextDarkAt: 0, darkFlip: false };
-
+const gen = { type: 'grass', left: 0, queue: [], lastJam: false, zone: null, lastZoneEnd: -999,
+              calmFrom: -1, calmTo: -2, nextDarkAt: 0, darkFlip: false, cactusCol: [5, 5, 5, 5] };
+// The snake (desert): at most one at a time. Once you're in pure desert (and `cooldown` s after the last one) it
+// rises out of the sand `ahead` rows in front of you, on your face, shown `tele` s early as dust at its entry edge.
+// It zigzags toward you (a full row across, one row nearer at the edge) for as long as the desert lasts, `speed`
+// tiles/s (times nerf and the speed multiplier), `segs` segments `gap` tiles apart, then sinks back into the sand
+// behind you or at the desert's end. `hit` is the hit radius.
+// speed was 3.6, then 4.7, then 6.0 (Izzy asked for a faster snake twice)
+const SNAKE = { ahead: 8, segs: [5, 7], lenSpeed: [1, 0.95, 0.9], speed: 6.0, nerf: 0.75, gap: 1.0, tele: 1.0, cooldown: 4, hit: 0.55 };
 // A jam pattern: direction, speed and gap centres, shared by the jam and (for difficult jams) its escort lanes.
 function makeJamPattern(tier, v) {
   const cfg = JAM[tier];
@@ -1377,10 +1458,10 @@ function planEscorts(pat) {
       if (!best || worst < best.worst) best = { cars, worst };
       if (worst <= cfg.maxBlocked) break;
     }
-    if (best.worst <= cfg.maxBlocked) return { dir: -pat.dir, cars: best.cars, worst: best.worst, fallback: false };
+    if (best.worst <= cfg.maxBlocked) return { dir: -pat.dir, cars: best.cars };
   }
   const al = alignedEscorts(pat);
-  return { dir: pat.dir, cars: [al, al], worst: 0, fallback: true };
+  return { dir: pat.dir, cars: [al, al] };
 }
 
 // One row of a crumble zone: starts and ends on cracked ground, with rolling-boulder road and rail blocks in between.
@@ -1484,6 +1565,14 @@ function nextSpec(v) {
     const plain = s.type === 'grass' && !s.inZone && !s.park && !s.grave;
     s.biome = s.grave ? 2 : plain ? rollBiome(v) : gen.blockBiome;
   }
+  if (!snowAll() && s.type === 'grass' && s.biome === 4 && s.lake === undefined && !s.igloo && !s.inZone) {
+    const b = biomeAt(v);
+    if (b.cur === 4 && b.t === 0) {
+      if (gen.snowSeg !== b.seg) { gen.snowSeg = b.seg; gen.snowNextIgloo = b.start; gen.snowMan = b.start + 3; }
+      if (v >= gen.snowNextIgloo) { s.igloo = true; s.clear = true; gen.snowNextIgloo = v + Math.round(snowSet('iglooEvery', v)); }
+      else if (v >= gen.snowMan) { s.men = true; gen.snowMan = v + snowInt('manGap', v); }
+    }
+  }
   // boulder field ground cracks everywhere. Any open-ground row (plain, park or the sparse row after a jam)
   // in a blend into or out of the boulder field cracks tile by tile, following the blend
   if (s.type === 'grass' && !s.inZone && !s.grave && !s.clear && !s.cracked && !s.chasm && !test.on && v >= START_SAFE) {   // chasm rock never crumbles
@@ -1494,23 +1583,6 @@ function nextSpec(v) {
   return s;
 }
 // the chasm tester's run: 2 grass rows, 4 rows of crumbling rock, the chasm, 4 rows of crumbling rock, 3 grass rows
-// one pillar row of a chasm on the grid. route: per face, the slot the way through arrives at. The way through
-// always slides 1-2 slots sideways along the row before going on, so there is never a straight line to leap
-// down; plus up to one decoy that leads nowhere useful.
-function pillarRowFrom(route) {
-  const pil = new Set(), S = SLOTS.length;
-  for (let f = 0; f < 4; f++) {
-    const r = route[f];
-    let r2 = r + pick([-2, -1, 1, 2]);
-    if (r2 < 0 || r2 > S - 1) r2 = r - (r2 - r);
-    r2 = Math.max(0, Math.min(S - 1, r2));
-    for (let i = Math.min(r, r2); i <= Math.max(r, r2); i++) pil.add(f * W + SLOTS[i]);
-    route[f] = r2;
-    for (let d = randInt(CHASM.decoys[0], CHASM.decoys[1]); d > 0; d--) pil.add(f * W + SLOTS[randInt(0, S - 1)]);
-  }
-  return pil;
-}
-const newRoute = () => Array.from({ length: 4 }, () => randInt(0, SLOTS.length - 1));
 // a whole chasm's pillar rows at once, one face at a time, so no face has a slot with a pillar in every row
 // (no straight line to leap down: the way through always needs sideways leaps)
 function makeChasmLayout(n, thin = false) {
@@ -1536,10 +1608,6 @@ function makeChasmLayout(n, thin = false) {
   }
   return rows;
 }
-function chasmPillarRow(i) {
-  if (i === 0) gen.chasmLayout = makeChasmLayout(CHASM.pillarRows);
-  return gen.chasmLayout[i];
-}
 // every row of one chasm, starting with its near edge at row v
 function chasmRows(v, pr = randInt(CHASM.pillarRows[0], CHASM.pillarRows[1])) {
   const n = 2 * pr + 1, layout = makeChasmLayout(pr), rows = [];
@@ -1558,12 +1626,23 @@ function chasmTestSpec(v) {
 }
 function nextSpecRaw(v) {
   if (CHASM_TEST) return gen.queue.length ? gen.queue.shift() : chasmTestSpec(v);
+  if (snowAll()) return snowTestSpec(v);
   if (v < START_SAFE) return { type: 'grass' };
   if (gen.zone) return zoneSpec(v);
   if (gen.queue.length) return gen.queue.shift();
-  if (gen.left > 0) { gen.left--; return gen.type === 'grass' ? { type: 'grass' } : { type: gen.type, hard: gen.blockHard, boulder: gen.blockBoulder }; }
+  if (gen.left > 0) { gen.left--; return gen.type === 'grass' ? { type: 'grass' } : { type: gen.type, hard: gen.blockHard, boulder: gen.blockBoulder, tumble: gen.blockTumble }; }
   if (gen.type !== 'grass') {               // a strip of grass after every hazard block
     gen.type = 'grass'; gen.left = randInt(SPACING.grassAfter[0], SPACING.grassAfter[1]) - 1; gen.blockHard = false; return { type: 'grass' };
+  }
+  const sb = biomeAt(v);
+  if (!test.on && sb.cur === 4 && sb.t === 0) {
+    if (gen.snowLakeSeg !== sb.seg && v >= sb.start + SNOW.lakeLead && v + SNOW.lakeRows + SNOW.lakeStagger + 2 < sb.end - BIOME.blend) {
+      gen.snowLakeSeg = sb.seg;
+      for (let k = 0; k < SNOW.lakeRows + SNOW.lakeStagger; k++) gen.queue.push({ type: 'grass', biome: 4, lake: k });
+      gen.queue.push({ type: 'grass', biome: 4, igloo: true, clear: true });
+      return { type: 'grass', biome: 4, igloo: true, clear: true };
+    }
+    if (Math.random() < SNOW.plainShare) { gen.type = 'grass'; gen.left = randInt(SNOW.plainRows[0], SNOW.plainRows[1]) - 1; return { type: 'grass' }; }
   }
   const prog = progressAt(v);
   const jamAllowed = !gen.lastJam;
@@ -1575,26 +1654,28 @@ function nextSpecRaw(v) {
   // this block's biome: inside a blend, the next biome with chance t
   const bi = biomeAt(v);
   // blocks run a few rows, so they roll a little ahead of the ground (t + 0.25) to keep pace with it
-  const bio = test.on ? 0 : bi.t > 0 && Math.random() < bi.t + 0.25 ? bi.next : bi.cur;
+  const bio = desertTest() ? 3 : test.on ? 0 : bi.t > 0 && Math.random() < bi.t + 0.25 ? bi.next : bi.cur;
   const leaving = !test.on && bio === bi.cur && bi.t > 0;              // old biome inside the blend: short blocks only
   gen.blockBiome = bio;
-  const weights = Object.entries(test.on ? FAMILY : BIOMES[bio].fam).filter(([f]) =>
+  const weights = Object.entries(desertTest() ? BIOMES[3].fam : test.on ? FAMILY : BIOMES[bio].fam).filter(([f]) =>
     !(leaving && (f === 'crumble' || f === 'park' || f === 'jam')) &&
     !(!test.on && f === 'crumble' && bi.t > 0) &&
     !(!test.on && bio === bi.cur && ((f === 'crumble' && v + ZONE.rows > bi.end) || (f === 'park' && v + (bio === 2 ? GRAVE.rows[1] : PARK.rows[1]) > bi.end))) &&
     !(f === 'park' && !parkAllowed) &&
     !(!test.on && f === 'river' && bi.next === 1 && v >= bi.end - BIOME.blend - FIELD.dryRows) &&
-    !(!test.on && (f === 'road' || f === 'jam') && bi.t > 0 && (bi.next === 1 || bi.cur === 1)) &&
+    !(!test.on && (f === 'road' || f === 'jam' || f === 'tumble') && bi.t > 0 && (bi.next === 1 || bi.cur === 1)) &&
     !(!test.on && f === 'jam' && bi.next === 1 && v + 5 >= bi.end - BIOME.blend) &&
     !(f === 'rail' && GRAVE.calm.noRails && inCalm(v)) &&
     !(f === 'jam' && (!jamAllowed || v < JAM.normal.fromRow)) &&
     !(f === 'crumble' && (v < ZONE.fromRow || v - gen.lastZoneEnd < ZONE.minSpacing)));
+  // nothing allowed here (e.g. a snowfield, whose only hazard is tracks, during a ghost chase): plain ground instead
+  if (!weights.length && !test.on) { gen.type = 'grass'; gen.left = randInt(SNOW.plainRows[0], SNOW.plainRows[1]) - 1; return { type: 'grass' }; }
   if (test.on && test.only === 'roller') {
     // testing steamrollers: long stretches of land, so one can come along every few rows
     const keep = weights.filter(([f]) => f !== 'rail');
     weights.length = 0; weights.push(...(keep.length ? keep : [['road', 1]]));
     test.first = false;
-  } else if (test.on && (test.only === 'dark' || test.only === 'ghost')) {
+  } else if (test.on && test.only && !testFam()) {
     test.first = false;                                   // darkness sits on top of ordinary rows
   } else if (test.on && test.only) {
     // the tested family comes first, then about a third of the time, ignoring its usual row limits
@@ -1622,6 +1703,7 @@ function nextSpecRaw(v) {
       bi.end - BIOME.blend - v >= GRAVE.rows[1] + 2 + 1) { gen.graveSeg = bi.seg; fam = 'park'; hard = true; }
   if (inCalm(v) && (fam === 'park' || (fam === 'jam' && GRAVE.calm.noGridlock))) hard = false;
   gen.blockBoulder = fam === 'boulder';
+  gen.blockTumble = fam === 'tumble';
   gen.blockHard = hard;
 
   // the boulder field biome is crumbling ground all the way through: outside its blends every block is a
@@ -1674,7 +1756,8 @@ function nextSpecRaw(v) {
     return rows[0];
   }
   const room = !test.on && bio === bi.cur ? Math.max(1, bi.end - v) : 99;     // rows left before the boundary
-  if (fam === 'road' || fam === 'boulder') {
+  if (fam === 'tumble') { gen.type = 'road'; gen.left = Math.min(room - 1, randInt(0, 1)); }      // 1-2 rows
+  else if (fam === 'road' || fam === 'boulder') {
     gen.type = 'road';  gen.left = Math.min(room - 1, randInt(0, 2 + Math.round(prog * 2)));
     if (!test.on && bi.next === 1) gen.left = Math.max(0, Math.min(gen.left, bi.end - BIOME.blend - v - 1));   // roads stop before a boulder field's fade
   }
@@ -1690,7 +1773,7 @@ function nextSpecRaw(v) {
     gen.type = 'river'; gen.left = Math.min(room, n) - 1;
   }
   else                      { gen.type = 'rail';  gen.left = Math.min(room - 1, randInt(0, 1)); }
-  return { type: gen.type, hard, boulder: gen.blockBoulder };
+  return { type: gen.type, hard, boulder: gen.blockBoulder, tumble: gen.blockTumble };
 }
 
 // land: the row before or after a lily pad row. canClear: land isn't drawn yet, so clear the tile next to one
@@ -1721,7 +1804,7 @@ function makeLane(v) {
     fuseMeshes: new Map(),  // cracked tile -> its warning overlay
     park: !!spec.park, grave: !!spec.grave,
     biome: spec.biome || 0, tileB: new Uint8Array(P),
-    chasm: spec.chasm || null
+    chasm: spec.chasm || null, spiky: new Set()     // spiky: desert cactus tiles that can shoot needles
   };
   if (spec.chasmStart) {
     chasms.push({ edge: v, far: spec.chasmFar, quakeT: 0, phase: 'idle', sink: [], rise: [], marks: [], woke: false });
@@ -1770,7 +1853,7 @@ function makeLane(v) {
         else if (spec.coinTiles.includes(p)) lane.coins.set(p, null);
         continue;
       }
-      let chance = deco ? 0.7 : (v < START_SAFE ? 0.1 : BIOMES[tb].decoChance);
+      let chance = deco ? 0.7 : (v < START_SAFE ? 0.1 : BIOMES[tb].decoChance * (test.on && test.only === 'cactus' ? 2 : 1));
       if ((spec.clear || spec.cracked || (lane.crackMask && lane.crackMask[p])) && !deco) chance = 0;
       if (spec.park && !deco) chance = spec.coinTiles.includes(p) ? 0 : PARK.treeChance;
       if (spec.sparse && !deco) chance = lane.blocked.has(wrapP(p - 1)) || (p === P - 1 && lane.blocked.has(0)) ? 0 : 0.08;
@@ -1778,11 +1861,18 @@ function makeLane(v) {
       if (Math.random() < chance) {
         lane.blocked.add(p);
         const d = deco ? 'tree' : BIOMES[tb].deco;
-        lane.trees.set(p, d === 'stone' ? -1 - randInt(0, 2) : d === 'rock' ? 0 : Math.random() < 0.82 ? randInt(1, 3) : 0);   // 0 = rock, <0 headstone
+        lane.trees.set(p, d === 'stone' ? -1 - randInt(0, 2) : d === 'rock' ? 0 : d === 'cactus' ? randInt(1, 3) : Math.random() < 0.82 ? randInt(1, 3) : 0);   // 0 = rock, <0 headstone
       } else if (!spec.chasm && (spec.park ? spec.coinTiles.includes(p) : (!deco && v >= 1 && Math.random() < 0.035))) {
         lane.coins.set(p, null);
       }
     }
+    // desert: every face keeps an open column, drifting by at most one tile per row, so there is always a way through
+    if (!deco && (bt.cur === 3 || bt.next === 3 || bt.cur === 4 || bt.next === 4)) for (let f = 0; f < 4; f++) {
+      const c = gen.cactusCol[f], nc = Math.max(0, Math.min(W - 1, c + randInt(-1, 1)));
+      for (const k of [c, nc]) { lane.blocked.delete(f * W + k); lane.trees.delete(f * W + k); }
+      gen.cactusCol[f] = nc;
+    }
+    if (!deco && lane.biome === 4) snowLane(lane, spec);
   } else if (type === 'road' && (spec.jam || spec.escort)) {
     const pat = spec.jam || spec.escort;
     lane.kind = spec.jam ? 'jam' : 'escort';
@@ -1798,19 +1888,25 @@ function makeLane(v) {
       for (const o of pat.escorts.cars[spec.side]) lane.vehicles.push({ o, len, color: pick(CAR_COLORS), parts: [] });
     }
   } else if (type === 'road') {
-    const rolling = spec.inZone || spec.boulder;
-    const truck = !rolling && Math.random() < 0.3;
-    lane.kind = rolling ? 'boulder' : truck ? 'truck' : 'car';     // boulder field: rolling boulders, not cars
+    const rolling = spec.inZone || spec.boulder, tumble = !!spec.tumble;
+    const truck = !rolling && !tumble && Math.random() < 0.3;
+    lane.kind = tumble ? 'tumble' : rolling ? 'boulder' : truck ? 'truck' : 'car';     // boulder field: rolling boulders, not cars; desert: tumbleweeds on sand
+    if (tumble) lane.tileB.fill(3);
     lane.dir = Math.random() < 0.5 ? 1 : -1;
-    lane.speed = (truck ? rand(1.6, 2.6) : lane.kind === 'boulder' ? rand(2.0, 3.4) : rand(2.2, 4.0)) * mul;
+    lane.speed = (tumble ? rand(1.8, 3.0) * 0.75 : truck ? rand(1.6, 2.6) : lane.kind === 'boulder' ? rand(2.0, 3.4) : rand(2.2, 4.0)) * mul;
     // difficult variant: this lane is a conveyor that drags you against the traffic
-    lane.belt = !rolling && (test.on ? !!spec.hard : Math.random() < hardShare(v));
+    lane.belt = !rolling && !tumble && (test.on ? !!spec.hard : Math.random() < hardShare(v));
     if (lane.belt) {
       lane.beltDir = -lane.dir;
       lane.beltSpeed = BELT.speed * mul;
       bonuses.push({ row: v + 1, points: BONUS.belt, label: 'CONVEYOR' });
     }
-    const len = truck ? 2.7 : lane.kind === 'boulder' ? ROLL.len : 1.5;
+    const len = truck ? 2.7 : lane.kind === 'boulder' ? ROLL.len : tumble ? 0.6 : 1.5;
+    if (tumble) {
+      // 2-3 tumbleweeds, each with its own position (storms blow them about, so no timetable)
+      const n = randInt(2, 3), slot = P / n, base = Math.random() * P;
+      for (let i = 0; i < n; i++) lane.vehicles.push({ pos: base + i * slot + rand(0, slot * 0.4), len, ph: rand(0, 6.28), parts: [] });
+    } else {
     // space cars by time, so even on the slowest stretch (the ceiling) there's a car-and-a-bit between them
     const minDt = (len + GRAVITY.carGap) / MIN_FACTOR;
     const n = Math.min(truck ? randInt(3, 4) : randInt(4, 6), Math.floor(LAP_TIME / minDt));
@@ -1820,6 +1916,7 @@ function makeLane(v) {
       lane.vehicles.push({ u: base + i * slot + Math.random() * slack, len, color: pick(CAR_COLORS), parts: [] });
     }
     for (let p = 0; p < P; p++) if (Math.random() < 0.02) lane.coins.set(p, null);
+    }
   } else if (type === 'river' && !(prev && prev.type === 'pads') && Math.random() < LILY.chance) {
     // a row of stationary lily pads
     lane.type = 'pads';
@@ -1862,7 +1959,8 @@ function makeLane(v) {
   } else {   // rail
     lane.dir = Math.random() < 0.5 ? 1 : -1;
     lane.idle = rand(2.5, 5.5);
-    lane.hard = (!spec.inZone || spec.biome === 1) && (test.on ? !!spec.hard : Math.random() < hardShare(v));
+    // no red trains in the desert (Izzy): its tracks always get the normal Wild-West train
+    lane.hard = (!spec.inZone || spec.biome === 1) && lane.biome !== 3 && (test.on ? !!spec.hard : Math.random() < hardShare(v));
     if (lane.hard) {
       lane.warn = RED_TRAIN.warn;
       lane.trainLen = P - RED_TRAIN.gap;
@@ -1901,6 +1999,7 @@ function makeLane(v) {
   if (prev && prev.type === 'pads' && !isWater(lane)) padExits(prev.pads, lane, true);
   if (lane.type === 'pads' && prev && !isWater(prev)) padExits(lane.pads, prev, false);
 
+  for (const [p, t] of lane.trees) if (t > 0 && lane.tileB[p] === 3 && Math.random() < 0.45) lane.spiky.add(p);
   buildLaneStatic(lane);
   buildLaneDynamic(lane);
   scene.add(lane.group);
@@ -1945,7 +2044,7 @@ function darknessAt(v) {
   return { amt, hard };
 }
 const DAY = { fogNear: 18, fogFar: 34, ambient: 0.5, sun: 0.6 };
-const _sky = new THREE.Color(), _night = new THREE.Color();
+const _sky = new THREE.Color(), _night = new THREE.Color(), _storm = new THREE.Color();
 const darkLook = { amt: 0, hardK: 0 };
 const _dusk = new THREE.Color(), _fog = new THREE.Color();
 // how lit the dark is right now: 1 during a flash, 0 between them (a steady beat you can time hops to)
@@ -1980,7 +2079,7 @@ function updateDarkness(dt) {
   scene.fog.near = lerp(DAY.fogNear, near, k);
   scene.fog.far = lerp(DAY.fogFar, far, k);
   const bc = biomeAt(camState.v + 4), bt = bc.t * bc.t * (3 - 2 * bc.t);
-  _sky.setHex(BIOMES[bc.cur].sky).lerp(_night.setHex(BIOMES[bc.next].sky), bt).lerp(_fog, k);
+  _sky.setHex(BIOMES[bc.cur].sky).lerp(_night.setHex(BIOMES[bc.next].sky), bt).lerp(_fog, k).lerp(_storm.setHex(STORM.color), Math.max(0, storm.amt - 0.3) / 0.7 * 0.6);
   scene.fog.color.copy(_sky);
   scene.background.copy(_sky);
   ambient.intensity = lerp(DAY.ambient, amb, k);
@@ -2059,10 +2158,37 @@ function buildLaneStatic(lane) {
         if (cx > x + 0.4 || cz > 0.4) break;
       }
       }
-    } else if (lane.type === 'grass') {
+    } else if (lane.type === 'grass' || lane.kind === 'tumble') {
       const B = BIOMES[lane.tileB[p]];
       const pal = lane.grave ? (v % 2 ? GRAVE.grass : GRAVE.grassAlt) : (v % 2 ? B.grass : B.grassAlt);
-      m.box(pal[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      const snowy = lane.tileB[p] === 4, icy = !!(lane.ice && lane.ice.has(p));
+      m.box(snowy ? 0xc9d5e2 : pal[alt], x, -0.2, 0, 1, 0.4, 1, rot);
+      const hz = icy && lane.iceHoles && lane.iceHoles.get(p);
+      if (hz === 'hole') {                                                 // a hole in the ice: dark water, a ragged rim
+        m.box(0x1b4a75, x, 0.005, 0, 1, 0.01, 1, rot);
+        for (const [dx, dz, w, d] of [[0, -0.44, 1, 0.12], [0, 0.44, 1, 0.12], [-0.44, 0, 0.12, 0.8], [0.44, 0, 0.12, 0.8], [-0.31, -0.31, 0.2, 0.2], [0.31, 0.3, 0.2, 0.22], [0.3, -0.33, 0.14, 0.16]])
+          m.box(0xeaf7ff, x + dx, 0.015, dz, w, 0.03, d, rot);
+      } else if (icy) {                                                    // ice: flat, glassy, a pale streak
+        m.box(alt ? 0xa9dbf3 : 0x9fd3ef, x, 0.01, 0, 1, 0.02, 1, rot);
+        if (hz === 'crack') {                                              // cracked ice: dark zigzags from the middle out
+          let seed = (v * 131 + p * 977) >>> 0;
+          const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
+          for (const [sx, sz] of [[1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+            let cx = x, cz = 0;
+            for (let k = 0; k < 3; k++) {
+              const lx = 0.08 + rnd() * 0.08, lz = 0.06 + rnd() * 0.08;
+              m.box(0x23557f, cx + sx * lx / 2, 0.024, cz, lx, 0.008, 0.05, rot); cx += sx * lx;
+              m.box(0x23557f, cx, 0.024, cz + sz * lz / 2, 0.05, 0.008, lz, rot); cz += sz * lz;
+            }
+          }
+          m.box(0x23557f, x, 0.024, 0, 0.14, 0.008, 0.14, rot);
+        } else if ((v * 7 + p * 3) % 4 === 0) m.box(0xe6f6ff, x - 0.1, 0.022, 0.1, 0.5, 0.006, 0.08, rot);
+      } else if (snowy) {                                                  // a layer of snow like a Minecraft snow layer
+        m.box(pal[alt], x, SNOW.layer / 2, 0, 1, SNOW.layer, 1, rot);
+        let sd = (v * 197 + p * 641) >>> 0;
+        const rr = () => ((sd = (sd * 1103515245 + 12345) >>> 0) / 4294967296);
+        if (rr() < 0.12) { const s2 = 0.08 + rr() * 0.08; m.box(0xfbfdff, x - 0.3 + rr() * 0.6, SNOW.layer + s2 / 8, -0.3 + rr() * 0.6, s2 * 1.6, s2 / 4, s2 * 1.3, rot); }
+      }
       const t = lane.trees.get(p);
       if (!lane.grave && B.deco === 'rock' && t === undefined) {
         // rocky ground: a darker seam where the slab is split, and a couple of pebbles (same every time per tile)
@@ -2073,6 +2199,14 @@ function buildLaneStatic(lane) {
           const s2 = 0.08 + rr() * 0.1;
           m.box(rr() < 0.5 ? 0xa2a4ac : 0x74767e, x - 0.35 + rr() * 0.7, s2 / 2, -0.35 + rr() * 0.7, s2, s2, s2 * 1.2, rot);
         }
+      }
+      if (B.deco === 'cactus' && t === undefined) {
+        // sand: now and then a thin darker ripple or a tiny pebble (same every time per tile)
+        let sd = (v * 197 + p * 641) >>> 0;
+        const rr = () => ((sd = (sd * 1103515245 + 12345) >>> 0) / 4294967296);
+        const r0 = rr();
+        if (r0 < 0.12) m.box(0xd9b86c, x - 0.5 + 0.15 + rr() * 0.7, 0.004, 0.25 - rr() * 0.5, 0.05, 0.01, 0.9, rot);
+        else if (r0 < 0.2) { const s2 = 0.07 + rr() * 0.05; m.box(0xb99a5c, x - 0.35 + rr() * 0.7, s2 / 2, -0.35 + rr() * 0.7, s2, s2, s2, rot); }
       }
       if ((lane.grave || B.deco === 'stone') && t === undefined && ((v * 53 + p * 29) % 23) === 0) {
         // a few scattered bones (just decoration)
@@ -2107,7 +2241,38 @@ function buildLaneStatic(lane) {
           m.box(GRAVE.engrave, x, 0.26, -0.105, wide - 0.32, 0.05, 0.012, rot);
         }
       } else if (t !== undefined) {
-        if (t === 0 && B.deco === 'rock') {                                // boulder field: chunky stacked rocks
+        if (B.deco === 'cactus') {                                         // a blocky green column; 2 has an arm, 3 two
+          const ch = 0.45 + t * 0.3;
+          m.box(0x5aa83a, x, ch / 2, 0, 0.36, ch, 0.36, rot);
+          m.box(0x46872c, x + 0.14, ch / 2, 0, 0.1, ch, 0.38, rot);
+          m.box(0x7bc653, x, ch + 0.015, 0, 0.36, 0.03, 0.36, rot);
+          if (lane.spiky.has(p)) {                                         // pale pricks always out: this one shoots
+            for (const f of [0.25, 0.5, 0.75]) for (const sx of [-1, 1]) {        // little grey pyramids
+              m.box(0x9ea0a8, x + sx * 0.23, ch * f, 0, 0.1, 0.09, 0.09, rot);
+              m.box(0x55575f, x + sx * 0.31, ch * f, 0, 0.07, 0.04, 0.04, rot);
+            }
+            m.box(0x9ea0a8, x, ch + 0.04, 0, 0.09, 0.08, 0.09, rot);
+            m.box(0x55575f, x, ch + 0.11, 0, 0.04, 0.07, 0.04, rot);
+          }
+          for (let a = 1; a < t; a++) {
+            const sx = a === 1 ? -1 : 1, ay = ch * 0.45 + a * 0.06;
+            m.box(0x5aa83a, x + sx * 0.18, ay, 0, 0.16, 0.12, 0.12, rot);
+            m.box(0x5aa83a, x + sx * 0.21, ay + 0.17, 0, 0.1, 0.34, 0.12, rot);
+          }
+        } else if (B.deco === 'pine') {
+          if (t === 0) {                                                   // a snowbank
+            m.box(0xf4f8fc, x, 0.22, 0, 0.86, 0.44, 0.8, rot);
+            m.box(0xffffff, x - 0.05, 0.5, 0.02, 0.6, 0.14, 0.56, rot);
+            m.box(0xdfe8f2, x, 0.22, 0.405, 0.86, 0.44, 0.01, rot);
+          } else {                                                         // a snowy pine: 2-4 tiers, a snow cap on each
+            m.box(0x6b4a2f, x, 0.25, 0, 0.24, 0.5, 0.24, rot);
+            for (let i = 0; i <= t; i++) {
+              const w = 0.84 - i * 0.17, y = 0.5 + i * 0.32;
+              m.box(i % 2 ? 0x2f6e4c : 0x2a6345, x, y, 0, w, 0.3, w, rot);
+              m.box(0xf7fbff, x, y + 0.17, 0, w - 0.08, 0.06, w - 0.08, rot);
+            }
+          }
+        } else if (t === 0 && B.deco === 'rock') {                                // boulder field: chunky stacked rocks
           const big = (v * 7 + p * 13) % 3 === 0;
           m.box(0x9a9ca4, x, 0.24, 0, 0.8, 0.48, 0.76, rot);
           m.box(0xb2b4bc, x - 0.04, 0.5, 0.02, 0.62, 0.08, 0.58, rot);
@@ -2183,6 +2348,11 @@ function buildLaneDynamic(lane) {
       rock.add(new THREE.Mesh(ROLL_FACE_GEO, VCOL));      // the face rolls with the rock
       spin.add(rock); holder.add(spin);
       veh.spin = spin;
+      veh.parts.push({ mesh: holder, off: 0 });
+    } else if (lane.kind === 'tumble') {
+      const ball = new THREE.Mesh(TUMBLE_GEO, VCOL), holder = new THREE.Object3D();
+      ball.scale.setScalar(1.3); holder.add(ball);
+      veh.ball = ball;
       veh.parts.push({ mesh: holder, off: 0 });
     } else if (lane.kind === 'truck') {
       const cab = new THREE.Mesh(truckCabGeometry(veh.color), VCOL);
@@ -2288,7 +2458,7 @@ function removeLane(lane) {
         o.geometry !== SKEL_GEO && o.geometry !== SKEL_EYE_GEO && o.geometry !== BELT_GEO && o.geometry !== MOUND_GEO && o.geometry !== ZOMBIE_GEO && o.geometry !== ZOMBIE_EYE_GEO && o.geometry !== MOUND_GLOW_GEO &&
         o.geometry !== SPOOKY_LOG_GEO && o.geometry !== SPOOKY_END_GEO &&
         o.geometry !== HEADLIGHT_GEO && o.geometry !== BEAM_GEO && o.geometry !== TAILLIGHT_GEO &&
-        o.geometry !== ROLL_GEO && o.geometry !== ROLL_FACE_GEO) o.geometry.dispose();
+        o.geometry !== ROLL_GEO && o.geometry !== ROLL_FACE_GEO && o.geometry !== TUMBLE_GEO && !SNOW_GEOS.includes(o.geometry)) o.geometry.dispose();
   });
   for (const sk of lane.skels || []) sk.eyeMat.dispose();
   if (lane.beltMat) { lane.beltMat.dispose(); lane.beltTex.dispose(); }
@@ -2305,6 +2475,7 @@ function ensureLanes() {
 
 // ---------------- moving things ----------------
 function vehicleCenter(lane, veh) {
+  if (veh.pos !== undefined) return veh.pos;                    // tumbleweeds keep their own position
   if (lane.uniform) return wrapP(veh.o + lane.dir * lane.speed * clock);
   return ringPosAt(veh.u + lane.speed * clock, lane.dir);
 }
@@ -2365,6 +2536,7 @@ function logUnder(lane, pf) {
   }
   return null;
 }
+const roadDeath = lane => lane.kind === 'boulder' ? 'roll' : lane.kind === 'tumble' ? 'tumble' : 'car';
 function vehicleHits(lane, pf) {
   return lane.vehicles.some(veh => ringDist(vehicleCenter(lane, veh), pf) < veh.len / 2 + 0.3);
 }
@@ -2375,7 +2547,7 @@ function carHonks() {
   if (game.mode !== 'play' || !game.started) return;
   const [pp, pv] = playerNow();
   const lane = lanes.get(Math.round(pv));
-  if (!lane || lane.type !== 'road' || !lane.speed || lane.kind === 'boulder') return;
+  if (!lane || lane.type !== 'road' || !lane.speed || lane.kind === 'boulder' || lane.kind === 'tumble') return;
   for (const veh of lane.vehicles) {
     const ahead = wrapP((pp - vehicleCenter(lane, veh)) * lane.dir);      // how far you are in front of its centre
     const gap = ahead - veh.len / 2;
@@ -2606,7 +2778,6 @@ function waterRunAt(v) {
 }
 // rivers of up to ROLLER.maxCross rows it drives across (0: none, it sinks in any river)
 const shortWater = v => { const n = waterRunAt(v); return n > 0 && n <= ROLLER.maxCross; };
-const rollerPath = v => rollable(lanes.get(v)) || shortWater(v);
 // the stone roller doesn't stop for tracks (it rumbles over them), so it can run inside a boulder field
 // the normal steamroller treats rock (boulder field rows, and grass rows that have started fading to rock) like
 // tracks: it never spawns into them and stops at their edge, so the only roller you see on rock is the stone one
@@ -2827,11 +2998,14 @@ function updateLanes(dt) {
       if (lane.beltTex) lane.beltTex.offset.x = -((lane.beltSpeed * clock) % 1);
       if (lane.hazardMat) lane.hazardMat.color.setHex(Math.floor(clock * 3) % 2 ? lane.hazardOn : 0x3a2010);
       const yaw = lane.dir > 0 ? 0 : Math.PI;
+      // tumbleweeds all move together: their own way, or while a storm blows, the storm's, 1.6x as fast
+      const blow = storm.phase === 'gust' && storm.gust > 0.5, step = (blow ? storm.dir : lane.dir) * lane.speed * (blow ? 1.6 : 1) * dt;
       for (const veh of lane.vehicles) {
+        if (veh.ball) { veh.pos = wrapP(veh.pos + step); veh.ball.rotation.z -= step / 0.35; }
         const c = vehicleCenter(lane, veh);
         // boulders never turn round (yaw 0), so the face always looks at the camera; they spin by how far
         // they've actually moved, measured across the wrap so the spin never jumps
-        for (const part of veh.parts) place(part.mesh, c + lane.dir * part.off, 0, veh.spin ? 0 : yaw);
+        for (const part of veh.parts) place(part.mesh, c + lane.dir * part.off, veh.ball ? 0.38 + Math.abs(Math.sin(clock * 6.28 + veh.ph)) * 0.25 : 0, veh.spin ? 0 : yaw);
         if (veh.spin) {
           if (veh.lastC !== undefined) { let d = c - veh.lastC; d -= Math.round(d / P) * P; veh.rolled = (veh.rolled || 0) + d; }
           veh.lastC = c;
@@ -2915,14 +3089,14 @@ const handState = { phase: 'idle', t: 0, dur: 1, roll: 0 };   // idle | coming |
 
 const player = {
   pf: Math.floor(W / 2), v: 0, hop: null, queued: null, bump: 0,
-  yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0
+  yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0, frozen: 0
 };
 const camState = { v: 0, want: 0, roll: 0, lean: 0, shake: 0 };
 let clock = 0;
 const game = { mode: 'ready', score: 0, dist: 0, bonus: 0, best: 0, coins: 0, started: false, death: null, deathT: 0, paused: false };
 const particles = [];
 const bonuses = [];          // difficult obstacles waiting to be cleared: { row, points, label, done }
-const lap = { face: 0, dir: 0, steps: 0, startRow: 0, entryRow: 0 };   // entryRow: row where you arrived on your current face
+const lap = { face: 0, dir: 0, steps: 0, entryRow: 0 };   // entryRow: row where you arrived on your current face
 const pops = { lap: 0, bonus: 0 };
 const run = { ranked: false, secs: 0, hops: 0, b: {} };   // what this run measured, for the leaderboard
 
@@ -2971,7 +3145,6 @@ function trackLap() {
 }
 
 function laneAt(v) { return lanes.get(v) || makeLane(v); }
-function surfaceHeight(lane) { return lane && lane.type === 'river' ? LOG_TOP : 0; }
 
 function yawFor(dp, dv) {
   if (dv > 0) return 0;
@@ -2987,7 +3160,7 @@ function calmHand() {
 
 function updateHand(dt) {
   // riding a log while you wait for the right moment doesn't count as standing still
-  if (game.mode === 'play' && game.started && !player.hop && !player.onLog && !onBelt()) player.idleT += dt;
+  if (game.mode === 'play' && game.started && !player.hop && !player.onLog && !onBelt() && !snowHold()) player.idleT += dt;
   if (handState.phase === 'idle' && game.mode === 'play' && player.idleT >= HAND.idle / speedMul(game.dist)) {
     handState.phase = 'coming';
     handState.t = 0;
@@ -3009,7 +3182,8 @@ function updateHand(dt) {
 function tryMove(dp, dv) {
   if (game.mode === 'ready') startGame();
   if (game.mode !== 'play') return;
-  if (player.hop) { player.queued = [dp, dv]; return; }
+  if (player.frozen > 0) { snowMash(); return; }    // frozen: no hopping; pressing chips away at the ice
+  if (player.hop) { if (player.hop.slide) snowSteer(dp, dv); else player.queued = [dp, dv]; return; }
   player.yawTarget = yawFor(dp, dv);
   const here = lanes.get(player.v);
   if (player.onLog && dv === 0 && here && here.type === 'river') {
@@ -3043,6 +3217,7 @@ function tryMove(dp, dv) {
   // holes don't stop you: hop into one and you fall (easy to do by accident in a crumbling field)
   if (lane.blocked.has(tw)) { player.bump = 0.14; SFX.bump(); return; }
   player.hop = { fp: player.pf, fv: player.v, tp, tv, t: 0, dp, dv, leap };
+  player.hop.slow = snowTakeoff(here, dp, dv);
   if (dv > 0) run.hops += leap ? 2 : 1;     // a leap covers 2 rows: counted as 2 hops so the board's checks still add up
   calmHand();
   player.onLog = null;
@@ -3098,16 +3273,17 @@ function finishHop() {
     if (!lane.fuse.has(tile)) lightFuse(lane, tile, lane.volatile && lane.volatile.has(tile) ? ZONE.volatileFuse : ZONE.fuse);
   }
   const coin = lane.coins.get(tile);
-  if (coin) { lane.group.remove(coin); lane.coins.delete(tile); game.coins++; SFX.coin(); }
+  if (coin) { lane.group.remove(coin); lane.coins.delete(tile); game.coins++; if (!test.on && coinTotal() < COINS.max) { game.unsent++; lbStore('coinsUnsent', game.unsent); } SFX.coin(); }
   if (player.v > game.dist) game.dist = player.v;
   for (const b of bonuses) {
     if (!b.done && player.v >= b.row) { b.done = true; addBonus(b.points, b.label); }
   }
   game.score = game.dist + game.bonus;
+  snowLanded(h);
 }
 
 const HIT_NAMES = { car: 'CAR', train: 'TRAIN', water: 'WATER', crumble: 'FELL', chasm: 'CHASM', fire: 'BURNED', boulder: 'BOULDER', roll: 'BOULDER', crack: 'CRACKED LOG',
-                    grab: 'GRABBED', slap: 'SLAPPED', skeleton: 'SKELETON', zombie: 'ZOMBIE', king: 'BOULDER KING', ghost: 'GHOST', sink: 'SANK', roller: 'STEAMROLLER' };
+                    grab: 'GRABBED', slap: 'SLAPPED', skeleton: 'SKELETON', zombie: 'ZOMBIE', king: 'BOULDER KING', ghost: 'GHOST', sink: 'SANK', roller: 'STEAMROLLER', snake: 'SNAKE', tumble: 'TUMBLEWEED', needle: 'CACTUS', snowball: 'SNOWBALL', frozen: 'FROZEN', icehole: 'THIN ICE', shatter: 'SHATTERED', giant: 'GIANT SNOWBALL' };
 function testHit(cause) {
   if (test.hitT[cause] && clock - test.hitT[cause] < 0.7) return;
   test.hitT[cause] = clock;
@@ -3131,7 +3307,7 @@ function die(cause) {
   if (!test.on && run.ranked && game.score > game.best) { game.best = game.score; lbStore('best', game.best); }
   const f = ringFrame(player.pf, 0);
   game.deathRoll = f.roll;
-  if (cause === 'water' || cause === 'crack' || cause === 'sink') splash(player.pf, player.v);
+  if (cause === 'water' || cause === 'crack' || cause === 'sink' || cause === 'icehole') splash(player.pf, player.v);
 }
 
 const zones = [];            // crumble zones generated so far, for the boulder announcement
@@ -3197,7 +3373,6 @@ function collapse(lane, tile) {
 
 // ---------------- embers from the red-hot coal train ----------------
 const embers = [];
-const EMBER_GEO = (() => { const m = new Merge(); m.part(0xff7a2a, 0, 0, 0, 0.22, 0.22, 0.22); m.part(0xffd25a, 0.03, 0.05, 0.03, 0.12, 0.12, 0.12); return m.geometry(); })();
 const FIRE_GEO = (() => {
   const m = new Merge();
   m.part(0x2a1a14, 0, 0.03, 0, 0.8, 0.06, 0.8);                                   // scorched rock
@@ -3933,6 +4108,372 @@ function updateParticles(dt) {
   }
 }
 
+// ---------------- desert: the snake, cactus needles and dust storms ----------------
+// The snake is a row of green segments slithering back and forth across ONE face (zigzag, one row nearer you per
+// pass); see SNAKE above. Segment i is si = s - i * gap tiles along the path and rises out of the sand over its first tile.
+let snake = null;              // { face, top, dir, s, tele, puffT, n, group, segs, sink: null, or seconds spent sinking }
+let snakeFree = 0;             // the clock time the next one may come
+// a tumbleweed: a see-through ball of dry twigs, made of 4 rings of thin sticks (3 round the up axis, 1 flat)
+const TUMBLE_GEO = (() => {
+  const m = new Merge(), r = 0.27, cols = [0xd8b36e, 0xb88f4f, 0x9a7240];
+  for (let k = 0; k < 8; k++) m.box(cols[k % 3], 0, r + H, 0, 0.24, 0.05, 0.05, k * Math.PI / 4);   // one ring of 8 sticks
+  m.box(cols[1], 0, H, 0, 0.4, 0.04, 0.04, 0.6); m.box(cols[2], 0, H, 0, 0.04, 0.36, 0.04, 0.3);  // a couple of twigs inside
+  const ring = m.geometry(), parts = [ring, ring.clone().rotateY(Math.PI / 3), ring.clone().rotateY(2 * Math.PI / 3), ring.clone().rotateX(Math.PI / 2)];
+  const g = new THREE.BufferGeometry();
+  for (const a of ['position', 'normal', 'color'])
+    g.setAttribute(a, new THREE.Float32BufferAttribute(parts.flatMap(p => [...p.attributes[a].array]), 3));
+  return g;
+})();
+// the snake: blocky segments 0.9 long along +x (head wider, with eyes and a forked tongue; tail narrow with a tip)
+const snakeGeo = (w, h, extra) => {
+  const m = new Merge();
+  m.part(0x4fb03a, 0, h / 2, 0, 1.05, h, w);                                          // a bit over 1 tile: the body reads as one piece
+  m.part(0x9fd86a, 0, 0.04, 0, 1.05, 0.08, w + 0.04);                                 // light belly edge
+  for (const x of [-0.22, 0.22]) m.part(0x3a8a2b, x, h + 0.01, 0, 0.2, 0.03, w * 0.6);   // dark spots on top
+  extra(m);
+  return m.geometry();
+};
+const SNAKE_GEOS = [
+  snakeGeo(0.6, 0.4, m => {
+    for (const z of [-0.17, 0.17]) { m.part(0xfff5e6, 0.2, 0.45, z, 0.13, 0.1, 0.13); m.part(0x1b1b26, 0.26, 0.46, z, 0.04, 0.07, 0.07); }
+    m.part(0xd9443f, 0.6, 0.12, 0, 0.3, 0.03, 0.05);
+    for (const z of [-0.04, 0.04]) m.part(0xd9443f, 0.78, 0.12, z, 0.1, 0.03, 0.03);
+  }),
+  snakeGeo(0.5, 0.36, () => {}),
+  snakeGeo(0.3, 0.24, m => m.part(0x4fb03a, -0.52, 0.08, 0, 0.2, 0.1, 0.1)),
+];
+const _sg = { row: 0, u: 0, dk: 1, si: 0, q: 0, y: 0 };
+// segment i's spot (into _sg), false while it is not out yet. y: -0.45 under the sand .. 0 out (sinking pulls it back down)
+function snakeSeg(sn, i) {
+  const si = sn.s - i * SNAKE.gap;
+  if (si < 0) return false;
+  const k = Math.floor(si / W), w = si - k * W, e = Math.min(w, W - 1), dk = k % 2 ? -sn.dir : sn.dir;
+  _sg.si = si; _sg.dk = dk; _sg.q = w - e;               // q: how far round the turn at the edge (0..1)
+  _sg.row = sn.top - k - (w - e);                     // turning at the edge: one row toward you
+  _sg.u = dk > 0 ? e : W - 1 - e;
+  _sg.y = -0.45 * Math.max(1 - si, sn.sink === null ? 0 : clamp01(sn.sink / 0.6));
+  return true;
+}
+function snakeHits(v, pf) {
+  if (!snake || snake.tele > 0) return false;
+  for (let i = 0; i < snake.n; i++)
+    if (snakeSeg(snake, i) && _sg.y > -0.2 && Math.abs(_sg.row - v) < 0.5 && ringDist(pf, snake.face * W + _sg.u) < SNAKE.hit) return true;
+  return false;
+}
+function removeSnake() { scene.remove(snake.group); snake = null; snakeFree = clock + (test.on && test.only === 'snake' ? 1 : SNAKE.cooldown); }
+// where a snake can be: desert, never water, holes, a chasm or train tracks (it won't start on tracks, and sinks when it reaches them)
+const snakeDesert = v => { const l = lanes.get(v); return (desertTest() || biomeAt(v).cur === 3) && !(l && (isWater(l) || l.holes.size || l.chasm || l.type === 'rail')); };
+function updateSnake(dt) {
+  if (!snake) {
+    const b = biomeAt(player.v), top = player.v + SNAKE.ahead;
+    if (game.mode !== 'play' || !game.started || clock < snakeFree || storm.stage === 1 || !(desertTest() || b.cur === 3 && b.t === 0) || !snakeDesert(top)) return;
+    snake = { face: faceOf(player.pf), top, dir: Math.random() < 0.5 ? -1 : 1, s: 0, tele: SNAKE.tele, puffT: 0, n: randInt(SNAKE.segs[0], SNAKE.segs[1]), group: new THREE.Group(), segs: [], sink: null };
+    for (let i = 0; i < snake.n; i++) {
+      const seg = new THREE.Mesh(SNAKE_GEOS[i === 0 ? 0 : i === snake.n - 1 ? 2 : 1], VCOL);
+      seg.rotation.order = 'ZYX'; seg.visible = false;
+      snake.group.add(seg); snake.segs.push(seg);
+    }
+    scene.add(snake.group);
+  }
+  const sn = snake;
+  if (sn.tele > 0) sn.tele -= dt; else sn.s += SNAKE.speed * SNAKE.lenSpeed[sn.n - SNAKE.segs[0]] * SNAKE.nerf * speedMul(player.v) * dt;
+  // dust at the hole while it is announced and while the last segments are still coming out
+  if (sn.s < sn.n * SNAKE.gap && (sn.puffT -= dt) <= 0) { sn.puffT = sn.tele > 0 ? 0.25 : 0.35; debris(sn.face * W + (sn.dir > 0 ? -0.3 : W - 0.7), sn.top, 0xd2b27a, sn.tele > 0 ? 3 : 2, 3); }
+  snakeSeg(sn, 0);
+  if (sn.sink === null && (_sg.row < player.v - 2 || !snakeDesert(Math.round(_sg.row)))) {   // behind you, or the desert ended
+    if (sn.tele > 0) { removeSnake(); return; }
+    sn.sink = 0;
+  }
+  if (sn.sink !== null && (sn.sink += dt) >= 0.6) { removeSnake(); return; }
+  for (let i = 0; i < sn.n; i++) {
+    const seg = sn.segs[i], on = sn.tele <= 0 && snakeSeg(sn, i);
+    seg.visible = on;
+    if (!on) continue;
+    seg.position.z = -_sg.row + Math.sin(_sg.si * 2.4) * 0.24;     // the body follows an S-shaped path
+    // faces its way along the row; round the turn it swings toward you (+z) and on into the next row's direction
+    const q = _sg.q * _sg.q * (3 - 2 * _sg.q);
+    place(seg, sn.face * W + _sg.u, _sg.y + Math.max(0, Math.sin(clock * 8 - i * 0.9)) * 0.06, _sg.dk > 0 ? -Math.PI * q : Math.PI * (1 + q));
+  }
+}
+
+// Cactus needles (desert): some cactuses (lane.spiky, drawn with pale pricks) can shoot. Every `every` seconds a
+// spiky one within `rows` rows ahead on your face winds up: for `warn` seconds spikes sprout out of it (they grow
+// with a springy wobble) and a spike grows on its top, while every tile its needles will cross is marked in red:
+// up to `reach` tiles each way along its row and up and down its column (never onto another face, never past a
+// blocked tile or off the edge of the world). Then 4 needles fly out at `speed` tiles/s, and the top spike shoots
+// up and comes down `lob` seconds later on the tile it predicts you'll be on: where you are (or where your hop
+// lands), plus your direction of travel times the hops you'd make in that time at your recent pace (at most `lead`
+// tiles; none if you've stopped). That tile is marked from the moment it's fired. Touching any needle kills.
+// Up to `max` cactuses at once, never two on a row. No new shots during a gust.
+const NEEDLE = { every: [1.4, 2.2], max: 2, warn: 1.0, reach: 3, speed: 9, rows: [0, 6], lob: 1.0, lobHeight: 3.2, lead: 3 };
+const NEEDLE_DIRS = [[-1, 0], [1, 0], [0, 1], [0, -1]];      // [tiles along the row, rows]: left, right, ahead, back
+const NEEDLE_YAW = [Math.PI, 0, Math.PI / 2, -Math.PI / 2];   // the needle model points along +x
+const needle = { t: 0, shots: [] };          // shot: { v, p, h, n: [tiles per direction], t, spikes, top, marks, pins, lob }
+// spikes are grey stepped pyramids: a square base narrowing in steps to a dark point
+const SPIKE_STEPS = [[0.2, 0.26, 0x8e9098], [0.16, 0.2, 0x9ea0a8], [0.12, 0.14, 0xaeb0b8], [0.08, 0.08, 0x8a8c94], [0.045, 0.04, 0x55575f]];   // [length, width, colour], base to tip
+function spikeGeo(along, scale = 1) {   // along: 'x' (points +x) or 'y' (points up); centred on its base
+  const m = new Merge(); let at = 0;
+  for (const [len, w, c] of SPIKE_STEPS) {
+    const L = len * scale, Wd = w * scale;
+    if (along === 'x') m.part(c, at + L / 2, 0, 0, L, Wd, Wd); else m.part(c, 0, at + L / 2, 0, Wd, L, Wd);
+    at += L;
+  }
+  return m.geometry();
+}
+const NEEDLE_GEO = spikeGeo('x', 0.9), NEEDLE_UP_GEO = spikeGeo('y', 0.9);
+const SPIKES_GEO = (() => {        // little grey pyramids sticking out all round: both sides, front and back
+  const m = new Merge();
+  const step = [[0.1, 0.12, 0x8e9098], [0.08, 0.08, 0xa6a8b0], [0.06, 0.04, 0x55575f]];
+  for (const y of [0.3, 0.6]) {
+    for (const sx of [-1, 1]) { let at = 0.17; for (const [l, w, c] of step) { m.part(c, sx * (at + l / 2), y, 0, l, w, w); at += l; } }
+    for (const sz of [-1, 1]) { let at = 0.17; for (const [l, w, c] of step) { m.part(c, 0, y + 0.12, sz * (at + l / 2), w, w, l); at += l; } }
+  }
+  return m.geometry();
+})();
+const needleMarkMat = new THREE.MeshBasicMaterial({ color: 0xff2a1f, transparent: true, opacity: 0.45, depthWrite: false });
+const needleTime = () => test.on && test.only === 'cactus' ? rand(0.9, 1.5) : rand(NEEDLE.every[0], NEEDLE.every[1]);
+// how many tiles a needle from (v, p) gets in direction (dp, dv) before something blocks it
+function needleReach(v, p, dp, dv) {
+  let n = 0;
+  while (n < NEEDLE.reach) {
+    const q = p + dp * (n + 1), l = lanes.get(v + dv * (n + 1));
+    if (!l || Math.floor(q / W) !== Math.floor(p / W) || l.blocked.has(wrapP(q)) || l.holes.has(wrapP(q))) break;
+    n++;
+  }
+  return n;
+}
+// the tile the top spike aims at: where you'll be after `lob` seconds if you keep going the way you're going
+function needleAim() {
+  const h = player.hop, p0 = Math.round(h ? h.tp : player.pf), v0 = h ? h.tv : player.v;
+  const pace = Math.max(HOP_TIME, player.pace || 0.3), moving = !!h || clock - (player.lastHopAt ?? -99) < pace + 0.25;
+  const d = player.lastDir || [0, 0], k = moving ? Math.min(NEEDLE.lead, Math.round(NEEDLE.lob / pace)) : 0;
+  return { p: wrapP(p0 + d[0] * k), v: Math.max(MIN_V, v0 + d[1] * k) };
+}
+function needleEnd(s) {
+  for (const o of [s.spikes, s.top, ...s.marks, ...s.pins]) scene.remove(o);
+  if (s.lob) { scene.remove(s.lob.mark); }
+  needle.shots.splice(needle.shots.indexOf(s), 1);
+}
+function needleHits(v, pf) {
+  for (const s of needle.shots) {
+    const fly = s.t - NEEDLE.warn;
+    if (fly < 0) continue;
+    for (let i = 0; i < 4; i++) {
+      if (!s.n[i]) continue;
+      if (NEEDLE.speed * fly > s.n[i]) continue;            // it's reached the end of its path and gone
+      const d = NEEDLE.speed * fly, [dp, dv] = NEEDLE_DIRS[i];
+      if (Math.abs(v - (s.v + dv * d)) < 0.5 && ringDist(pf, s.p + dp * d) < 0.4) return true;
+    }
+  }
+  return false;
+}
+function updateNeedles(dt) {
+  for (let j = needle.shots.length - 1; j >= 0; j--) {
+    const s = needle.shots[j];
+    s.t += dt;
+    const fly = s.t - NEEDLE.warn;
+    if (fly < 0) {
+      // sprouting: the spikes grow out with an overshoot and a wobble, the top spike pushes up
+      const k = clamp01(s.t / NEEDLE.warn), grow = 1 + 1.7 * Math.pow(k - 1, 3) + 0.7 * Math.pow(k - 1, 2);   // ease out with a little overshoot
+      s.spikes.scale.set(grow * (1 + 0.08 * Math.sin(clock * 30)), grow, grow * (1 + 0.08 * Math.sin(clock * 30 + 1)));
+      s.top.scale.setScalar(Math.max(0.05, grow)); s.top.position.z = -s.v; place(s.top, s.p, s.h + 0.05 * grow, 0);
+      needleMarkMat.opacity = 0.3 + 0.25 * Math.abs(Math.sin(clock * 12));
+      continue;
+    }
+    if (s.spikes.visible) {                      // fire: the 4 needles go, the top spike leaves on its lob
+      s.spikes.visible = false; s.top.visible = false;
+      const aim = needleAim(), mark = new THREE.Mesh(MARK_GEO, needleMarkMat), mesh = new THREE.Mesh(NEEDLE_UP_GEO, VCOL);
+      mark.rotation.order = mesh.rotation.order = 'ZYX'; mark.position.z = -aim.v;
+      const al = lanes.get(aim.v); place(mark, aim.p, 0.02 + (al ? snowTop(al, aim.p) : 0), 0); scene.add(mark); scene.add(mesh);
+      s.lob = { ...aim, mark, mesh, t: 0, done: false };
+      s.pins.push(mesh);
+    }
+    for (let i = 0; i < 4; i++) {
+      const d = Math.min(NEEDLE.speed * fly, s.n[i]), [dp, dv] = NEEDLE_DIRS[i], pin = s.pins[i];
+      pin.visible = s.n[i] > 0 && NEEDLE.speed * fly <= s.n[i]; pin.position.z = -(s.v + dv * d); place(pin, s.p + dp * d, 0.55, NEEDLE_YAW[i]);
+    }
+    const L = s.lob;
+    if (!L.done) {
+      L.t += dt;
+      const k = clamp01(L.t / NEEDLE.lob), tp = nearCopy(L.p, s.p);
+      L.mesh.position.z = -lerp(s.v, L.v, k);
+      place(L.mesh, lerp(s.p, tp, k), lerp(s.h + 0.3, 0.3, k) + 4 * NEEDLE.lobHeight * k * (1 - k), 0);
+      L.mesh.rotation.x = k < 0.5 ? 0 : Math.PI;             // points up on the way up, down on the way down
+      if (k >= 1) {
+        L.done = true; L.mark.visible = false; L.mesh.visible = false;
+        debris(L.p, L.v, 0xd2b27a, 4, 2);
+        const [pp, pv] = playerNow();
+        if (game.mode === 'play' && Math.abs(pv - L.v) < 0.5 && ringDist(pp, L.p) < 0.45) die('needle');
+      }
+    }
+    if (NEEDLE.speed * fly > Math.max(...s.n) && L.done) needleEnd(s);
+  }
+  if (game.mode !== 'play' || !game.started || storm.phase === 'gust' || (snake && snake.tele > 0) || needle.shots.length >= NEEDLE.max || (needle.t -= dt) > 0) return;
+  const f = faceOf(player.pf), c = [];
+  for (let r = NEEDLE.rows[0]; r <= NEEDLE.rows[1]; r++) {
+    const l = lanes.get(player.v + r);
+    if (l && !needle.shots.some(s => s.v === l.v)) for (const p of l.spiky)
+      if (Math.floor(p / W) === f && l.trees.get(p) > 0 && l.blocked.has(p)) c.push([l, p]);
+  }
+  if (!c.length) { needle.t = 0.5; return; }
+  needle.t = needleTime();
+  const [l, p] = pick(c), v = l.v;
+  const sh = { v, p, h: 0.45 + l.trees.get(p) * 0.3, n: NEEDLE_DIRS.map(([dp, dv]) => needleReach(v, p, dp, dv)), t: 0,
+               spikes: new THREE.Mesh(SPIKES_GEO, VCOL), top: new THREE.Mesh(NEEDLE_UP_GEO, VCOL), marks: [], pins: [], lob: null };
+  needle.shots.push(sh);
+  const put = (m, q, h, vv = v) => { m.rotation.order = 'ZYX'; m.position.z = -vv; place(m, q, h, 0); scene.add(m); };
+  put(sh.spikes, p, 0); sh.spikes.scale.setScalar(0.05);
+  put(sh.top, p, sh.h); sh.top.scale.setScalar(0.05);
+  NEEDLE_DIRS.forEach(([dp, dv], i) => {
+    for (let k = 1; k <= sh.n[i]; k++) { const m = new THREE.Mesh(MARK_GEO, needleMarkMat), ml = lanes.get(v + dv * k); sh.marks.push(m); put(m, p + dp * k, 0.02 + (ml ? snowTop(ml, p + dp * k) : 0), v + dv * k); }
+    const pin = new THREE.Mesh(NEEDLE_GEO, VCOL); pin.visible = false; sh.pins.push(pin); put(pin, p, 0.55);
+  });
+}
+
+// Dust storms (desert): the wind always blows in pure desert (never with water, holes, a chasm or crumbling ground
+// within `clear` rows): a breeze (amt 0.3) that shoves you one tile sideways every `breezePush` / speed multiplier s
+// (never over a face edge, never into a cactus). Every `switchEvery` s it turns round (not during a gust). Every
+// `gustEvery` s of wind a gust builds over `gustRamp` s (the warning, never while a snake is announced), holds for
+// `gustHold` s, then eases off over 1 s; pushes speed up to `gustPush` s meanwhile.
+const STORM = { switchEvery: [3, 5], breezePush: 1.8, gustPush: 0.55, gustEvery: [8, 14], gustRamp: 1.5, gustHold: [3, 5], clear: 3, count: 40, color: 0xd9b26a };
+const storm = { phase: 'off', dir: 1, flow: 1, switchT: 0, pushT: 0, amt: 0, gust: 0, stage: 0, st: 0, hold: 0, gustIn: 0 };   // phase: off / breeze / gust. stage: 0 none, 1 ramp up, 2 hold, 3 ramp down. flow: the streaks' direction, which eases round after a switch
+const stormTest = () => test.on && test.only === 'storm';      // test mode: the first gust 2 s after the wind starts, then every 5-8 s
+function stormSafe(v) {
+  for (let k = v - STORM.clear; k <= v + STORM.clear; k++) {
+    const l = lanes.get(k);
+    if (l && (isWater(l) || l.holes.size || l.chasm || l.cracked)) return false;
+  }
+  return true;
+}
+// the sand look: breeze (storm.amt ~0.3) = a few short low streaks + skipping grains; gust (amt 1) = many long fast high streaks
+// breeze/gust: streak count, streak length (x scale), speed mult, height mult; grains: count; peak speed is ~1.7x the breeze's
+const SAND = { count: 70, breeze: 0.3, n: [26, 70], len: [1.1, 2.4], speed: [0.55, 0.94], high: [0.5, 1], grains: [12, 24] };
+const stormMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.7, 0.07, 0.07),
+  new THREE.MeshBasicMaterial({ color: 0xa8824c, transparent: true, opacity: 0.85, depthWrite: false }), SAND.count);
+stormMesh.frustumCulled = false; stormMesh.visible = false;
+scene.add(stormMesh);
+const grainMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.07, 0.07, 0.07), new THREE.MeshBasicMaterial({ color: 0xc9a266 }), SAND.grains[1]);
+grainMesh.frustumCulled = false;
+stormMesh.add(grainMesh);                 // a child, so it hides with the streaks
+const sandX = new Float32Array(SAND.count), sandH = new Float32Array(SAND.count), sandZ = new Float32Array(SAND.count), sandV = new Float32Array(SAND.count);
+for (let i = 0; i < SAND.count; i++) { sandX[i] = rand(-H, H); sandH[i] = rand(0.1, 2.2); sandZ[i] = rand(-3, 9); sandV[i] = rand(5, 9); }
+const grainX = new Float32Array(SAND.grains[1]), grainZ = new Float32Array(SAND.grains[1]), grainP = new Float32Array(SAND.grains[1]);
+for (let i = 0; i < grainX.length; i++) { grainX[i] = rand(-H, H); grainZ[i] = rand(-3, 9); grainP[i] = rand(0, 6.3); }
+const _sandObj = new THREE.Object3D();
+// the dust cloud a desert train kicks up: puffy sand cubes over its own row and the one each side, in one pooled InstancedMesh
+// pool: puffs in the whole scene; rate: puffs per second per train; size: cube size range; life: seconds; rise/drift: how far a puff climbs / slides sideways
+const DUST = { pool: 180, rate: 70, size: [0.7, 1.3], life: [1.2, 1.8], rise: 0.7, drift: 0.5, near: 10, colors: [0xe3c68f, 0xd2b27a] };
+const dustMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+  new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false }), DUST.pool);
+dustMesh.frustumCulled = false; dustMesh.visible = false;
+scene.add(dustMesh);
+const dustP = Array.from({ length: DUST.pool }, () => ({ x: 0, y: 0, z: 0, roll: 0, dz: 0, age: 0, life: 0, size: 0, spin: 0 }));
+let dustNext = 0;
+const _dustObj = new THREE.Object3D(), _dustCol = new THREE.Color();
+function updateTrainDust(dt) {
+  for (const lane of lanes.values()) {
+    if (lane.type !== 'rail' || lane.biome !== 3) continue;
+    const st = trainState(lane);
+    if (!st.run) { lane.dustAcc = 0; continue; }
+    lane.dustAcc = (lane.dustAcc || 0) + DUST.rate * dt;
+    for (; lane.dustAcc >= 1; lane.dustAcc--) {
+      const pos = wagonPos(lane, st, randInt(0, lane.trainLen - 1));
+      if (pos === null || ringDist(pos, player.pf) > DUST.near) continue;
+      const pf = pos - lane.dir * rand(0.3, 1), f = ringFrame(pf, rand(0.1, 0.6)), c = dustP[dustNext];
+      const slot = dustNext; dustNext = (dustNext + 1) % DUST.pool;   // the oldest puff is recycled when the pool is full
+      Object.assign(c, { x: f.x, y: f.y, roll: f.roll, z: -(lane.v + randInt(-1, 1) + rand(-0.4, 0.4)), dz: rand(-DUST.drift, DUST.drift),
+                         age: 0, life: rand(DUST.life[0], DUST.life[1]), size: rand(DUST.size[0], DUST.size[1]), spin: rand(0, 3) });
+      dustMesh.setColorAt(slot, _dustCol.setHex(DUST.colors[randInt(0, 1)]));
+    }
+  }
+  let any = false;
+  for (let i = 0; i < DUST.pool; i++) {
+    const c = dustP[i];
+    c.age += dt;
+    const t = c.age / c.life;
+    if (t >= 1 || c.life === 0) { c.life = 0; _dustObj.scale.setScalar(0); }
+    else {
+      any = true;
+      const rise = DUST.rise * t, s = c.size * Math.min(1, 0.5 + t * 2) * (1 - t * t);   // grows fast, then shrinks to nothing
+      _dustObj.position.set(c.x - Math.sin(c.roll) * rise, c.y + Math.cos(c.roll) * rise, c.z + c.dz * t);
+      _dustObj.rotation.set(0, c.spin, c.roll); _dustObj.scale.setScalar(s);
+    }
+    _dustObj.updateMatrix();
+    dustMesh.setMatrixAt(i, _dustObj.matrix);
+  }
+  dustMesh.visible = any;
+  dustMesh.instanceMatrix.needsUpdate = true;
+  if (dustMesh.instanceColor) dustMesh.instanceColor.needsUpdate = true;
+}
+function clearTrainDust() { for (const c of dustP) c.life = 0; dustMesh.visible = false; }
+function updateStorm(dt) {
+  const b = biomeAt(player.v), ok = game.mode === 'play' && game.started && (desertTest() || b.cur === 3 && b.t === 0) && stormSafe(player.v);
+  const interval = () => lerp(STORM.breezePush, STORM.gustPush, storm.gust) / speedMul(player.v);
+  if (!ok) { if (storm.phase !== 'off') Object.assign(storm, { phase: 'off', gust: 0, stage: 0 }); }
+  else {
+    if (storm.phase === 'off') {
+      storm.phase = 'breeze'; storm.flow = storm.dir = Math.random() < 0.5 ? -1 : 1;
+      storm.pushT = interval(); storm.switchT = rand(STORM.switchEvery[0], STORM.switchEvery[1]);
+      storm.gustIn = stormTest() ? 2 : rand(STORM.gustEvery[0], STORM.gustEvery[1]);
+    }
+    if (storm.stage === 0) {
+      if ((storm.gustIn -= dt) <= 0 && !(snake && snake.tele > 0)) { storm.stage = 1; storm.st = 0; storm.hold = rand(STORM.gustHold[0], STORM.gustHold[1]); }
+      else if ((storm.switchT -= dt) <= 0) {          // the wind turns: the first push the new way waits a whole interval
+        storm.dir = -storm.dir; storm.switchT = rand(STORM.switchEvery[0], STORM.switchEvery[1]); storm.pushT = interval();
+      }
+    } else {
+      storm.st += dt;
+      if (storm.stage === 1) { storm.gust = Math.min(1, storm.st / STORM.gustRamp); if (storm.st >= STORM.gustRamp) { storm.stage = 2; storm.st = 0; } }
+      else if (storm.stage === 2) { if (storm.st >= storm.hold) { storm.stage = 3; storm.st = 0; } }
+      else { storm.gust = Math.max(0, 1 - storm.st); if (storm.st >= 1) { storm.stage = 0; storm.gust = 0; storm.gustIn = stormTest() ? rand(5, 8) : rand(STORM.gustEvery[0], STORM.gustEvery[1]); } }
+    }
+    storm.phase = storm.stage === 1 || storm.stage === 2 ? 'gust' : 'breeze';
+    if ((storm.pushT -= dt) <= 0) {
+      storm.pushT = interval();
+      const from = Math.round(player.pf), tp = from + storm.dir, tw = wrapP(tp), lane = lanes.get(player.v);
+      if (!player.hop && !player.onLog && faceOf(tw) === faceOf(wrapP(from)) && !lane.blocked.has(tw) && !lane.holes.has(tw))
+        player.hop = { fp: player.pf, fv: player.v, tp, tv: player.v, t: 0, dp: storm.dir, dv: 0 };
+    }
+  }
+  storm.flow += Math.max(-5 * dt, Math.min(5 * dt, storm.dir - storm.flow));      // streaks slow to 0 and turn round in ~0.4 s
+  storm.amt = storm.phase === 'off' ? Math.max(0, storm.amt - dt) : 0.3 + 0.7 * storm.gust;
+  drawStorm(dt);
+}
+// the blowing sand streaks: how many show and how fast they go follow storm.amt (0..1) and storm.flow (direction)
+function drawStorm(dt) {
+  stormMesh.visible = storm.amt > 0;
+  if (!stormMesh.visible) return;
+  const roll = faceOf(player.pf) * Math.PI / 2, c = Math.cos(roll), s = Math.sin(roll), z = camState.v;
+  const am = storm.amt, g = Math.min(1, Math.max(0, (am - SAND.breeze) / (1 - SAND.breeze))), w = Math.min(1, am / SAND.breeze);   // g: 0 in a breeze, 1 at a gust's peak
+  const L = (r) => r[0] + (r[1] - r[0]) * g;
+  const shown = SAND.n[0] * w + (SAND.n[1] - SAND.n[0]) * g, len = L(SAND.len), hs = L(SAND.high), sp = w * L(SAND.speed);
+  const step = storm.flow * dt * sp;
+  _sandObj.rotation.set(0, 0, roll);
+  for (let i = 0; i < SAND.count; i++) {
+    let lx = sandX[i] + sandV[i] * step;
+    if (lx > H) lx -= 2 * H; else if (lx < -H) lx += 2 * H;
+    sandX[i] = lx;
+    const y = -H + 0.12 + sandH[i] * hs;
+    _sandObj.position.set(lx * c - y * s, lx * s + y * c, -(z + sandZ[i]));
+    _sandObj.scale.set(i < shown ? len : 0, 1, 1);
+    _sandObj.updateMatrix();
+    stormMesh.setMatrixAt(i, _sandObj.matrix);
+  }
+  stormMesh.instanceMatrix.needsUpdate = true;
+  const gShown = SAND.grains[0] * w + (SAND.grains[1] - SAND.grains[0]) * g, gs = storm.flow * dt * 4.5 * sp;
+  for (let i = 0; i < grainX.length; i++) {
+    let lx = grainX[i] + gs * (1 + i % 3 * 0.3);
+    if (lx > H) lx -= 2 * H; else if (lx < -H) lx += 2 * H;
+    grainX[i] = lx; grainP[i] += dt * 9 * w;
+    const y = -H + 0.05 + Math.abs(Math.sin(grainP[i])) * (0.12 + 0.2 * g);       // skips along the sand
+    _sandObj.position.set(lx * c - y * s, lx * s + y * c, -(z + grainZ[i]));
+    _sandObj.scale.setScalar(i < gShown ? 1 : 0);
+    _sandObj.updateMatrix();
+    grainMesh.setMatrixAt(i, _sandObj.matrix);
+  }
+  grainMesh.instanceMatrix.needsUpdate = true;
+}
+
 function update(dt) {
   clock += dt;
   if (game.mode === 'play' && game.started) run.secs += dt;
@@ -3942,18 +4483,20 @@ function update(dt) {
 
     if (player.hop) {
       const h = player.hop;
-      h.t += dt / (HOP_TIME * (h.leap ? CHASM.leapTime : 1));
+      h.t += dt / (h.slide ? h.stile : HOP_TIME * (h.leap ? CHASM.leapTime : 1) / (h.slow ? SNOW.slowMul : 1));
       // traffic can catch you mid-hop: check the lane you are over right now
       const t = clamp01(h.t);
       const lv = t < 0.5 ? h.fv : h.tv;
       const [hf, ht] = hopEnds(h);
       const lp = lerp(hf, ht, t);
       const lane = lanes.get(lv);
-      if (lane && lane.type === 'road' && vehicleHits(lane, lp)) die(lane.kind === 'boulder' ? 'roll' : 'car');
+      if (lane && lane.type === 'road' && vehicleHits(lane, lp)) die(roadDeath(lane));
       else if (lane && lane.type === 'rail' && trainHits(lane, lp)) die('train');
       else if (lane && lane.skels && skelHits(lane, lp)) die('skeleton');
       else if (lane && lane.risers && riserHits(lane, lp)) die('zombie');
       else if (rollerHits(lp, lerp(h.fv, h.tv, t))) die('roller');
+      else if (snakeHits(lv, lp)) die('snake');
+      else if (needleHits(lv, lp)) die('needle');
       else if (h.t >= 1) finishHop();
     } else {
       const lane = laneAt(player.v);
@@ -3968,11 +4511,13 @@ function update(dt) {
         else player.pf += lane.dir * lane.speed * dt;     // the log carries you, even round a corner
       }
       if (lane.belt) player.pf += lane.beltDir * lane.beltSpeed * dt;   // the conveyor drags you
-      if (lane.type === 'road' && vehicleHits(lane, player.pf)) die(lane.kind === 'boulder' ? 'roll' : 'car');
+      if (lane.type === 'road' && vehicleHits(lane, player.pf)) die(roadDeath(lane));
       if (lane.type === 'rail' && trainHits(lane, player.pf)) die('train');
       if (lane.skels && skelHits(lane, player.pf)) die('skeleton');
       if (lane.risers && riserHits(lane, player.pf)) die('zombie');
       if (rollerHits(player.pf, player.v)) die('roller');
+      if (snakeHits(player.v, player.pf)) die('snake');
+      if (needleHits(player.v, player.pf)) die('needle');
       if (game.mode === 'play' && player.queued) {
         const q = player.queued; player.queued = null; tryMove(q[0], q[1]);
       }
@@ -4003,6 +4548,10 @@ function update(dt) {
   updateRisers(dt);
   updateGhost(dt);
   updateRollers(dt);
+  updateSnake(dt);
+  updateStorm(dt);
+  updateSnow(dt);
+  updateNeedles(dt);
   updateParticles(dt);
   updateCrumble(dt);
   updateChasms(dt);
@@ -4013,8 +4562,434 @@ function update(dt) {
   updateDrops(dt);
 }
 
+// ---------------- snow: blizzards and igloos, snowmen, ice lakes, footprints ----------------
+// Snow ground is a raised layer (SNOW.layer) you stand in, so the bottom of you is hidden; every hop off snow leaves
+// footprints. Hops that start on snow take 1 / SNOW.slowMul as long. Ice tiles (lane.ice) slide you on in the hop's
+// direction, one tile per SNOW.slideHop s, until the next tile is blocked, on another face, or not ice (you slide
+// onto it and stop). Igloos (lane.igloos) are one tile you hop into: you're hidden inside and the blizzard can't
+// freeze you. Blizzard: every SNOW.blizzardEveryRows rows, frost creeps in from the screen edges and the wind rises
+// for SNOW.warnSec; then anyone outside an igloo freezes for SNOW.freezeSec (no hopping; anything else can still
+// hit you). Snowmen (blocked tiles, lane.snowmen) on your face 1-6 rows ahead: arm up for a wind-up, then a snowball
+// flies at your tile (marked blue until it lands, SNOW.flight s), then they scoop up another and go again while
+// you're in range. Usually one throws at a time, sometimes two (see updateSnowmen). Hit: frozen, like the blizzard.
+const IGLOO_GEO = (() => {
+  // a round, chunky dome of snow blocks with an entrance tunnel facing you
+  const m = new Merge(), ice = 0xffffff, side = 0xeef5fd, seam = 0xc8d9ec;
+  for (const [y, w, h] of [[0.14, 0.92, 0.28], [0.4, 0.84, 0.24], [0.62, 0.68, 0.2], [0.8, 0.46, 0.16], [0.92, 0.22, 0.08]]) {
+    m.part(ice, 0, y, 0, w, h, w);
+    m.part(seam, 0, y + h / 2, 0, w + 0.02, 0.02, w + 0.02);
+  }
+  for (const x of [-0.26, 0.2]) m.part(seam, x, 0.14, 0.462, 0.02, 0.28, 0.01);
+  for (const x of [-0.05, 0.3]) m.part(seam, x, 0.4, 0.422, 0.02, 0.24, 0.01);
+  m.part(side, 0, 0.22, 0.47, 0.5, 0.44, 0.16);                                      // the entrance tunnel
+  m.part(seam, 0, 0.44, 0.47, 0.52, 0.02, 0.18);
+  return m.geometry();
+})();
+const IGLOO_DOOR_GEO = (() => { const m = new Merge(); m.part(0xffffff, 0, 0.17, 0.552, 0.32, 0.34, 0.02); return m.geometry(); })();
+const iglooDoorMat = new THREE.MeshBasicMaterial({ color: 0x2a3a52 });     // all doors share it: they glow during a warning
+const SNOWMAN_GEO = (() => {
+  const m = new Merge(), w = 0xf7fbff, s = 0xdbe6f2;
+  m.part(w, 0, 0.3, 0, 0.62, 0.6, 0.62); m.part(s, 0, 0.3, 0.315, 0.62, 0.6, 0.01);
+  m.part(w, 0, 0.78, 0, 0.46, 0.4, 0.46);
+  m.part(0xd9443f, 0, 0.99, 0, 0.5, 0.08, 0.5);                                       // scarf
+  m.part(w, 0, 1.15, 0, 0.34, 0.32, 0.34);
+  for (const x of [-0.08, 0.08]) m.part(0x1b1b26, x, 1.2, 0.172, 0.06, 0.06, 0.02);   // coal eyes
+  m.part(0xf07a24, 0, 1.13, 0.25, 0.06, 0.06, 0.18);                                  // carrot
+  for (const y of [0.7, 0.86]) m.part(0x1b1b26, 0, y, 0.232, 0.06, 0.06, 0.02);      // buttons
+  m.part(0x1b1b26, 0, 1.33, 0, 0.42, 0.04, 0.42); m.part(0x1b1b26, 0, 1.43, 0, 0.26, 0.18, 0.26);   // hat
+  m.part(0x6b4a2f, -0.36, 0.84, 0, 0.3, 0.05, 0.05);                                  // the arm that doesn't throw
+  return m.geometry();
+})();
+// the throwing arm: a stick from the shoulder (its origin) along +x, turned up by rotation.z
+const SNOWMAN_ARM_GEO = (() => { const m = new Merge(); m.part(0x6b4a2f, 0.21, -0.025, 0, 0.42, 0.05, 0.05); m.part(0x6b4a2f, 0.4, 0.02, 0, 0.04, 0.1, 0.04); return m.geometry(); })();
+const SNOWBALL_GEO = (() => { const m = new Merge(); m.part(0xffffff, 0, -0.11, 0, 0.22, 0.22, 0.22); m.part(0xe2ecf6, 0, -0.11, 0, 0.26, 0.14, 0.14); return m.geometry(); })();
+const PRINT_GEO = (() => { const m = new Merge(); for (const [x, z] of [[-0.11, 0.12], [0.11, -0.12]]) m.part(0xc6d4e5, x, 0, z, 0.13, 0.012, 0.2); return m.geometry(); })();
+const SNOW_GEOS = [IGLOO_GEO, IGLOO_DOOR_GEO, SNOWMAN_GEO, SNOWMAN_ARM_GEO, SNOWBALL_GEO, PRINT_GEO];   // shared: never disposed
+const snowMarkMat = new THREE.MeshBasicMaterial({ color: 0x5fb8ff, transparent: true, opacity: 0.5, depthWrite: false });
+// frozen: a block of ice around you (a child of the player, so it hides with you)
+const iceBlock = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.5, 0.8), new THREE.MeshLambertMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0.55, depthWrite: false }));
+iceBlock.position.y = 0.72; iceBlock.visible = false; spyMesh.add(iceBlock);
+// falling snow: one Points object, positions recycled in place (no per-frame allocations)
+const flakePos = new Float32Array(SNOW.flakes * 3);
+for (let i = 0; i < SNOW.flakes; i++) { flakePos[i * 3] = rand(-H, H); flakePos[i * 3 + 1] = rand(-H, H); flakePos[i * 3 + 2] = rand(-16, 4); }
+const flakeGeo = new THREE.BufferGeometry();
+flakeGeo.setAttribute('position', new THREE.BufferAttribute(flakePos, 3));
+const flakes = new THREE.Points(flakeGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.14, transparent: true, opacity: 0.9, depthWrite: false }));
+flakes.frustumCulled = false; flakes.visible = false; scene.add(flakes);
+const prints = [];
+let printAt = 0;
+const bliz = { phase: 'idle', t: 0, nextRow: 0, hit: false, free: 0, warn: 3 };          // phase: idle / warn / blast
+// sball.wait: seconds until another snowman may start throwing. phase/t/man mirror the busiest throw (read by tests).
+const sball = { phase: 'idle', t: 0, wait: 0, man: null };
+const throws = [];        // one per throwing snowman: { man, phase: 'wind' | 'fly' | 'reload', t, fp, fv, fh, tp, tv, ball, mark }
+const ballPool = [], markPool = [];   // snowball and landing-mark meshes are reused (shared geometry, never disposed)
+const jiggles = [];                                                      // igloos doing their bloop
+let frostShown = -1;
+const elFrost = document.getElementById('frost');
+// the warning: snowflakes blowing across the screen, more and more of them. Built once; stage s (1..FROST_STAGES)
+// shows every flake of stage <= s. Each flake falls and drifts on its own CSS loop (no per-frame work).
+const FROST_STAGES = 12;
+(function buildFrost() {
+  let h = '<div id="frostHaze"></div>', css = '';
+  for (let i = 0; i < SNOW.screenFlakes; i++) {
+    const s = 1 + Math.floor(i / SNOW.screenFlakes * FROST_STAGES), dur = 0.8 + Math.random() * 1.5;
+    h += '<span class="fl s' + s + '" style="left:' + (Math.random() * 115 - 15).toFixed(1) + '%;font-size:' + (10 + Math.floor(Math.random() * 34)) +
+         'px;animation-duration:' + dur.toFixed(2) + 's;animation-delay:-' + (Math.random() * dur).toFixed(2) + 's">\u2744</span>';
+  }
+  for (let j = 1; j <= FROST_STAGES; j++) for (let i = 1; i <= j; i++) css += '#frost[data-s="' + j + '"] .s' + i + ',';
+  elFrost.innerHTML = h + '<style>' + css.slice(0, -1) + '{opacity:.95}</style>';
+})();
+const elHaze = document.getElementById('frostHaze');
+let frostStage = -1;
+
+const lakeRow = v => { const k = v - gen.snowLakeAt; return k >= 0 && k < SNOW.lakeRows + SNOW.lakeStagger ? k : -1; };   // the tester's one lake section   // the tester is one snowfield: one lake
+// the tester's rows: plain snow, an igloo row every SNOW.iglooEvery rows (and either side of a lake), snowman rows
+// SNOW.manGap apart (never in or next to a lake), and the lakes
+function snowTestSpec(v) {
+  const s = { type: 'grass', biome: 4 };
+  if (v < START_SAFE) return s;
+  if (lakeRow(v) >= 0) { s.lake = lakeRow(v); return s; }
+  if (v % SNOW.iglooEvery === 1 || v === START_SAFE || lakeRow(v + 1) === 0 || lakeRow(v - 1) === SNOW.lakeRows + SNOW.lakeStagger - 1) { s.igloo = true; s.clear = true; return s; }
+  if (v >= gen.snowMan && lakeRow(v + 1) < 0 && lakeRow(v - 1) < 0) { s.men = true; gen.snowMan = v + snowInt('manGap', v); }
+  return s;
+}
+function snowLane(lane, spec) {
+  const open = p => { lane.blocked.delete(p); lane.trees.delete(p); };
+  if (spec.lake !== undefined) {
+    // the lake section (spec.lake = row in it): every face has its own lake, starting 0-lakeStagger rows in, at its own
+    // columns; its sides wobble a tile from row to row
+    if (spec.lake === 0) gen.snowLakes = [0, 1, 2, 3].map(face => {
+      const w = randInt(SNOW.lakeWidth[0], SNOW.lakeWidth[1]), l = randInt(1, W - 1 - w);
+      return { face, at: randInt(0, SNOW.lakeStagger), l, r: l + w - 1 };
+    });
+    lane.ice = new Set(); lane.iceHoles = new Map();
+    for (const L of gen.snowLakes) {
+      const k = spec.lake - L.at;
+      if (k < 0 || k >= SNOW.lakeRows) continue;
+      const edge = k === 0 || k === SNOW.lakeRows - 1;
+      const l = Math.max(1, L.l + (edge ? 1 : randInt(-1, 0))), r = Math.min(W - 2, L.r - (edge ? 1 : randInt(-1, 0)));
+      for (let u = l; u <= r; u++) { const p = L.face * W + u; lane.ice.add(p); open(p); lane.coins.delete(p); }
+      // holes and cracks (both kill). Never in a lake's first 2 or last 2 rows. A safe column wanders at most 1 tile per
+      // row, inside L.l+1 .. L.r-1 (which every row has whatever its edges do), and both its tile on this row and the next
+      // row's column stay clear, so a single sidestep always gets you through.
+      const lo = L.l + 1, hi = L.r - 1;
+      if (k === 0) L.next = randInt(lo, hi);
+      L.safe = L.next; L.next = Math.max(lo, Math.min(hi, L.safe + randInt(-1, 1)));
+      if (k >= 2 && k < SNOW.lakeRows - 2)
+        for (let u = l; u <= r; u++) if (u !== L.safe && u !== L.next && Math.random() < SNOW.holeChance) lane.iceHoles.set(L.face * W + u, Math.random() < 0.5 ? 'hole' : 'crack');
+    }
+  }
+  if (spec.igloo) {
+    lane.igloos = new Map();
+    for (let f = 0; f < 4; f++) {
+      const p = f * W + randInt(1, W - 2), mesh = new THREE.Mesh(IGLOO_GEO, VCOL), door = new THREE.Mesh(IGLOO_DOOR_GEO, iglooDoorMat);
+      open(p); lane.coins.delete(p);
+      mesh.rotation.order = 'ZYX'; mesh.add(door); place(mesh, p, 0, 0); lane.group.add(mesh);
+      lane.igloos.set(p, { mesh, jig: 0 });
+    }
+  }
+  if (spec.men) {
+    lane.snowmen = [];
+    for (let f = 0; f < 4; f++) {
+      const c = gen.cactusCol[f], cols = [];
+      for (let u = 1; u < W - 1; u++) if (Math.abs(u - c) > 1) cols.push(u);      // never on the open column
+      for (let n = Math.random() < snowSet('twoPerFace', lane.v) ? 2 : 1; n > 0 && cols.length; n--) {
+        const p = f * W + cols.splice(randInt(0, cols.length - 1), 1)[0], mesh = new THREE.Mesh(SNOWMAN_GEO, VCOL), arm = new THREE.Mesh(SNOWMAN_ARM_GEO, VCOL);
+        lane.blocked.add(p); lane.trees.delete(p); lane.coins.delete(p);
+        arm.position.set(0.22, 0.84, 0); arm.rotation.z = -0.6; mesh.add(arm);
+        mesh.rotation.order = 'ZYX'; place(mesh, p, 0, 0); lane.group.add(mesh);
+        lane.snowmen.push({ p, v: lane.v, lane, mesh, arm });
+      }
+    }
+  }
+}
+const isIce = (lane, p) => !!(lane && lane.ice && lane.ice.has(wrapP(p)));
+// how high the snow is on this tile (0 off snow, on ice and in an igloo)
+function snowTop(lane, pf) {
+  const p = wrapP(Math.round(pf));
+  return lane && lane.type === 'grass' && lane.tileB[p] === 4 && !isIce(lane, p) && !(lane.igloos && lane.igloos.has(p)) ? SNOW.layer : 0;
+}
+// in an igloo: standing in one, or on the way into one (not sliding)
+function inIgloo() {
+  const h = player.hop, l = lanes.get(h ? h.tv : player.v);
+  return !!(l && l.igloos && l.igloos.has(wrapP(Math.round(h ? h.tp : player.pf)))) && !(h && h.slide);
+}
+const snowHold = () => player.frozen > 0 || (bliz.phase !== 'idle' && inIgloo());   // waiting it out isn't standing still
+function jiggle(ig) { if (ig.jig <= 0) jiggles.push(ig); ig.jig = 0.45; }
+// frozen: every hop press chips SNOW.mashCut s off the freeze and shakes the ice, so clicking fast breaks you out
+function snowMash() {
+  player.frozen = Math.max(0, player.frozen - SNOW.mashCut); player.mashT = 0.15;
+  if (Math.random() < 0.6) debris(player.pf, player.v, 0xcfeeff, 2, 3);
+  SFX.iceTap(player.frozen <= 0);
+}
+// by: the snowman that froze you, or 'blizzard'. Only a hit from a DIFFERENT snowman while you're frozen shatters you.
+function snowFreeze(by = 'blizzard') {
+  if (player.frozen > 0 || game.mode !== 'play') return;
+  player.frozen = SNOW.freezeSec; player.frozenBy = by; player.queued = null; calmHand();
+  SFX.freeze();
+}
+// a hop is starting from `here`: footprints on snow, the igloo bloops as you leave. Returns whether it's slowed.
+function snowTakeoff(here, dp, dv) {
+  player.pace = Math.max(HOP_TIME, Math.min(SNOW.slideSlowest, clock - (player.lastHopAt ?? -99)));   // seconds between your hops
+  player.lastHopAt = clock;
+  player.lastDir = [dp, dv];
+  if (!here || here.type !== 'grass' || here.tileB[wrapP(Math.round(player.pf))] !== 4) return false;
+  const p = wrapP(Math.round(player.pf)), ig = here.igloos && here.igloos.get(p);
+  if (ig) { jiggle(ig); return true; }
+  if (isIce(here, p)) return false;
+  let m = prints[printAt];
+  if (!m) { m = prints[printAt] = new THREE.Mesh(PRINT_GEO, VCOL); m.rotation.order = 'ZYX'; scene.add(m); }
+  printAt = (printAt + 1) % SNOW.prints;
+  m.visible = true; m.position.z = -player.v; place(m, p, SNOW.layer + 0.004, yawFor(dp, dv));
+  return true;
+}
+// a hop just landed: into an igloo, or onto ice (slide on)
+function snowLanded(h) {
+  const lane = lanes.get(player.v), p = wrapP(Math.round(player.pf));
+  if (!lane || game.mode !== 'play') return;
+  const ig = lane.igloos && lane.igloos.get(p);
+  if (ig) { jiggle(ig); SFX.igloo(); }
+  if (lane.iceHoles && lane.iceHoles.has(p)) { die('icehole'); return; }   // fell through the ice
+  if (!isIce(lane, p) || player.frozen > 0) return;
+  // on ice you keep your speed (the time between your last hops) and your direction; a sideways (or, sliding
+  // sideways, forward/back) press moves you one tile that way, then you carry on. Only a blocked tile or the edge
+  // of the face stops you.
+  const dir = h.slide ? h.sdir : [h.dp, h.dv], tile = h.slide ? h.stile : player.pace;
+  const ok = (tp, tv) => tv >= MIN_V && faceOf(wrapP(tp)) === faceOf(p) && !laneAt(tv).blocked.has(wrapP(tp)) && !laneAt(tv).holes.has(wrapP(tp));
+  let step = h.turn && ok(p + h.turn[0], player.v + h.turn[1]) ? h.turn : dir;
+  if (!ok(p + step[0], player.v + step[1])) return;
+  player.hop = { fp: p, fv: player.v, tp: p + step[0], tv: player.v + step[1], t: 0, dp: step[0], dv: step[1], slide: true, sdir: dir, stile: tile, turn: null };
+  player.yawTarget = yawFor(dir[0], dir[1]);
+  player.queued = null;
+  if (step[1] > 0) run.hops++;
+}
+// a press while sliding: only across the slide counts (you can't stop or speed up)
+function snowSteer(dp, dv) {
+  const h = player.hop;
+  if ((dp !== 0) !== (h.sdir[0] !== 0)) h.turn = [dp, dv];
+}
+function smashIgloo(v, p) {
+  const l = lanes.get(v), ig = l && l.igloos && l.igloos.get(wrapP(p));
+  if (!ig) return;
+  l.igloos.delete(wrapP(p)); l.group.remove(ig.mesh);
+  debris(p, v, 0xffffff, 12, 5); debris(p, v, 0xd3e1f0, 6, 4);
+  SFX.freeze();
+}
+function newThrow(man) {
+  let ball = ballPool.pop(), mark = markPool.pop();
+  if (!ball) { ball = new THREE.Mesh(SNOWBALL_GEO, VCOL); ball.rotation.order = 'ZYX'; scene.add(ball); }
+  if (!mark) { mark = new THREE.Mesh(MARK_GEO, snowMarkMat); mark.rotation.order = 'ZYX'; scene.add(mark); }
+  ball.visible = mark.visible = false; ball.scale.setScalar(1);
+  throws.push({ man, phase: 'wind', t: 0, fp: 0, fv: 0, fh: 0, tp: 0, tv: 0, ball, mark });
+}
+function dropThrow(s) {
+  s.ball.visible = s.mark.visible = false; ballPool.push(s.ball); markPool.push(s.mark);
+  s.man.arm.rotation.z = -0.6; s.man.mesh.scale.set(1, 1, 1);
+  throws.splice(throws.indexOf(s), 1);
+}
+// snowmen throw at you unless a blizzard is coming, or it's blizzarding and you're sheltering in an igloo
+const snowCanThrow = () => game.mode === 'play' && game.started && bliz.phase !== 'warn' && !(bliz.phase === 'blast' && inIgloo());
+const inThrowRange = m => { const r = m.v - player.v; return lanes.get(m.v) === m.lane && faceOf(m.p) === faceOf(player.pf) && r >= SNOW.throwRows[0] && r <= SNOW.throwRows[1]; };
+function handAt(s, a) { s.fp = s.man.p + 0.22 + 0.42 * Math.cos(a); s.fh = 0.84 + 0.42 * Math.sin(a) + 0.11; s.fv = s.man.v; }
+function updateSnowmen(dt) {
+  // another snowman joins in: always when nobody's throwing, sometimes (snowSet('team')) when one already is
+  if ((sball.wait -= dt) <= 0 && snowCanThrow() && throws.length < 2) {
+    sball.wait = 0.3;
+    if (!throws.length || Math.random() < snowSet('team')) {
+      let man = null;
+      for (let r = SNOW.throwRows[0]; r <= SNOW.throwRows[1] && !man; r++) {
+        const l = lanes.get(player.v + r);
+        if (l && l.snowmen) man = l.snowmen.find(m => inThrowRange(m) && !throws.some(s => s.man === m)) || null;
+      }
+      if (man) { newThrow(man); sball.wait = rand(...snowSet('throwGap')); }
+    } else sball.wait = rand(...snowSet('throwGap'));
+  }
+  for (let i = throws.length - 1; i >= 0; i--) updateThrow(throws[i], dt);
+  const busy = throws.find(s => s.phase === 'fly') || throws.find(s => s.phase === 'wind') || null;
+  sball.phase = busy ? busy.phase : 'idle'; sball.t = busy ? busy.t : 0; sball.man = busy ? busy.man : null;
+}
+function updateThrow(s, dt) {
+  const m = s.man;
+  if (lanes.get(m.v) !== m.lane) { dropThrow(s); return; }              // its row is gone
+  s.t += dt;
+  if (s.phase === 'reload') {
+    // scoops up a fresh snowball: arm down to the snow and back, a little squash, the ball grows in its hand
+    const reload = snowSet('reload'), k = clamp01(s.t / reload), dip = Math.sin(k * Math.PI);
+    m.arm.rotation.z = lerp(-0.6, -1.5, dip); m.mesh.scale.set(1 + 0.06 * dip, 1 - 0.1 * dip, 1 + 0.06 * dip);
+    handAt(s, m.arm.rotation.z);
+    s.ball.visible = k > 0.5; s.ball.scale.setScalar(Math.max(0.05, (k - 0.5) * 2));
+    s.ball.position.z = -m.v; place(s.ball, s.fp, s.fh, 0);
+    if (k < 1) return;
+    m.mesh.scale.set(1, 1, 1);
+    if (!inThrowRange(m) || !snowCanThrow()) { dropThrow(s); return; }  // you've moved on: it stops
+    s.phase = 'wind'; s.t = 0;
+  }
+  if (s.phase === 'wind') {
+    const windup = snowSet('windup'), k = clamp01(s.t / windup), a = lerp(-0.6, 2.2, k * k * (3 - 2 * k));
+    m.arm.rotation.z = a; handAt(s, a);
+    s.ball.visible = true; s.ball.scale.setScalar(1); s.ball.position.z = -m.v; place(s.ball, s.fp, s.fh, 0);
+    if (s.t < windup) return;
+    if (game.mode !== 'play') { dropThrow(s); return; }
+    // throw at where you are (or where your hop lands)
+    s.phase = 'fly'; s.t = 0; m.arm.rotation.z = -0.3;
+    s.tp = wrapP(Math.round(player.hop ? player.hop.tp : player.pf)); s.tv = player.hop ? player.hop.tv : player.v;
+    s.mark.visible = true; s.mark.position.z = -s.tv;
+    const ml = lanes.get(s.tv); place(s.mark, s.tp, 0.012 + snowTop(ml, s.tp), 0);
+    SFX.snowThrow();
+    return;
+  }
+  // in the air: a high arc onto the marked tile
+  if (s.t < 0.25) m.arm.rotation.z = lerp(-0.3, -0.6, s.t / 0.25);
+  snowMarkMat.opacity = 0.35 + 0.25 * Math.abs(Math.sin(clock * 10));
+  const k = clamp01(s.t / SNOW.flight), tpn = nearCopy(s.tp, s.fp);
+  s.ball.position.z = -lerp(s.fv, s.tv, k);
+  place(s.ball, lerp(s.fp, tpn, k), lerp(s.fh, 0.25, k) + 4 * SNOW.arc * k * (1 - k), clock * 9);
+  if (k < 1) return;
+  debris(s.tp, s.tv, 0xffffff, 6, 3);
+  SFX.snowHit();
+  const sheltered = bliz.phase !== 'idle' && inIgloo();      // sheltering from a blizzard keeps you (and your igloo) safe
+  if (game.mode === 'play' && !sheltered) {
+    const h = player.hop, t = h ? clamp01(h.t) : 1, lv = h ? (t < 0.5 ? h.fv : h.tv) : player.v, [pp] = playerNow();
+    if (lv === s.tv && ringDist(pp, s.tp) < 0.5) {
+      if (player.frozen > 0) {
+        if (player.frozenBy !== m) { debris(player.pf, player.v, 0xbfe8ff, 14, 5); die('shatter'); }   // another snowman's hit: you shatter
+      } else {
+        if (inIgloo()) smashIgloo(player.v, player.pf);   // the igloo you're in breaks
+        if (SNOW.snowballFreezes) snowFreeze(m); else die('snowball');
+      }
+    }
+  }
+  s.ball.visible = s.mark.visible = false; s.phase = 'reload'; s.t = 0;   // and it reaches for another one
+}
+// no blizzard while you're on a lake or it starts within SNOW.lakeCalm rows: you can't stop on the ice to shelter
+function nearLake() {
+  for (let v = player.v - 1; v <= player.v + SNOW.lakeCalm; v++) { const l = lanes.get(v); if (l && l.ice) return true; }
+  return false;
+}
+function updateBlizzard(dt) {
+  const b = biomeAt(player.v), inSnow = snowAll() || (b.cur === 4 && b.t === 0 && player.v >= b.start + SNOW.blizzardLead && player.v < b.end - BIOME.blend - 3);
+  if (bliz.phase === 'idle') {
+    if (game.mode === 'play' && game.started && inSnow && player.v >= bliz.nextRow && !nearLake()) { bliz.phase = 'warn'; bliz.t = 0; bliz.warn = snowSet('warnSec'); SFX.windRise(bliz.warn); }
+    return;
+  }
+  bliz.t += dt;
+  if (bliz.phase === 'warn' && bliz.t >= bliz.warn) { bliz.phase = 'blast'; bliz.t = 0; bliz.hit = false; bliz.free = 0; SFX.blizzard(); }
+  if (bliz.phase === 'blast') {
+    // out in the open you freeze; break free and you get SNOW.refreezeSec seconds (to reach an igloo), then it freezes you again
+    if (inIgloo() || player.frozen > 0) bliz.free = 0;
+    else if (!bliz.hit || (bliz.free += dt) >= SNOW.refreezeSec) { bliz.hit = true; bliz.free = 0; snowFreeze(); }
+    if (bliz.t >= SNOW.freezeSec) { bliz.phase = 'idle'; bliz.nextRow = player.v + (test.on && test.only === 'blizzard' ? randInt(8, 10) : snowInt('blizzardEveryRows', player.v)); }
+  }
+}
+function updateSnow(dt) {
+  if (game.mode === 'play' && player.frozen > 0) player.frozen = Math.max(0, player.frozen - dt);
+  updateBlizzard(dt);
+  updateSnowmen(dt);
+  updateGiants(dt);
+  // the frost and the snowfall
+  const b = biomeAt(camState.v + 4), snowy = snowAll() || b.cur === 4 || (b.next === 4 && b.t > 0.3);
+  const warnK = bliz.phase === 'warn' ? clamp01(bliz.t / bliz.warn) : bliz.phase === 'blast' ? 1 : 0;
+  const frost = bliz.phase === 'blast' ? 1 - 0.3 * clamp01((bliz.t - SNOW.freezeSec + 0.6) / 0.6) : warnK;
+  if (Math.abs(frost - frostShown) > 0.01) { frostShown = frost; elHaze.style.opacity = frost.toFixed(2); }
+  // the number of flakes climbs faster and faster through the warning; the blizzard itself shows them all
+  const stage = bliz.phase === 'warn' ? 1 + Math.floor(warnK * warnK * (FROST_STAGES - 1.001)) : bliz.phase === 'blast' ? FROST_STAGES : 0;
+  if (stage !== frostStage) { frostStage = stage; elFrost.dataset.s = String(stage); }
+  // igloo doors glow warm while a blizzard is coming, so you can see where to go
+  iglooDoorMat.color.setHex(0x2a3a52).lerp(_iglooWarm, warnK > 0 ? 0.55 + 0.45 * Math.abs(Math.sin(clock * 6)) : 0);
+  for (let i = jiggles.length - 1; i >= 0; i--) {
+    const ig = jiggles[i];
+    ig.jig = Math.max(0, ig.jig - dt);
+    const q = ig.jig / 0.45, w = Math.sin((1 - q) * Math.PI * 3) * q;    // a bouncy bloop that settles
+    ig.mesh.scale.set(1 + 0.12 * w, 1 - 0.16 * w, 1 + 0.12 * w);
+    if (ig.jig <= 0) jiggles.splice(i, 1);
+  }
+  iceBlock.visible = player.frozen > 0 && game.mode === 'play';
+  // each press while frozen shakes the block hard for a moment; it also trembles as it's about to crack open
+  player.mashT = Math.max(0, (player.mashT || 0) - dt);
+  const shake = player.mashT > 0 ? 0.09 * player.mashT / 0.15 : player.frozen < 0.4 ? 0.03 : 0;
+  if (iceBlock.visible) { iceBlock.position.x = Math.sin(clock * 80) * shake; iceBlock.rotation.z = Math.sin(clock * 63) * shake * 1.5; iceBlock.scale.setScalar(0.85 + 0.15 * clamp01(player.frozen / SNOW.freezeSec)); }
+  flakes.visible = snowy;
+  if (!snowy) return;
+  const n = Math.round(lerp(60, SNOW.flakes, warnK * warnK)), fall = lerp(1.1, 5.5, warnK * warnK) * dt, wind = lerp(0.3, 4.5, warnK * warnK) * dt;
+  flakeGeo.setDrawRange(0, n);
+  for (let i = 0; i < n; i++) {
+    let x = flakePos[i * 3] + wind + Math.sin(clock * 1.3 + i) * 0.3 * dt, y = flakePos[i * 3 + 1] - fall;
+    if (y < -H) { y += 2 * H; x = rand(-H, H); }
+    if (x > H) x -= 2 * H;
+    flakePos[i * 3] = x; flakePos[i * 3 + 1] = y;
+  }
+  flakeGeo.attributes.position.needsUpdate = true;
+  flakes.position.z = -camState.v; flakes.rotation.z = camState.roll;   // "down" is the face you're on
+}
+const _iglooWarm = new THREE.Color(0xffa640);
+// Giant snowballs: every SNOW.giantEvery s one starts SNOW.giantAhead rows ahead of you on your face, lined up on
+// your column, and rolls down the tube toward you at SNOW.giantSpeed rows/s (x the speed multiplier). It starts
+// SNOW.giantSize[0] tiles wide and grows SNOW.giantGrow tiles per row it rolls, up to SNOW.giantSize[1]. Touching it
+// kills you (in an igloo you're safe). It rolls over trees and snowmen and melts away a few rows behind you.
+const GIANT_GEO = (() => {
+  // a blocky ball 1 across, centred on 0: a core plus three crossing slabs give an octagon outline from every side,
+  // shaded bands and a few lumps so you can see it roll
+  const m = new Merge(), w = 0xf6f9fd, s = 0xdce7f2, d = 0xb9cbe0;
+  m.part(w, 0, -0.5, 0, 0.8, 0.8, 0.8);
+  m.part(w, 0, -0.5, 0, 1.0, 0.56, 0.56); m.part(s, 0, -0.5, 0, 0.56, 1.0, 0.56); m.part(w, 0, -0.5, 0, 0.56, 0.56, 1.0);
+  m.part(s, 0, -0.5, 0, 0.9, 0.7, 0.7); m.part(w, 0, -0.5, 0, 0.7, 0.9, 0.7); m.part(s, 0, -0.5, 0, 0.7, 0.7, 0.9);
+  m.part(d, 0, -0.5, 0, 1.02, 0.12, 0.3);                                            // a seam that turns as it rolls
+  for (const [x, y, z] of [[0.3, -0.2, 0.42], [-0.28, -0.72, 0.43], [0.43, -0.6, -0.2], [-0.43, -0.3, 0.15], [0.1, -0.06, -0.3]]) m.part(d, x, y, z, 0.16, 0.14, 0.16);
+  return m.geometry();
+})();
+SNOW_GEOS.push(GIANT_GEO);
+const giants = [];                 // { mesh, pf, v, size, spin }
+let giantT = 0;
+function updateGiants(dt) {
+  const play = game.mode === 'play' && game.started, b = biomeAt(player.v), inSnow = snowAll() || (b.cur === 4 && b.t === 0);
+  if (play && inSnow && (giantT -= dt) <= 0 && giants.length < SNOW.giantMax) {
+    giantT = rand(...snowSet('giantEvery'));
+    const aim = Math.random() < snowSet('giantAim') ? needleAim().p : Math.round(player.hop ? player.hop.tp : player.pf);
+    const add = (pf, v) => { const mesh = new THREE.Mesh(GIANT_GEO, VCOL); mesh.rotation.order = 'ZYX'; scene.add(mesh); giants.push({ mesh, pf, v, size: SNOW.giantSize[0], spin: 0 }); };
+    add(aim, player.v + SNOW.giantAhead);
+    // a partner 4-6 columns over: at full size each covers 3 columns, so there's always a free column between them
+    if (giants.length < SNOW.giantMax && Math.random() < snowSet('giantPair')) add(wrapP(aim + (Math.random() < 0.5 ? -1 : 1) * randInt(4, 6)), player.v + SNOW.giantAhead + 2);
+    SFX.rumble();
+  }
+  const [pp, pv] = playerNow();
+  for (let i = giants.length - 1; i >= 0; i--) {
+    const gb = giants[i], step = SNOW.giantSpeed * speedMul(player.v) * dt;
+    if (game.mode === 'play' || game.mode === 'dying') {
+      gb.v -= step; gb.size = Math.min(SNOW.giantSize[1], gb.size + SNOW.giantGrow * step); gb.spin += step / (gb.size / 2);   // rolling toward you: its top turns toward you
+      if (Math.random() < dt * 6) debris(gb.pf + rand(-gb.size, gb.size) / 2, gb.v - gb.size / 2, 0xffffff, 1, 2);
+    }
+    const r = gb.size / 2;
+    gb.mesh.scale.setScalar(gb.size); gb.mesh.position.z = -gb.v;
+    place(gb.mesh, gb.pf, r + 0.05, 0); gb.mesh.rotation.x = gb.spin;
+    // it flattens any igloo it rolls over (over the same rows and tiles where it would flatten you)
+    for (let row = Math.ceil(gb.v - r * 0.7 - 0.25); row <= Math.floor(gb.v + r * 0.7 + 0.25); row++) {
+      const gl = lanes.get(row);
+      if (gl && gl.igloos) for (const q of [...gl.igloos.keys()]) if (ringDist(q, gb.pf) < r + 0.25) smashIgloo(row, q);
+    }
+    if (game.mode === 'play' && Math.abs(pv - gb.v) < r * 0.7 + 0.25 && ringDist(pp, gb.pf) < r + 0.25) die('giant');
+    if (gb.v < Math.min(player.v, camState.v) - 8) { scene.remove(gb.mesh); giants.splice(i, 1); }
+  }
+}
+function snowReset() {
+  for (const gb of giants) scene.remove(gb.mesh);
+  giants.length = 0; giantT = SNOW.giantFirst;
+  Object.assign(bliz, { phase: 'idle', t: 0, nextRow: SNOW.firstBlizzard, hit: false });
+  while (throws.length) dropThrow(throws[0]);
+  Object.assign(sball, { phase: 'idle', t: 0, wait: 1.5, man: null });
+  for (const m of prints) m.visible = false;
+  for (const ig of jiggles) { ig.jig = 0; ig.mesh.scale.set(1, 1, 1); }
+  jiggles.length = 0;
+  iceBlock.visible = false;
+  frostShown = -1; frostStage = -1;
+  player.lastHopAt = -99;
+  gen.snowMan = test.on && test.only === 'snowman' ? 6 : 8; gen.snowLakes = null; gen.snowLakeSeg = -1; gen.snowSeg = -1; gen.snowNextIgloo = 0;
+  gen.snowLakeAt = test.on && test.only === 'lake' ? 8 : SNOW.lakeFirst;
+  if (test.on && test.only === 'blizzard') bliz.nextRow = 5;
+}
+
 // ---------------- drawing the player and camera ----------------
 function updateVisuals(dt) {
+  updateTrainDust(dt);
   let pf = player.pf, vz = player.v, h = 0;
   let sx = 1, sy = 1, sz = 1;
   const laneNow = lanes.get(player.v);
@@ -4034,6 +5009,7 @@ function updateVisuals(dt) {
     sy = 1 - 0.22 * takeoff + 0.12 * air;
     sx = sz = 1 + 0.12 * takeoff - 0.06 * air;
   }
+  if (player.hop && player.hop.slide) { h = 0; sx = sy = sz = 1; }   // sliding on ice: flat, no bounce
   if (player.landT > 0) {
     const k = Math.sin((player.landT / LAND_TIME) * Math.PI);
     sy = 1 - 0.25 * k; sx = sz = 1 + 0.15 * k;
@@ -4049,7 +5025,7 @@ function updateVisuals(dt) {
   let z = -vz;
   const fr = ringFrame(pf, base + h);
   let px = fr.x, py = fr.y, roll = fr.roll;
-  let show = true;
+  let show = !(game.mode === 'play' && !player.hop && inIgloo() && !(player.frozen > 0));   // inside an igloo you can't be seen (frozen: you're stuck in the doorway)
 
   let handGrab = null;
   if (game.mode === 'dying' || game.mode === 'over') {
@@ -4073,7 +5049,7 @@ function updateVisuals(dt) {
       px = f2.x; py = f2.y;
       yaw += t * 9;
       show = t < 0.9;
-    } else if (game.death === 'car' || game.death === 'boulder' || game.death === 'roll' || game.death === 'slap' || game.death === 'skeleton' || game.death === 'roller') {
+    } else if (game.death === 'car' || game.death === 'boulder' || game.death === 'roll' || game.death === 'slap' || game.death === 'skeleton' || game.death === 'roller' || game.death === 'snake' || game.death === 'tumble' || game.death === 'giant') {
       sy = 0.14; sx = 1.35; sz = 1.35;
       const f2 = ringFrame(player.pf, 0.04);
       px = f2.x; py = f2.y;
@@ -4083,7 +5059,9 @@ function updateVisuals(dt) {
       const f2 = ringFrame(player.pf + dir * t * 9, 0.4 + t * 3 - t * t * 2);
       px = f2.x; py = f2.y; roll = f2.roll;
       extraRoll = t * 14;
-    } else if (game.death === 'water' || game.death === 'crack' || game.death === 'sink') {
+    } else if (game.death === 'shatter') {
+      show = false;                                   // broken into ice chips
+    } else if (game.death === 'water' || game.death === 'crack' || game.death === 'sink' || game.death === 'icehole') {
       const f2 = ringFrame(player.pf, -t * 1.2);
       px = f2.x; py = f2.y;
       show = t < 0.8;
@@ -4099,7 +5077,8 @@ function updateVisuals(dt) {
   spyMesh.rotation.set(extraRoll, yaw, roll);
   spyMesh.scale.set(sx, sy, sz);
 
-  const gb = ringFrame(pf, base + 0.015);
+  const snowH = player.hop ? 0 : snowTop(laneNow, player.pf);       // standing in snow: shadow and marker sit on top of it
+  const gb = ringFrame(pf, base + 0.015 + snowH);
   blob.visible = show && game.mode !== 'dying';
   blob.position.set(gb.x, gb.y, -vz);
   blob.rotation.set(0, 0, gb.roll);
@@ -4107,10 +5086,10 @@ function updateVisuals(dt) {
 
   // highlight the tile you're on; it reddens as the tile is about to give way
   const standing = !player.hop && game.mode === 'play';
-  marker.visible = standing;
+  marker.visible = standing && show;
   if (standing) {
     const tile = Math.round(player.pf);
-    const mf = ringFrame(player.onLog || onBelt() ? player.pf : tile, base + 0.01);
+    const mf = ringFrame(player.onLog || onBelt() ? player.pf : tile, base + 0.01 + snowH);
     marker.position.set(mf.x, mf.y, -player.v);
     marker.rotation.set(0, 0, mf.roll);
     const at = laneNow && laneNow.fuse.get(wrapP(tile));
@@ -4268,8 +5247,8 @@ function gameOver() {
                 crumble: 'The ground gave way', chasm: 'Fell into the chasm', fire: 'Hit by burning coal', boulder: 'Crushed by a boulder', roll: 'Flattened by a rolling boulder', crack: 'The log cracked',
                 grab: 'Pulled off the screen', slap: 'Slapped for standing still',
                 skeleton: 'Caught by a skeleton', zombie: 'A zombie came up under you', king: 'The boulder king landed on you', ghost: ghost.name ? ghost.name + '\u2019s ghost got you' : 'The ghost got you',
-                sink: 'Sank with the log', roller: lastRollerKind === 'stone' ? 'Flattened by the stone roller' : 'Flattened by a steamroller' }[game.death] || '';
-  showCenter('GAME OVER', why + '  ·  Score ' + game.score,
+                sink: 'Sank with the log', icehole: 'Fell through the ice', shatter: 'Shattered while frozen', giant: 'Flattened by a giant snowball', snake: 'Bitten by a snake', tumble: 'Flattened by a tumbleweed', needle: 'Spiked by a cactus needle', roller: lastRollerKind === 'stone' ? 'Flattened by the stone roller' : 'Flattened by a steamroller' }[game.death] || '';
+  showCenter('GAME OVER', why + '  ·  Score ' + game.score + '  ·  ' + game.coins + (game.coins === 1 ? ' coin' : ' coins') + (test.on ? '' : ' (' + coinTotal() + ' total)'),
              test.on ? 'Press R or tap to retry the test  ·  T to change it' : 'Press R or tap to play again', true);
   lbRunOver();
   logDeath();
@@ -4286,18 +5265,26 @@ function reset() {
   for (const q of particles) scene.remove(q.mesh);
   particles.length = 0;
   Object.assign(player, { pf: Math.floor(W / 2), v: 0, hop: null, queued: null, bump: 0,
-                          yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0 });
+                          yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0, frozen: 0 });
+  snowReset();
   Object.assign(camState, { v: 0, want: 0, roll: 0, lean: 0 });
   Object.assign(game, { mode: 'ready', score: 0, dist: 0, bonus: 0, coins: 0, started: false, death: null, deathT: 0, biomeSeg: 0 });
   bonuses.length = 0;
-  Object.assign(lap, { face: 0, dir: 0, steps: 0, startRow: 0, entryRow: 0 });
+  Object.assign(lap, { face: 0, dir: 0, steps: 0, entryRow: 0 });
   Object.assign(handState, { phase: 'idle', t: 0, dur: 1 });
   hand.visible = false;
   pops.lap = 0; pops.bonus = 0;
   bSegs.length = 0;
-  gen.type = 'grass'; gen.left = 0; gen.queue = []; gen.chasmSeg = -1; gen.graveSeg = -1; gen.testStep = -1; gen.fieldSpecials = {}; gen.rollerSegs = {}; gen.lastFam = null; gen.lastJam = false; gen.lastPark = false; gen.zone = null; gen.lastZoneEnd = -999;
+  gen.type = 'grass'; gen.left = 0; gen.queue = []; gen.chasmSeg = -1; gen.graveSeg = -1; gen.testStep = -1; gen.rollerSegs = {}; gen.lastFam = null; gen.lastJam = false; gen.lastPark = false; gen.zone = null; gen.lastZoneEnd = -999; gen.cactusCol = [5, 5, 5, 5];
   gen.calmFrom = -1; gen.calmTo = -2;
-  gen.blockHard = false; gen.blockBiome = 0; gen.blockBoulder = false;
+  gen.blockHard = false; gen.blockBiome = 0; gen.blockBoulder = false; gen.blockTumble = false;
+  clearTrainDust();
+  if (snake) removeSnake();
+  snakeFree = test.on && test.only === 'snake' ? 1 : SNAKE.cooldown;
+  while (needle.shots.length) needleEnd(needle.shots[0]);
+  needle.t = needleTime();
+  Object.assign(storm, { phase: 'off', pushT: 0, amt: 0, gust: 0, stage: 0 });
+  stormMesh.visible = false;
   darkZones.length = 0;
   gen.darkFlip = false;
   gen.nextDarkAt = test.on && test.only === 'dark' ? 8 : DARK.fromRow + randInt(0, 40);
@@ -4363,6 +5350,12 @@ const lbLocal = (() => { try { return window.localStorage || null; } catch (e) {
 function lbStore(k, v) { try { if (lbLocal) lbLocal.setItem('crd2.' + k, String(v)); } catch (e) {} }
 function lbLoad(k) { try { return lbLocal ? lbLocal.getItem('crd2.' + k) : null; } catch (e) { return null; } }
 game.best = Math.max(0, Math.floor(+lbLoad('best') || 0));
+// Coins (for skins): every coin picked up outside test mode. They go on your leaderboard row (scores/<NAME>.coins) with
+// the next run you post, at most COINS.perWrite at a time; until then they wait on this device (crd2.coinsUnsent), so
+// nothing is lost offline or before you pick a name. Your total = your row's coins + the ones still waiting.
+const COINS = { perWrite: 500, max: 1000 };   // max: the most you can stock up before skins come out
+game.unsent = Math.max(0, Math.floor(+lbLoad('coinsUnsent') || 0));
+const coinTotal = () => (LB.mine && isInt(LB.mine.coins) ? LB.mine.coins : 0) + game.unsent;
 
 // The Current board's key: scores keep their "best this period" in the week/wBest/wRun/wAt fields (from when the
 // board was weekly), and the period is now the release, e.g. 'v1.1-2----' (the database wants 10 characters).
@@ -4465,12 +5458,12 @@ function lbSubscribe() {
   LB.unsub.push(col.where('week', '==', LB.wk).limit(LBV.fetchWeek).onSnapshot(take('week'), fail));
 }
 let lbWriting = Promise.resolve();
-function lbWrite(doc, run) {
+function lbWrite(doc, run, sent = 0) {
   const name = doc.name, ref = LB.db.doc('scores/' + name);
   const attempt = () => ref.set(doc);
   lbWriting = lbWriting.then(attempt)
     .catch(e => e && e.code === 'unavailable' ? new Promise(r => setTimeout(r, 1500 + Math.random() * 1000)).then(attempt) : Promise.reject(e))
-    .then(() => { if (LB.name === name) LB.mine = doc; LB.err = ''; lbRender(); })
+    .then(() => { if (LB.name === name) LB.mine = doc; if (sent) { game.unsent = Math.max(0, game.unsent - sent); lbStore('coinsUnsent', game.unsent); } LB.err = ''; lbRender(); })
     .catch(e => {
       if (run) LB.pending = LB.pending && LB.pending.dist + LB.pending.bonus >= run.dist + run.bonus ? LB.pending : run;
       if (e && e.code === 'permission-denied') { LB.needPin = true; LB.askName = true; LB.err = ''; }   // name isn't this computer's (yet)
@@ -4495,6 +5488,11 @@ function lbMerge(runs) {
     if (thisWeek && s > d.wBest) { d.wBest = s; d.wRun = r; d.wAt = at || now; changed = true; }
   }
   if (!(d.wBest > 0)) return null;            // nothing played this week yet: wait for a run (the rules need one)
+  // coins waiting on this device go up with this write (at most COINS.perWrite; the rules allow no more)
+  d.coins = isInt(d.coins) ? d.coins : 0;
+  const sent = Math.min(game.unsent, COINS.perWrite);
+  if (sent > 0) { d.coins += sent; changed = true; }
+  lbMerge.sent = sent;
   return changed ? d : null;
 }
 function lbPost(r) {
@@ -4502,7 +5500,7 @@ function lbPost(r) {
   if (!LB.name || LB.needPin) { LB.pending = r; LB.askName = true; return; }
   LB.pending = null;
   const d = lbMerge([[r, true]]);
-  if (d) lbWrite(d, r);
+  if (d) lbWrite(d, r, lbMerge.sent);
 }
 function lbRunOver() {
   const r = { dist: game.dist, bonus: game.bonus, secs: Math.round(run.secs * 100) / 100, hops: run.hops, b: Object.assign({}, run.b) };
@@ -4557,10 +5555,11 @@ async function lbSaveName(rawName, rawPin) {
   if (renaming && old !== n && oldMine && rowOk(oldMine)) {                 // renaming: bring your scores along
     runs.push([oldMine.run, false, oldMine.at]);
     if (weekOk(oldMine, wk)) runs.push([oldMine.wRun, true, oldMine.wAt]);
+    if (isInt(oldMine.coins) && oldMine.coins > 0) { game.unsent += oldMine.coins; lbStore('coinsUnsent', game.unsent); }   // your coins come too (sent up 500 at a time)
   }
   if (LB.pending) { runs.push([LB.pending, true]); LB.pending = null; }
   const d = runs.length ? lbMerge(runs) : null;
-  if (d) await lbWrite(d);
+  if (d) await lbWrite(d, null, lbMerge.sent);
   if (renaming && old !== n) {                                              // free the old name
     try { await LB.db.doc('scores/' + old).delete(); } catch (e) {}
     try { await LB.db.doc('names/' + old).delete(); } catch (e) {}
@@ -5020,7 +6019,7 @@ const SFX = (() => {
           noise(0.5, { f: 2500, to: 200, vol: 0.5 }); tone(120, 0.4, { to: 40, vol: 0.45 });
           for (const f of [311, 392, 466]) tone(f, 0.8, { type: 'sawtooth', vol: 0.05, lp: 1400, delay: 0.05 });
           break;
-        case 'water': splash(); break;
+        case 'water': case 'icehole': splash(); break;
         case 'crack': noise(0.07, { type: 'bandpass', f: 1800, q: 2, vol: 0.4 }); tone(320, 0.08, { to: 140, vol: 0.25 }); splash(); break;
         case 'sink':
           splash();
@@ -5038,6 +6037,15 @@ const SFX = (() => {
         default: noise(0.2, { f: 1500, to: 200, vol: 0.4 }); tone(160, 0.2, { to: 60, vol: 0.35 });
       }
     },
+    // snow. The wind rise is the blizzard's warning: like the honks, it changes difficulty, not just feel
+    windRise(d) { if (!gate('windRise', 1)) return; noise(d, { type: 'bandpass', f: 250, to: 1600, q: 0.7, vol: 0.28, a: d * 0.85 }); noise(d, { f: 500, to: 2600, vol: 0.12, a: d * 0.9 }); },
+    blizzard() { if (!gate('blizzard', 1)) return; noise(1.6, { type: 'bandpass', f: 1400, to: 500, q: 0.6, vol: 0.3, a: 0.02 }); },
+    iceTap(free) { if (!gate('iceTap', 0.04)) return; noise(0.05, { type: 'highpass', f: free ? 2500 : 4000, vol: free ? 0.4 : 0.2 }); tone(jit(free ? 1400 : 2200, 0.15), 0.06, { type: 'triangle', vol: 0.07 }); },
+    freeze() { if (!gate('freeze', 0.4)) return; noise(0.12, { type: 'highpass', f: 3000, vol: 0.35 }); [1760, 2350, 3130].forEach((f, i) => tone(f, 0.25, { type: 'triangle', vol: 0.06, delay: 0.03 + i * 0.05 })); tone(300, 0.2, { to: 120, vol: 0.2 }); },
+    snowThrow() { if (!gate('snowThrow', 0.3)) return; noise(0.22, { type: 'bandpass', f: 700, to: 1800, q: 1.2, vol: 0.18 }); },
+    snowHit() { if (!gate('snowHit', 0.2)) return; noise(0.16, { f: 900, to: 200, vol: 0.35 }); tone(180, 0.1, { to: 90, vol: 0.18 }); },
+    rumble() { if (!gate('rumble', 1)) return; noise(1.4, { f: 220, to: 90, vol: 0.32, a: 0.4 }); tone(55, 1.2, { to: 40, vol: 0.18, a: 0.3 }); },
+    igloo() { if (!gate('igloo', 0.2)) return; tone(392, 0.12, { type: 'sine', to: 330, vol: 0.18 }); [659, 880].forEach((f, i) => tone(f, 0.3, { type: 'triangle', vol: 0.08, delay: 0.06 + i * 0.07 })); },
     gameOver() { if (!gate('gameOver', 1)) return; [523, 440, 349].forEach((f, i) => tone(f, 0.18, { type: 'triangle', vol: 0.12, delay: 0.05 + i * 0.13 })); },
     stopLoops() { S.handStop(); if (loops.engine && ac) loops.engine.g.gain.setTargetAtTime(0, ac.currentTime, 0.05); },
     unlock, status,
