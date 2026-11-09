@@ -5223,7 +5223,7 @@ function updateHUD() {
     pops.lap = 2.2;
   }
   elScore.textContent = game.score;
-  elCoins.textContent = game.coins;
+  elCoins.textContent = test.on ? game.coins : coinTotal();   // all-time coins (test runs show just that run's)
   elBest.textContent = game.best ? 'TOP ' + game.best : '';
   const dt = 1 / 60;
   pops.lap = Math.max(0, pops.lap - dt); pops.bonus = Math.max(0, pops.bonus - dt);
