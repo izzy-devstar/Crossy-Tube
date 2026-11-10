@@ -335,6 +335,7 @@
       <button type="button" data-v="snowman">Snowmen</button>
       <button type="button" data-v="lake">Ice lake</button>
       <button type="button" data-v="blizzard">Blizzard</button>
+      <button type="button" data-v="polar">Snow train</button>
       <button type="button" data-v="">Nothing difficult</button>
     </div>
     <div class="pair"><div>
@@ -514,8 +515,8 @@ const DIFF = { start: 100, scale: 200, calmSpeed: 0.85, maxSpeedUp: 0.8, minHard
 const test = { on: false, only: 'park', speedRow: 0, god: false, first: false, hitT: {} };
 const TEST_NAMES = { park: 'Graveyard + zombies', ghost: 'Record ghost (beat 15)', rail: 'Red train', road: 'Conveyor road', jam: 'Gridlock', crumble: 'Boulder field',
                      river: 'Cracked logs', sink: 'Sinking logs', roller: 'Steamroller (1 face, then 2)', dark: 'Darkness (dusk, then dark)',
-                     desert: 'Desert', snake: 'Snake', tumble: 'Tumbleweeds', cactus: 'Cactuses', storm: 'Dust storm', snowman: 'Snowmen', lake: 'Ice lake', blizzard: 'Blizzard', '': 'Nothing difficult' };
-const testFam = () => test.only === 'sink' ? 'river' : ['roller', 'dark', 'ghost', 'desert', 'snake', 'cactus', 'storm', 'snowman', 'lake', 'blizzard'].includes(test.only) ? '' : test.only;   // the obstacle family a test choice belongs to
+                     desert: 'Desert', snake: 'Snake', tumble: 'Tumbleweeds', cactus: 'Cactuses', storm: 'Dust storm', snowman: 'Snowmen', lake: 'Ice lake', blizzard: 'Blizzard', polar: 'Snow train', '': 'Nothing difficult' };
+const testFam = () => test.only === 'sink' ? 'river' : ['roller', 'dark', 'ghost', 'desert', 'snake', 'cactus', 'storm', 'snowman', 'lake', 'blizzard', 'polar'].includes(test.only) ? '' : test.only;   // the obstacle family a test choice belongs to
 const desertTest = () => test.on && ['desert', 'snake', 'tumble', 'cactus', 'storm'].includes(test.only);   // every row is desert
 function progressAt(v) { return v <= DIFF.start ? 0 : 1 - Math.exp(-(v - DIFF.start) / DIFF.scale); }
 function speedMul(v) {
@@ -595,6 +596,11 @@ const DARK = { fromRow: 40, len: 25, gap: [80, 140], ramp: 2, graveDark: 0.35,
   // fewer: faster full-screen flashing can trigger seizures in photosensitive players.
   dark: { see: 0.6, fog: 0x000000, ambient: 0.03, sun: 0, flashSee: 7, flashFog: 0x18203a, flashAmbient: 0.42, flashSun: 0.3 },
   blink: { period: 0.5, rise: 0, hold: 0.2, fade: 0, pulseEvery: 4 } };
+// The snow train (snow tracks never get the red train): it freezes you if you stand beside it, within POLAR.reach rows of
+// its track and within 0.5 tile of a car, unless you're in an igloo. Standing on the track still kills as usual.
+const POLAR = { reach: 1 };
+// Sliding on ice: lean toward travel (radians), bank into a steer press, and a small sway (amplitude, rad/s)
+const SLIDE = { lean: 0.2, bank: 0.25, sway: 0.06, swayRate: 7 };
 const RED_TRAIN = { warn: 0.8, flashRate: 24, gap: 4, laps: 3, coverSeconds: 2.5 };
 // The boulder field's red train is the red-hot coal train: it goes round only once, and as it passes it flings
 // EMBERS.count burning coals onto rock 1-2 rows either side of the track. A red glow marks where each will land;
@@ -738,8 +744,9 @@ const SNOW = {
   team: 0.2,                     // chance a second snowman joins in while one is already throwing (never more than 2)
   throwRows: [1, 6],             // snowmen this many rows ahead of you, on your face, can throw
   slideSlowest: 0.5,             // (tunable) on ice you slide at your own hop pace (time between your last hops), at most this slow
-  lakeRows: 15, lakeFirst: 26,   // each face of a snowfield gets one lake, 15 rows long (tester: the lake section starts at row 26)
-  lakeStagger: 6,                // the four lakes start up to this many rows apart (and at their own columns), so they don't line up
+  lakeRows: 15, lakeFirst: 26,   // each face of a snowfield gets one lake, 15 rows long, at its own random row and columns (tester: the first can start at row 26)
+  slideBoost: 0.85, slideMax: 1.5,   // pressing the way you're sliding makes each tile take x0.85 as long, never under HOP_TIME / 1.5 (1.5x the fastest hop); kept to the end of the slide
+  lakeSpread: 25,                // tester only: the four lakes start 0-this many rows after lakeFirst
   giantEvery: [4, 7],            // (tunable) seconds between giant snowballs (one or two at a time)
   giantFirst: 5, giantMax: 3,
   giantPair: 0, giantAim: 0,     // chance one comes with a partner a few columns over; chance it aims where you're heading
@@ -748,10 +755,10 @@ const SNOW = {
   giantSize: [0.6, 2.6],         // (tunable) tiles wide at the start, and the most they grow to
   giantGrow: 0.13,               // tiles wider per row rolled
   lakeCalm: 6,                   // no blizzard starts on a lake or this many rows before one
-  lakeLead: 6,                   // the lake starts at least this many rows into a snowfield (one lake per snowfield)
+  lakeLead: 6,                   // lakes start at least this many rows into a snowfield, and end before its fade out
   plainShare: 0.75, plainRows: [4, 8],   // in a snowfield, most picks are a stretch of plain snow; the rest are train tracks
   blizzardLead: 6,               // no blizzard in a snowfield's first rows, nor in its last few before the fade out
-  holeChance: 0.2,               // (tunable) share of lake tiles that are holes or cracks (both kill)
+  holeChance: 0.28,              // (tunable) share of lake tiles that are holes or cracks (both kill)
   lakeWidth: [5, 9],             // (tunable) tiles wide, on one face, anywhere on it; edges wobble a tile row by row
   flakes: 450,                   // (tunable) falling snow: one Points object, recycled; 60 normally, all of them in a blizzard
   screenFlakes: 220,             // (tunable) snowflakes blowing across the screen in a blizzard
@@ -770,7 +777,7 @@ function snowSet(key, v = player.v) {
 }
 const snowInt = (key, v) => { const r = snowSet(key, v); return randInt(Math.round(r[0]), Math.round(r[1])); };
 const SNOW_TEST = false;         // the snow tester page sets this: every row is snow
-const snowTest = () => test.on && ['snowman', 'lake', 'blizzard'].includes(test.only);   // test mode: every row is snow
+const snowTest = () => test.on && ['snowman', 'lake', 'blizzard', 'polar'].includes(test.only);   // test mode: every row is snow
 const snowAll = () => SNOW_TEST || snowTest();
 // Biome segments are laid out as the run goes, each with its own length. A boulder field's length depends on
 // its special obstacle (rolled when the segment is made): a short run-up, the special (a chasm of 11-15 rows,
@@ -1123,8 +1130,38 @@ function westTrainGeometry(front, red = false) {
   }
   return m.geometry();
 }
-// coal trains run in the boulder field, steam trains in the desert; everywhere else it's the classic train
-const trainGeometry = (front, red, biome) => biome === 1 ? coalTrainGeometry(front, red) : biome === 3 ? westTrainGeometry(front, red) : classicTrainGeometry(front, red);
+// snow trains (snow biome only): the night express. A big black steam engine (brass trim, glowing cab window, red cowcatcher, bright
+// headlight) pulling maroon passenger cars with a row of warm lit windows, all with snow on their roofs. `red` is unused here.
+function snowTrainGeometry(front, red = false) {
+  const m = new Merge(), snow = 0xf4f9ff, glow = 0xffd77a;
+  const wheels = xs => { for (const x of xs) for (const z of [-0.4, 0.4]) { m.part(0x1a1a20, x, 0.17, z, 0.3, 0.3, 0.08); m.part(0xd9b84a, x, 0.17, z * 1.08, 0.1, 0.1, 0.02); } };
+  m.part(0x1a1a20, 0, 0.17, 0, 0.9, 0.12, 0.62);                                 // chassis
+  if (front) {
+    wheels([-0.28, 0.02, 0.3]);
+    m.part(0x15151a, 0.06, 0.55, 0, 0.84, 0.5, 0.6);                             // boiler
+    m.part(0x34343e, 0.06, 0.55, 0, 0.86, 0.1, 0.62); m.part(0x34343e, 0.3, 0.55, 0, 0.1, 0.52, 0.62);   // dark grey bands
+    m.part(0xd9b84a, 0.06, 0.55, 0.31, 0.5, 0.04, 0.01); m.part(0xd9b84a, 0.06, 0.55, -0.31, 0.5, 0.04, 0.01);   // brass trim
+    m.part(0xd9b84a, 0.12, 0.84, 0, 0.16, 0.1, 0.16);                            // brass dome
+    m.part(snow, 0.06, 0.82, 0.15, 0.6, 0.05, 0.26); m.part(snow, 0.06, 0.82, -0.15, 0.6, 0.05, 0.26);   // snow on the boiler
+    m.part(0x15151a, -0.28, 0.74, 0, 0.42, 0.62, 0.82);                          // cab
+    m.part(0x0e0e12, -0.28, 1.08, 0, 0.5, 0.06, 0.9);
+    m.part(snow, -0.28, 1.13, 0, 0.5, 0.06, 0.88);                               // snow cap on the cab roof
+    m.part(glow, -0.28, 0.84, 0.415, 0.26, 0.2, 0.01); m.part(glow, -0.28, 0.84, -0.415, 0.26, 0.2, 0.01);
+    m.part(0x15151a, 0.32, 0.95, 0, 0.16, 0.36, 0.16); m.part(0xd9b84a, 0.32, 1.15, 0, 0.24, 0.05, 0.24);   // tall smokestack, brass lip
+    m.part(0xfff2a8, 0.49, 0.62, 0, 0.04, 0.22, 0.28);                            // big headlight
+    m.part(0xd8302a, 0.46, 0.22, 0, 0.08, 0.26, 0.66); m.part(0xa01e1a, 0.52, 0.14, 0, 0.08, 0.1, 0.5);   // red cowcatcher
+  } else {
+    wheels([-0.28, 0.28]);
+    m.part(0x6e1e2e, 0, 0.55, 0, 0.96, 0.62, 0.8);                               // maroon car
+    for (const x of [-0.3, 0, 0.3]) for (const z of [-0.405, 0.405]) m.part(glow, x, 0.66, z, 0.2, 0.22, 0.01);   // lit windows
+    for (const z of [-0.405, 0.405]) m.part(0xd9b84a, 0, 0.5, z, 0.96, 0.03, 0.01);   // gold stripe
+    m.part(0x2a2228, 0, 0.9, 0, 0.98, 0.08, 0.84); m.part(0x2a2228, 0, 0.97, 0, 0.98, 0.07, 0.6);   // rounded roof
+    m.part(snow, 0, 1.03, 0, 0.94, 0.05, 0.52);
+  }
+  return m.geometry();
+}
+// coal trains run in the boulder field, steam trains in the desert, the night express in the snow; everywhere else it's the classic train
+const trainGeometry = (front, red, biome) => biome === 1 ? coalTrainGeometry(front, red) : biome === 3 ? westTrainGeometry(front, red) : biome === 4 ? snowTrainGeometry(front, red) : classicTrainGeometry(front, red);
 const LOG_GEO = (() => {
   const m = new Merge();
   m.part(COLORS.log, 0, -0.04, 0, 1.0, 0.34, 0.7);
@@ -1629,6 +1666,16 @@ function nextSpecRaw(v) {
   if (snowAll()) return snowTestSpec(v);
   if (v < START_SAFE) return { type: 'grass' };
   if (gen.zone) return zoneSpec(v);
+  const sb0 = biomeAt(v);   // snowfield lakes: each face's lake sits at its own random row; rows under a lake are plain snow, with an igloo row either side
+  if (!test.on && sb0.cur === 4 && sb0.t === 0 && gen.snowLakeSeg !== sb0.seg && v >= sb0.start + SNOW.lakeLead && v + SNOW.lakeRows + 2 < sb0.end - BIOME.blend) {
+    gen.snowLakeSeg = sb0.seg;
+    const hi = sb0.end - BIOME.blend - SNOW.lakeRows - 2;
+    gen.snowLakes = [0, 1, 2, 3].map(f => makeLake(f, randInt(v, hi)));
+  }
+  if (!test.on && gen.snowLakes && (lakeRowAt(v) || lakeEdge(v))) {
+    gen.type = 'grass'; gen.left = 0;
+    return lakeRowAt(v) ? { type: 'grass', biome: 4, lake: true } : { type: 'grass', biome: 4, igloo: true, clear: true };
+  }
   if (gen.queue.length) return gen.queue.shift();
   if (gen.left > 0) { gen.left--; return gen.type === 'grass' ? { type: 'grass' } : { type: gen.type, hard: gen.blockHard, boulder: gen.blockBoulder, tumble: gen.blockTumble }; }
   if (gen.type !== 'grass') {               // a strip of grass after every hazard block
@@ -1636,12 +1683,6 @@ function nextSpecRaw(v) {
   }
   const sb = biomeAt(v);
   if (!test.on && sb.cur === 4 && sb.t === 0) {
-    if (gen.snowLakeSeg !== sb.seg && v >= sb.start + SNOW.lakeLead && v + SNOW.lakeRows + SNOW.lakeStagger + 2 < sb.end - BIOME.blend) {
-      gen.snowLakeSeg = sb.seg;
-      for (let k = 0; k < SNOW.lakeRows + SNOW.lakeStagger; k++) gen.queue.push({ type: 'grass', biome: 4, lake: k });
-      gen.queue.push({ type: 'grass', biome: 4, igloo: true, clear: true });
-      return { type: 'grass', biome: 4, igloo: true, clear: true };
-    }
     if (Math.random() < SNOW.plainShare) { gen.type = 'grass'; gen.left = randInt(SNOW.plainRows[0], SNOW.plainRows[1]) - 1; return { type: 'grass' }; }
   }
   const prog = progressAt(v);
@@ -1959,8 +2000,8 @@ function makeLane(v) {
   } else {   // rail
     lane.dir = Math.random() < 0.5 ? 1 : -1;
     lane.idle = rand(2.5, 5.5);
-    // no red trains in the desert (Izzy): its tracks always get the normal Wild-West train
-    lane.hard = (!spec.inZone || spec.biome === 1) && lane.biome !== 3 && (test.on ? !!spec.hard : Math.random() < hardShare(v));
+    // no red trains in the desert or the snow (Izzy): its tracks always get the normal Wild-West train
+    lane.hard = (!spec.inZone || spec.biome === 1) && lane.biome !== 3 && lane.biome !== 4 && (test.on ? !!spec.hard : Math.random() < hardShare(v));
     if (lane.hard) {
       lane.warn = RED_TRAIN.warn;
       lane.trainLen = P - RED_TRAIN.gap;
@@ -2182,7 +2223,16 @@ function buildLaneStatic(lane) {
             }
           }
           m.box(0x23557f, x, 0.024, 0, 0.14, 0.008, 0.14, rot);
-        } else if ((v * 7 + p * 3) % 4 === 0) m.box(0xe6f6ff, x - 0.1, 0.022, 0.1, 0.5, 0.006, 0.08, rot);
+        } else {                                                           // safe ice: a pale streak, and on about half the tiles 1-3 thin bent hairlines
+          if ((v * 7 + p * 3) % 4 === 0) m.box(0xe6f6ff, x - 0.1, 0.022, 0.1, 0.5, 0.006, 0.08, rot);
+          let sd = (v * 313 + p * 1291) >>> 0;
+          const rr = () => ((sd = (sd * 1103515245 + 12345) >>> 0) / 4294967296);
+          if (rr() < 0.5) for (let k = 0, n = 1 + Math.floor(rr() * 3); k < n; k++) {
+            const c = rr() < 0.5 ? 0xe4f5ff : 0xc6e6f7, cx = x - 0.3 + rr() * 0.4, cz = -0.35 + rr() * 0.5, lx = 0.2 + rr() * 0.25, lz = 0.1 + rr() * 0.2;
+            if (rr() < 0.5) { m.box(c, cx + lx / 2, 0.019, cz, lx, 0.006, 0.02, rot); m.box(c, cx + lx, 0.019, cz + lz / 2, 0.02, 0.006, lz, rot); }
+            else { m.box(c, cx, 0.019, cz + lx / 2, 0.02, 0.006, lx, rot); m.box(c, cx + lz / 2, 0.019, cz + lx, lz, 0.006, 0.02, rot); }
+          }
+        }
       } else if (snowy) {                                                  // a layer of snow like a Minecraft snow layer
         m.box(pal[alt], x, SNOW.layer / 2, 0, 1, SNOW.layer, 1, rot);
         let sd = (v * 197 + p * 641) >>> 0;
@@ -2390,6 +2440,7 @@ function buildLaneDynamic(lane) {
       const mesh = new THREE.Mesh(trainGeometry(i === 0, lane.hard, lane.biome), VCOL);
       mesh.rotation.order = 'ZYX';
       mesh.visible = false;
+      if (lane.biome === 4 && i === 0) addHeadlights(mesh, 0.52);   // shows through the dark like car headlights
       lane.wagons.push(mesh);
       lane.group.add(mesh);
     }
@@ -2577,6 +2628,23 @@ function wagonPos(lane, st, i) {
   const along = st.travelled - 0.5 - i;
   if (along < -0.5 || along > (lane.laps || 1) * P + 0.5) return null;
   return lane.trainStart + lane.dir * along;
+}
+function trainNear(lane, pf) {
+  const st = trainState(lane);
+  if (!st.run) return false;
+  for (let i = 0; i < lane.trainLen; i++) {
+    const pos = wagonPos(lane, st, i);
+    if (pos !== null && ringDist(pos, pf) < 0.5 && faceOf(pos) === faceOf(pf)) return true;
+  }
+  return false;
+}
+// snow rails (biome 4) freeze you from the neighbouring rows
+function snowTrainNear(v, pf) {
+  if (game.mode !== 'play' || inIgloo()) return;
+  for (let d = -POLAR.reach; d <= POLAR.reach; d++) {
+    const l = d && lanes.get(v + d);
+    if (l && l.type === 'rail' && l.biome === 4 && trainNear(l, pf)) { snowFreeze('train'); return; }
+  }
 }
 function trainHits(lane, pf) {
   const st = trainState(lane);
@@ -3087,7 +3155,9 @@ scene.add(hand);
 const handState = { phase: 'idle', t: 0, dur: 1, roll: 0 };   // idle | coming | leaving | struck
 
 
+const _leanE = new THREE.Euler(), _leanQ = new THREE.Quaternion();
 const player = {
+  lean: 0, bank: 0,
   pf: Math.floor(W / 2), v: 0, hop: null, queued: null, bump: 0,
   yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0, frozen: 0
 };
@@ -4362,28 +4432,31 @@ for (let i = 0; i < grainX.length; i++) { grainX[i] = rand(-H, H); grainZ[i] = r
 const _sandObj = new THREE.Object3D();
 // the dust cloud a desert train kicks up: puffy sand cubes over its own row and the one each side, in one pooled InstancedMesh
 // pool: puffs in the whole scene; rate: puffs per second per train; size: cube size range; life: seconds; rise/drift: how far a puff climbs / slides sideways
-const DUST = { pool: 180, rate: 70, size: [0.7, 1.3], life: [1.2, 1.8], rise: 0.7, drift: 0.5, near: 10, colors: [0xe3c68f, 0xd2b27a] };
+const DUST = { pool: 420, rate: 70, size: [0.7, 1.3], life: [1.2, 1.8], rise: 0.7, drift: 0.5, near: 10, colors: [0xe3c68f, 0xd2b27a] };
 const dustMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
   new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false }), DUST.pool);
 dustMesh.frustumCulled = false; dustMesh.visible = false;
 scene.add(dustMesh);
-const dustP = Array.from({ length: DUST.pool }, () => ({ x: 0, y: 0, z: 0, roll: 0, dz: 0, age: 0, life: 0, size: 0, spin: 0 }));
+// snow trains shed pale frost the same way, but smaller, low, and sliding out about a tile to each side
+const FROST = { rate: 260, size: [0.6, 0.9], flat: 0.5, life: [1.1, 1.4], rise: 0.12, drift: [0.5, 1.2], height: [0.05, 0.25], colors: [0xbfe3f7, 0xd6eefb, 0x9fd0ee] };
+const dustP = Array.from({ length: DUST.pool }, () => ({ x: 0, y: 0, z: 0, roll: 0, dz: 0, age: 0, life: 0, size: 0, spin: 0, rise: 0, flat: 1 }));
 let dustNext = 0;
 const _dustObj = new THREE.Object3D(), _dustCol = new THREE.Color();
 function updateTrainDust(dt) {
   for (const lane of lanes.values()) {
-    if (lane.type !== 'rail' || lane.biome !== 3) continue;
+    if (lane.type !== 'rail' || lane.biome !== 3 && lane.biome !== 4) continue;
+    const fr = lane.biome === 4, D = fr ? FROST : DUST;
     const st = trainState(lane);
     if (!st.run) { lane.dustAcc = 0; continue; }
-    lane.dustAcc = (lane.dustAcc || 0) + DUST.rate * dt;
+    lane.dustAcc = (lane.dustAcc || 0) + D.rate * dt;
     for (; lane.dustAcc >= 1; lane.dustAcc--) {
       const pos = wagonPos(lane, st, randInt(0, lane.trainLen - 1));
       if (pos === null || ringDist(pos, player.pf) > DUST.near) continue;
-      const pf = pos - lane.dir * rand(0.3, 1), f = ringFrame(pf, rand(0.1, 0.6)), c = dustP[dustNext];
+      const pf = pos - lane.dir * (fr ? rand(-0.5, 0.5) : rand(0.3, 1)), f = ringFrame(pf, fr ? rand(D.height[0], D.height[1]) : rand(0.1, 0.6)), c = dustP[dustNext];
       const slot = dustNext; dustNext = (dustNext + 1) % DUST.pool;   // the oldest puff is recycled when the pool is full
-      Object.assign(c, { x: f.x, y: f.y, roll: f.roll, z: -(lane.v + randInt(-1, 1) + rand(-0.4, 0.4)), dz: rand(-DUST.drift, DUST.drift),
-                         age: 0, life: rand(DUST.life[0], DUST.life[1]), size: rand(DUST.size[0], DUST.size[1]), spin: rand(0, 3) });
-      dustMesh.setColorAt(slot, _dustCol.setHex(DUST.colors[randInt(0, 1)]));
+      Object.assign(c, { x: f.x, y: f.y, roll: f.roll, z: -(lane.v + (fr ? 0 : randInt(-1, 1)) + rand(-0.4, 0.4)), dz: fr ? (Math.random() < 0.5 ? -1 : 1) * rand(D.drift[0], D.drift[1]) : rand(-D.drift, D.drift),
+                         age: 0, life: rand(D.life[0], D.life[1]), size: rand(D.size[0], D.size[1]), spin: rand(0, 3), rise: D.rise, flat: fr ? D.flat : 1 });
+      dustMesh.setColorAt(slot, _dustCol.setHex(D.colors[randInt(0, D.colors.length - 1)]));
     }
   }
   let any = false;
@@ -4394,9 +4467,9 @@ function updateTrainDust(dt) {
     if (t >= 1 || c.life === 0) { c.life = 0; _dustObj.scale.setScalar(0); }
     else {
       any = true;
-      const rise = DUST.rise * t, s = c.size * Math.min(1, 0.5 + t * 2) * (1 - t * t);   // grows fast, then shrinks to nothing
+      const rise = c.rise * t, s = c.size * Math.min(1, 0.5 + t * 2) * (1 - t * t * t);   // grows fast, then shrinks to nothing
       _dustObj.position.set(c.x - Math.sin(c.roll) * rise, c.y + Math.cos(c.roll) * rise, c.z + c.dz * t);
-      _dustObj.rotation.set(0, c.spin, c.roll); _dustObj.scale.setScalar(s);
+      _dustObj.rotation.set(0, c.spin, c.roll); _dustObj.scale.set(s, s * c.flat, s);   // frost puffs are flat, so they stay low
     }
     _dustObj.updateMatrix();
     dustMesh.setMatrixAt(i, _dustObj.matrix);
@@ -4490,6 +4563,7 @@ function update(dt) {
       const [hf, ht] = hopEnds(h);
       const lp = lerp(hf, ht, t);
       const lane = lanes.get(lv);
+      snowTrainNear(lv, lp);
       if (lane && lane.type === 'road' && vehicleHits(lane, lp)) die(roadDeath(lane));
       else if (lane && lane.type === 'rail' && trainHits(lane, lp)) die('train');
       else if (lane && lane.skels && skelHits(lane, lp)) die('skeleton');
@@ -4518,6 +4592,7 @@ function update(dt) {
       if (rollerHits(player.pf, player.v)) die('roller');
       if (snakeHits(player.v, player.pf)) die('snake');
       if (needleHits(player.v, player.pf)) die('needle');
+      snowTrainNear(player.v, player.pf);
       if (game.mode === 'play' && player.queued) {
         const q = player.queued; player.queued = null; tryMove(q[0], q[1]);
       }
@@ -4642,41 +4717,65 @@ const FROST_STAGES = 12;
 const elHaze = document.getElementById('frostHaze');
 let frostStage = -1;
 
-const lakeRow = v => { const k = v - gen.snowLakeAt; return k >= 0 && k < SNOW.lakeRows + SNOW.lakeStagger ? k : -1; };   // the tester's one lake section   // the tester is one snowfield: one lake
+// lakes: gen.snowLakes = one per face, { face, at (first row), plan[k] = { l, r, holes } per row, safe }. In the tester they spread over
+// lakeSpread rows from lakeFirst. lakeRowAt: v is under some lake; lakeEdge: v is the row just before or after one (an igloo row)
+const lakeRowAt = v => !!gen.snowLakes && gen.snowLakes.some(L => v >= L.at && v < L.at + SNOW.lakeRows);
+const lakeEdge = v => !!gen.snowLakes && gen.snowLakes.some(L => v === L.at - 1 || v === L.at + SNOW.lakeRows);
+// A lake's whole layout at once. Holes/cracks (both kill) never in its first 2 or last 2 rows. A safe column wanders at most 1 tile per
+// row inside l+1 .. r-1 (which every row has whatever its edges do); its tile on a row and the next row's column stay clear, so a single
+// sidestep always gets you through. And no straight column may be clear (sliding straight in must always need a steer): re-rolled until so.
+function makeLake(face, at) {
+  const R = SNOW.lakeRows;
+  for (;;) {
+    const w = randInt(SNOW.lakeWidth[0], SNOW.lakeWidth[1]), l0 = randInt(1, W - 1 - w), r0 = l0 + w - 1, lo = l0 + 1, hi = r0 - 1;
+    const safe = [randInt(lo, hi)];
+    for (let k = 0; k < R; k++) safe.push(Math.max(lo, Math.min(hi, safe[k] + randInt(-1, 1))));
+    const plan = [], cols = new Map();   // cols: column -> hazard count over the hazard rows
+    for (let k = 0; k < R; k++) {
+      const edge = k === 0 || k === R - 1;
+      const l = Math.max(1, l0 + (edge ? 1 : randInt(-1, 0))), r = Math.min(W - 2, r0 - (edge ? 1 : randInt(-1, 0))), holes = new Map();
+      for (let u = l; u <= r; u++) {
+        const hz = k >= 2 && k < R - 2;
+        if (hz && !cols.has(u)) cols.set(u, 0);
+        if (hz && u !== safe[k] && u !== safe[k + 1] && Math.random() < SNOW.holeChance) { holes.set(u, Math.random() < 0.4 ? 'hole' : 'crack'); cols.set(u, cols.get(u) + 1); }
+      }
+      plan.push({ l, r, holes });
+    }
+    let ok = true;
+    for (const [u, n] of cols) {
+      if (n) continue;
+      const ks = []; for (let k = 2; k < R - 2; k++) if (u >= plan[k].l && u <= plan[k].r && u !== safe[k] && u !== safe[k + 1]) ks.push(k);
+      if (!ks.length) { ok = false; break; }
+      plan[ks[randInt(0, ks.length - 1)]].holes.set(u, Math.random() < 0.4 ? 'hole' : 'crack');
+    }
+    if (ok) return { face, at, plan, safe: safe[0], l: l0, r: r0 };
+  }
+}
 // the tester's rows: plain snow, an igloo row every SNOW.iglooEvery rows (and either side of a lake), snowman rows
 // SNOW.manGap apart (never in or next to a lake), and the lakes
 function snowTestSpec(v) {
   const s = { type: 'grass', biome: 4 };
   if (v < START_SAFE) return s;
-  if (lakeRow(v) >= 0) { s.lake = lakeRow(v); return s; }
-  if (v % SNOW.iglooEvery === 1 || v === START_SAFE || lakeRow(v + 1) === 0 || lakeRow(v - 1) === SNOW.lakeRows + SNOW.lakeStagger - 1) { s.igloo = true; s.clear = true; return s; }
-  if (v >= gen.snowMan && lakeRow(v + 1) < 0 && lakeRow(v - 1) < 0) { s.men = true; gen.snowMan = v + snowInt('manGap', v); }
+  if (test.on && test.only === 'polar') {   // snow tracks every third row, an igloo row beside each
+    if (v % 3 === 0) return { type: 'rail', biome: 4 };
+    if (v % 3 === 1) { s.igloo = true; s.clear = true; }
+    return s;
+  }
+  if (lakeRowAt(v)) { s.lake = true; return s; }
+  if (v % SNOW.iglooEvery === 1 || v === START_SAFE || lakeEdge(v)) { s.igloo = true; s.clear = true; return s; }
+  if (v >= gen.snowMan && !lakeRowAt(v + 1) && !lakeRowAt(v - 1)) { s.men = true; gen.snowMan = v + snowInt('manGap', v); }
   return s;
 }
 function snowLane(lane, spec) {
   const open = p => { lane.blocked.delete(p); lane.trees.delete(p); };
   if (spec.lake !== undefined) {
-    // the lake section (spec.lake = row in it): every face has its own lake, starting 0-lakeStagger rows in, at its own
-    // columns; its sides wobble a tile from row to row
-    if (spec.lake === 0) gen.snowLakes = [0, 1, 2, 3].map(face => {
-      const w = randInt(SNOW.lakeWidth[0], SNOW.lakeWidth[1]), l = randInt(1, W - 1 - w);
-      return { face, at: randInt(0, SNOW.lakeStagger), l, r: l + w - 1 };
-    });
     lane.ice = new Set(); lane.iceHoles = new Map();
     for (const L of gen.snowLakes) {
-      const k = spec.lake - L.at;
+      const k = lane.v - L.at;
       if (k < 0 || k >= SNOW.lakeRows) continue;
-      const edge = k === 0 || k === SNOW.lakeRows - 1;
-      const l = Math.max(1, L.l + (edge ? 1 : randInt(-1, 0))), r = Math.min(W - 2, L.r - (edge ? 1 : randInt(-1, 0)));
-      for (let u = l; u <= r; u++) { const p = L.face * W + u; lane.ice.add(p); open(p); lane.coins.delete(p); }
-      // holes and cracks (both kill). Never in a lake's first 2 or last 2 rows. A safe column wanders at most 1 tile per
-      // row, inside L.l+1 .. L.r-1 (which every row has whatever its edges do), and both its tile on this row and the next
-      // row's column stay clear, so a single sidestep always gets you through.
-      const lo = L.l + 1, hi = L.r - 1;
-      if (k === 0) L.next = randInt(lo, hi);
-      L.safe = L.next; L.next = Math.max(lo, Math.min(hi, L.safe + randInt(-1, 1)));
-      if (k >= 2 && k < SNOW.lakeRows - 2)
-        for (let u = l; u <= r; u++) if (u !== L.safe && u !== L.next && Math.random() < SNOW.holeChance) lane.iceHoles.set(L.face * W + u, Math.random() < 0.5 ? 'hole' : 'crack');
+      const pl = L.plan[k];
+      for (let u = pl.l; u <= pl.r; u++) { const p = L.face * W + u; lane.ice.add(p); open(p); lane.coins.delete(p); }
+      for (const [u, t] of pl.holes) lane.iceHoles.set(L.face * W + u, t);
     }
   }
   if (spec.igloo) {
@@ -4751,22 +4850,25 @@ function snowLanded(h) {
   if (ig) { jiggle(ig); SFX.igloo(); }
   if (lane.iceHoles && lane.iceHoles.has(p)) { die('icehole'); return; }   // fell through the ice
   if (!isIce(lane, p) || player.frozen > 0) return;
-  // on ice you keep your speed (the time between your last hops) and your direction; a sideways (or, sliding
-  // sideways, forward/back) press moves you one tile that way, then you carry on. Only a blocked tile or the edge
-  // of the face stops you.
+  // on ice you keep your speed (the time between your last hops, sped up by presses the way you slide) and your direction; a
+  // sideways (or, sliding sideways, forward/back) press moves you one tile that way, then you carry on. Only a blocked
+  // tile or the edge of the face stops you.
   const dir = h.slide ? h.sdir : [h.dp, h.dv], tile = h.slide ? h.stile : player.pace;
   const ok = (tp, tv) => tv >= MIN_V && faceOf(wrapP(tp)) === faceOf(p) && !laneAt(tv).blocked.has(wrapP(tp)) && !laneAt(tv).holes.has(wrapP(tp));
   let step = h.turn && ok(p + h.turn[0], player.v + h.turn[1]) ? h.turn : dir;
   if (!ok(p + step[0], player.v + step[1])) return;
-  player.hop = { fp: p, fv: player.v, tp: p + step[0], tv: player.v + step[1], t: 0, dp: step[0], dv: step[1], slide: true, sdir: dir, stile: tile, turn: null };
+  const pr = Math.round(player.pf);   // unwrapped (the camera follows it); p is only for lookups
+  player.hop = { fp: pr, fv: player.v, tp: pr + step[0], tv: player.v + step[1], t: 0, dp: step[0], dv: step[1], slide: true, sdir: dir, stile: tile, turn: null };
+  if (h.slide) player.hop.t = Math.min(0.99, Math.max(0, h.t - 1) * h.stile / tile);   // leftover time carries into the next slide tile: no stall
   player.yawTarget = yawFor(dir[0], dir[1]);
   player.queued = null;
   if (step[1] > 0) run.hops++;
 }
-// a press while sliding: only across the slide counts (you can't stop or speed up)
+// a press while sliding: across the slide steers one tile; the way you're sliding speeds you up (same tiles, less time); back is ignored
 function snowSteer(dp, dv) {
   const h = player.hop;
   if ((dp !== 0) !== (h.sdir[0] !== 0)) h.turn = [dp, dv];
+  else if (dp === h.sdir[0] && dv === h.sdir[1]) h.stile = Math.max(HOP_TIME / SNOW.slideMax, h.stile * SNOW.slideBoost);
 }
 function smashIgloo(v, p) {
   const l = lanes.get(v), ig = l && l.igloos && l.igloos.get(wrapP(p));
@@ -4982,8 +5084,9 @@ function snowReset() {
   iceBlock.visible = false;
   frostShown = -1; frostStage = -1;
   player.lastHopAt = -99;
-  gen.snowMan = test.on && test.only === 'snowman' ? 6 : 8; gen.snowLakes = null; gen.snowLakeSeg = -1; gen.snowSeg = -1; gen.snowNextIgloo = 0;
-  gen.snowLakeAt = test.on && test.only === 'lake' ? 8 : SNOW.lakeFirst;
+  gen.snowMan = test.on && test.only === 'snowman' ? 6 : 8; gen.snowLakeSeg = -1; gen.snowSeg = -1; gen.snowNextIgloo = 0;
+  const lk0 = test.on && test.only === 'lake' ? 8 : SNOW.lakeFirst;
+  gen.snowLakes = snowAll() && !(test.on && test.only === 'polar') ? [0, 1, 2, 3].map(f => makeLake(f, lk0 + randInt(0, SNOW.lakeSpread))) : null;
   if (test.on && test.only === 'blizzard') bliz.nextRow = 5;
 }
 
@@ -4997,7 +5100,7 @@ function updateVisuals(dt) {
 
   if (player.hop) {
     const t = clamp01(player.hop.t);
-    const e = t * t * (3 - 2 * t);
+    const e = player.hop.slide ? t : t * t * (3 - 2 * t);   // ice slides are one steady glide: no ease at tile boundaries
     const [hf, ht] = hopEnds(player.hop);
     pf = lerp(hf, ht, e);
     vz = lerp(player.hop.fv, player.hop.tv, e);
@@ -5075,6 +5178,13 @@ function updateVisuals(dt) {
   spyMesh.visible = show;
   spyMesh.position.set(px, py, z);
   spyMesh.rotation.set(extraRoll, yaw, roll);
+  const sh = player.hop && player.hop.slide && game.mode === 'play' ? player.hop : null;
+  let tf = 0, tb = 0;
+  if (sh) { const st = sh.turn || [sh.dp, sh.dv], yw = player.yawTarget; const spd = HOP_TIME / sh.stile;   // 1 at the fastest plain hop, up to slideMax: leans further and sways quicker the faster you go
+    player.swayT = (player.swayT || 0) + dt * SLIDE.swayRate * spd;
+    tf = Math.min(0.26, SLIDE.lean * Math.max(0.8, spd)); tb = -(st[0] * Math.cos(yw) + st[1] * Math.sin(yw)) * SLIDE.bank + Math.sin(player.swayT) * SLIDE.sway; }
+  player.lean += (tf - player.lean) * smooth(dt, 0.12); player.bank += (tb - player.bank) * smooth(dt, 0.1);
+  if (Math.abs(player.lean) + Math.abs(player.bank) > 1e-3) spyMesh.quaternion.multiply(_leanQ.setFromEuler(_leanE.set(-player.lean, 0, player.bank)));   // in the model's own frame (its front is -Z)
   spyMesh.scale.set(sx, sy, sz);
 
   const snowH = player.hop ? 0 : snowTop(laneNow, player.pf);       // standing in snow: shadow and marker sit on top of it
@@ -5265,7 +5375,7 @@ function reset() {
   for (const q of particles) scene.remove(q.mesh);
   particles.length = 0;
   Object.assign(player, { pf: Math.floor(W / 2), v: 0, hop: null, queued: null, bump: 0,
-                          yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0, frozen: 0 });
+                          yaw: 0, yawTarget: 0, landT: 0, onLog: null, slot: null, idleT: 0, frozen: 0, lean: 0, bank: 0 });
   snowReset();
   Object.assign(camState, { v: 0, want: 0, roll: 0, lean: 0 });
   Object.assign(game, { mode: 'ready', score: 0, dist: 0, bonus: 0, coins: 0, started: false, death: null, deathT: 0, biomeSeg: 0 });
