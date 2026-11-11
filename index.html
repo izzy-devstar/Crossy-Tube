@@ -33,21 +33,15 @@
   }
   #center.dim { background: rgba(0, 0, 0, .35); }
   #center h1 { font-size: 68px; margin: 0 0 14px; letter-spacing: 2px; }
-  /* start title in the Pixel Paper style: pixel font, cream face, a square ink outline (8 flat shadows,
-     no blur, so the corners stay pixel-sharp), then a stepped clay and ink block underneath */
+  /* blocky 3D start title: white face, extruded sides built from stacked shadows */
   #center h1.logo {
-    --o: max(3px, .045em); --o2: calc(var(--o) * 2); --o3: calc(var(--o) * 3);
-    font-family: "Silkscreen", "Courier New", monospace; font-weight: 700;
-    font-size: clamp(32px, 7.6vw, 104px); letter-spacing: -.02em; line-height: 1.05;
-    color: #fff5e6; -webkit-text-stroke: 0;
-    text-shadow: var(--o) 0 0 #3a2216, calc(-1 * var(--o)) 0 0 #3a2216, 0 var(--o) 0 #3a2216, 0 calc(-1 * var(--o)) 0 #3a2216,
-                 var(--o) var(--o) 0 #3a2216, calc(-1 * var(--o)) var(--o) 0 #3a2216, var(--o) calc(-1 * var(--o)) 0 #3a2216, calc(-1 * var(--o)) calc(-1 * var(--o)) 0 #3a2216,
-                 0 var(--o2) 0 #b8473c, var(--o) var(--o2) 0 #b8473c, calc(-1 * var(--o)) var(--o2) 0 #b8473c,
-                 0 var(--o3) 0 #3a2216, var(--o) var(--o3) 0 #3a2216, calc(-1 * var(--o)) var(--o3) 0 #3a2216, 0 .25em .18em rgba(0, 0, 0, .45);
+    font-family: "Luckiest Guy", "Arial Black", sans-serif;
+    font-size: clamp(56px, 11vw, 132px); letter-spacing: 3px; line-height: 1;
+    color: #fff; -webkit-text-stroke: 3px #1b1b26;
+    text-shadow: 0 3px 0 #c9d4e3, 0 6px 0 #aab8cc, 0 9px 0 #8b9bb2, 0 12px 0 #6c7d97,
+                 0 15px 0 #4e5f7b, 0 18px 0 #33415c, 0 24px 22px rgba(0, 0, 0, .55);
   }
-  /* narrow screens: TUBE drops to a second line, bigger */
-  @media (max-width: 640px) { #center h1.logo { font-size: 15vw; } #center h1.logo .sq { display: block; } }
-  #center h1.logo .sq { color: #f2a12b; }
+  #center h1 .sq { color: #ffd23f; }
   #center p:empty { display: none; }
   /* lap counter and bonus pop-ups */
   .pop {
@@ -60,22 +54,6 @@
   #lap { top: calc(16px + env(safe-area-inset-top, 0px)); font-size: 44px; }
   #bonus { top: 24%; font-size: 52px; color: #ffd23f; }
   #center p  { font-size: 22px; margin: 6px; }
-  /* game over (and the test mode card) in the Pixel Paper style, to match the CROSSY TUBE logo:
-     pixel font, cream face, a square ink outline and a stepped salmon/ink block underneath */
-  #center h1:not(.logo) {
-    font-family: "Silkscreen", "Courier New", monospace; font-weight: 700; letter-spacing: 0; line-height: 1.05;
-    font-size: clamp(34px, 5.6vw, 76px); color: #fff5e6; margin: 0 0 22px;
-    text-shadow: 4px 0 0 #3a2216, -4px 0 0 #3a2216, 0 4px 0 #3a2216, 0 -4px 0 #3a2216,
-                 4px 4px 0 #3a2216, -4px 4px 0 #3a2216, 4px -4px 0 #3a2216, -4px -4px 0 #3a2216,
-                 0 8px 0 #e0685a, 4px 8px 0 #e0685a, -4px 8px 0 #e0685a,
-                 0 12px 0 #3a2216, 4px 12px 0 #3a2216, -4px 12px 0 #3a2216, 0 20px 14px rgba(0, 0, 0, .4);
-  }
-  #center p {
-    font-family: "Silkscreen", "Courier New", monospace; font-weight: 700; font-size: clamp(13px, 1.5vw, 19px);
-    letter-spacing: 0; color: #fff5e6; margin: 7px;
-    text-shadow: 3px 0 0 #3a2216, -3px 0 0 #3a2216, 0 3px 0 #3a2216, 0 -3px 0 #3a2216,
-                 3px 3px 0 #3a2216, -3px 3px 0 #3a2216, 3px -3px 0 #3a2216, -3px -3px 0 #3a2216;
-  }
   /* points at the ghost while he's off screen */
   #ghostPtr { position: fixed; left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px;
               pointer-events: none; display: none; }
@@ -364,10 +342,11 @@
 <div id="board"><div id="boardCard" class="lbcard" role="dialog" aria-label="Leaderboard"></div></div>
 <div id="notes" role="dialog" aria-modal="true" aria-labelledby="notesTitle" hidden>
   <div class="card">
-    <div class="notesTag">PATCH 1.2</div>
+    <div class="notesTag">PATCH 1.2.1</div>
     <h2 id="notesTitle">What's new</h2>
     <ul>
       <li><b>Bugs.</b> if you find any bugs let izzy know</li>
+      <li><b>1.2.1.</b> fixed some reported bugs</li>
       <li><b>Desert biome.</b> new biome. snakes, tumbleweeds, dust storms that push you around and cactuses that shoot spikes at you (one of them aims where you're going so keep moving)</li>
       <li><b>Snow biome.</b> snow slows you down. snowmen throw snowballs that freeze you and if a different snowman hits you while you're frozen you shatter. giant snowballs roll at you, and the ice lakes don't let you stop. when a blizzard comes get in an igloo or spam keys to break out of the ice</li>
       <li><b>Coins.</b> coins actually do something now. they save to your account and skins are coming next update so stock up. max is 1000</li>
@@ -392,7 +371,7 @@
 // everyone AND starts a fresh Current board (every old score stays on Legacy). For a new update set both, e.g.
 // GAME_VERSION '1.2' and RELEASE '1.2'; to re-release the same version with a board reset, add a suffix ('1.1-2').
 // RELEASE can be at most 9 characters.
-const GAME_VERSION = '1.2';
+const GAME_VERSION = '1.2.1';   // 1.2.1: bug fixes only; RELEASE stays '1.2' so the Current board and seen notes don't reset
 const RELEASE = '1.2';
 // =====================================================================
 // Crossy Road inside a square tube. Every lane is a ring around all four
@@ -2638,6 +2617,21 @@ function trainNear(lane, pf) {
   }
   return false;
 }
+// desert rails (biome 3): a train passing a row next to you bumps you one tile its way, once per pass. Same rules as
+// the dust storm's push: only while you're standing (not mid-hop), never into a blocked tile, a hole or round a corner
+function sandTrainBump() {
+  if (game.mode !== 'play' || player.hop || player.onLog) return;
+  for (const d of [-1, 1]) {
+    const l = lanes.get(player.v + d);
+    if (!l || l.type !== 'rail' || l.biome !== 3 || l.bumped === l.cycle || !trainNear(l, player.pf)) continue;
+    const from = Math.round(player.pf), tp = from + l.dir, tw = wrapP(tp), here = lanes.get(player.v);
+    if (faceOf(tw) !== faceOf(wrapP(from)) || here.blocked.has(tw) || here.holes.has(tw)) continue;
+    l.bumped = l.cycle;
+    player.hop = { fp: player.pf, fv: player.v, tp, tv: player.v, t: 0, dp: l.dir, dv: 0 };
+    SFX.bump();
+    return;
+  }
+}
 // snow rails (biome 4) freeze you from the neighbouring rows
 function snowTrainNear(v, pf) {
   if (game.mode !== 'play' || inIgloo()) return;
@@ -3066,8 +3060,13 @@ function updateLanes(dt) {
       if (lane.beltTex) lane.beltTex.offset.x = -((lane.beltSpeed * clock) % 1);
       if (lane.hazardMat) lane.hazardMat.color.setHex(Math.floor(clock * 3) % 2 ? lane.hazardOn : 0x3a2010);
       const yaw = lane.dir > 0 ? 0 : Math.PI;
-      // tumbleweeds all move together: their own way, or while a storm blows, the storm's, 1.6x as fast
-      const blow = storm.phase === 'gust' && storm.gust > 0.5, step = (blow ? storm.dir : lane.dir) * lane.speed * (blow ? 1.6 : 1) * dt;
+      // tumbleweeds go with the wind: their own way when it's calm; while it blows (breeze or gust) the wind's way,
+      // up to 1.6x as fast at a gust's peak. lane.wind eases toward that so they slow, stop and turn round, never snap
+      if (lane.kind === 'tumble') {
+        const want = storm.phase === 'off' ? lane.dir : storm.flow * (1 + 0.6 * storm.gust);
+        lane.wind = lane.wind === undefined ? want : lane.wind + Math.max(-3 * dt, Math.min(3 * dt, want - lane.wind));
+      }
+      const step = (lane.kind === 'tumble' ? lane.wind : lane.dir) * lane.speed * dt;
       for (const veh of lane.vehicles) {
         if (veh.ball) { veh.pos = wrapP(veh.pos + step); veh.ball.rotation.z -= step / 0.35; }
         const c = vehicleCenter(lane, veh);
@@ -3592,7 +3591,8 @@ function updateGravity(dt) {
     beamMesh.material.opacity = 0.9 * Math.min(1, gravity.beam / 0.25);
   }
 }
-const pillarRowsOf = c => { const rows = []; for (let v = c.edge + 2; v < c.far; v += 2) rows.push(v); return rows; };
+// only rows still loaded: a long chasm's first rows are unloaded behind you (a quake marking them crashed the game)
+const pillarRowsOf = c => { const rows = []; for (let v = c.edge + 2; v < c.far; v += 2) if (lanes.has(v)) rows.push(v); return rows; };
 // a way through on every face: from any pillar in the first row, across slots and rows, to the last row
 function chasmPassable(c, isPillar) {
   const rows = pillarRowsOf(c);
@@ -4593,6 +4593,7 @@ function update(dt) {
       if (snakeHits(player.v, player.pf)) die('snake');
       if (needleHits(player.v, player.pf)) die('needle');
       snowTrainNear(player.v, player.pf);
+      sandTrainBump();
       if (game.mode === 'play' && player.queued) {
         const q = player.queued; player.queued = null; tryMove(q[0], q[1]);
       }
@@ -4906,11 +4907,12 @@ function updateSnowmen(dt) {
       if (man) { newThrow(man); sball.wait = rand(...snowSet('throwGap')); }
     } else sball.wait = rand(...snowSet('throwGap'));
   }
-  for (let i = throws.length - 1; i >= 0; i--) updateThrow(throws[i], dt);
+  for (let i = throws.length - 1; i >= 0; i--) updateSnowThrow(throws[i], dt);
   const busy = throws.find(s => s.phase === 'fly') || throws.find(s => s.phase === 'wind') || null;
   sball.phase = busy ? busy.phase : 'idle'; sball.t = busy ? busy.t : 0; sball.man = busy ? busy.man : null;
 }
-function updateThrow(s, dt) {
+// (named updateSnowThrow, not updateThrow: a second updateThrow replaced the king's pillar throw and crashed the chasm)
+function updateSnowThrow(s, dt) {
   const m = s.man;
   if (lanes.get(m.v) !== m.lane) { dropThrow(s); return; }              // its row is gone
   s.t += dt;
