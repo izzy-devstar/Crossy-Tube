@@ -200,13 +200,13 @@
   .lbcard h3, #testPanel h3 { font: 700 15px/1 var(--px); color: var(--clayDark); letter-spacing: 0; }
   #testPanel h2 { font: 700 24px/1 var(--px); color: var(--clayDark); letter-spacing: 0; margin-bottom: 8px; }
   #testPanel .note, .lbcard .muted { color: var(--soft); font-size: 11px; }
-  .lbcard button, #testPanel button, #testBtn, #notesBtn, #pauseBtn, #muteBtn {
+  .lbcard button, #testPanel button, #testBtn, #notesBtn, #skinsBtn, #pauseBtn, #muteBtn {
     font: 700 12px var(--px); color: var(--text); background: var(--paper2); border: 0; border-radius: 0; padding: 7px 10px;
     box-shadow: 0 -3px 0 0 var(--ink), 0 3px 0 0 var(--ink), -3px 0 0 0 var(--ink), 3px 0 0 0 var(--ink); margin: 3px;
     text-shadow: none;
   }
   .lbcard button[aria-pressed="true"], #testPanel button[aria-pressed="true"] { background: var(--orange); color: var(--ink); }
-  .lbcard button:active, #testPanel button:active, #testBtn:active, #notesBtn:active, #muteBtn:active { transform: translateY(2px); }
+  .lbcard button:active, #testPanel button:active, #testBtn:active, #notesBtn:active, #skinsBtn:active, #muteBtn:active { transform: translateY(2px); }
   #testPanel #testStart, #lbName .go {
     font: 700 18px var(--px); letter-spacing: 0; background: var(--orange); color: var(--ink); padding: 10px 18px;
     box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 4px var(--clayDark);
@@ -250,7 +250,58 @@
     box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 4px var(--clayDark); }
   #notesBtn { position: fixed; left: 18px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); display: none; z-index: 5; cursor: pointer; font-size: 14px; padding: 10px 14px;
     box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 0 var(--ink); }
-  #notesBtn:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+  #skinsBtn { position: fixed; left: 18px; bottom: calc(134px + env(safe-area-inset-bottom, 0px)); display: none; z-index: 5; cursor: pointer; font-size: 14px; padding: 10px 14px;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 0 var(--ink); }
+  #notesBtn:focus-visible, #skinsBtn:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+  /* skins: the claw machine and the collection, in the Pixel Paper style (like the patch notes) */
+  #claw { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(42, 22, 16, .6); padding: 12px; box-sizing: border-box; }
+  #claw[hidden] { display: none; }
+  #claw .card { position: relative; width: 100%; max-width: 800px; max-height: calc(100% - 20px); overflow-y: auto; background: var(--paper); color: var(--text); margin: 4px; padding: 12px 16px 14px;
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 12px 0 0 var(--ink); font: 12px/1.4 var(--px); }
+  #claw .cl { min-width: 0; }
+  #claw .top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  #claw h2 { font: 700 20px/1 var(--px); color: var(--clayDark); margin: 0; flex: 1; }
+  #claw h3 { font: 700 13px/1 var(--px); color: var(--clayDark); margin: 0 0 8px; }
+  #clawCoins { font: 700 16px var(--px); color: var(--ink); }
+  #clawCoins::before { content: ''; display: inline-block; width: 12px; height: 12px; background: #ffd23f; margin-right: 6px; box-shadow: 0 0 0 3px var(--ink); }
+  #claw .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+  #claw .tabs button { margin: 3px 3px 3px 3px; }
+  #claw .tabs button[aria-pressed="true"] { background: var(--orange); color: var(--ink); }
+  #claw[data-tab="col"] .cl { height: 0; overflow: hidden; }
+  #claw[data-tab="claw"] .cr { display: none; }
+  #clawStage { position: relative; }
+  #claw button { font: 700 13px var(--px); color: var(--text); background: var(--paper2); border: 0; padding: 7px 10px; margin: 3px; cursor: pointer;
+    box-shadow: 0 -3px 0 0 var(--ink), 0 3px 0 0 var(--ink), -3px 0 0 0 var(--ink), 3px 0 0 0 var(--ink); }
+  #claw button:active { transform: translateY(2px); }
+  #claw button:disabled { opacity: .55; cursor: default; transform: none; }
+  #claw button:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+  #claw .go { background: var(--orange); color: var(--ink); font-size: 15px; padding: 9px 14px; }
+  #claw #clawCv { position: static; display: block; width: 100%; height: clamp(200px, calc(100vh - 150px), 560px); touch-action: none; background: radial-gradient(#6a45aa, #2a1a4a);
+    box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink); }
+  #clawCtl { position: absolute; left: 0; right: 0; bottom: 10px; padding: 0 14px; box-sizing: border-box; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; pointer-events: none; }
+  #clawCtl > * { pointer-events: auto; }
+  /* the reveal: the canvas goes full screen over everything, on a dark background with a soft glow in the tier colour */
+  #claw.full #clawCv { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 70; box-shadow: none; background: #000; }
+  #claw.full.glow #clawCv { background: radial-gradient(circle at 50% 42%, var(--glow) 0%, #000 85%); }
+  #clawRev { position: fixed; left: 0; right: 0; bottom: max(12px, 4vh); z-index: 71; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; pointer-events: none; }
+  #clawRev[hidden] { display: none; }
+  #clawRev > * { pointer-events: auto; }
+  #clawStick { position: relative; flex: none; width: 84px; height: 84px; border-radius: 50%; background: #5a3320; box-shadow: inset 0 0 0 4px var(--ink), 0 4px 0 var(--ink); touch-action: none; cursor: grab; }
+  #clawStk { position: absolute; left: 50%; top: 50%; height: 8px; margin-top: -4px; width: 0; background: linear-gradient(#eef2f4, #9aa3a8); transform-origin: 0 50%; }
+  #clawBall { position: absolute; left: 50%; top: 50%; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffc062, #f2701b 70%); box-shadow: 0 0 0 3px var(--ink); }
+  #clawMid { flex: 1; min-width: 0; text-align: center; }
+  #clawMsg { min-height: 14px; font-size: 11px; color: var(--cream); text-shadow: 0 2px 0 #000; }
+  #claw #clawGrab { flex: none; width: 84px; height: 84px; border-radius: 50%; margin: 0; font-size: 14px; color: #fff; background: radial-gradient(circle at 35% 30%, #7be07b, #2fa84f 70%); box-shadow: 0 0 0 4px var(--ink), 0 8px 0 4px var(--ink); }
+  #clawTier { display: inline-block; font: 700 12px var(--px); padding: 4px 10px; box-shadow: 0 -3px 0 0 var(--ink), 0 3px 0 0 var(--ink), -3px 0 0 0 var(--ink), 3px 0 0 0 var(--ink); }
+  #clawName { font: 700 clamp(18px, 4vw, 28px) var(--px); color: var(--cream); text-shadow: 0 3px 0 #000; margin-top: 6px; }
+  #clawNote { font-size: 13px; color: #ffe9c7; text-shadow: 0 2px 0 #000; }
+  #clawGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  @media (max-width: 640px) { #clawGrid { grid-template-columns: repeat(3, 1fr); } }
+  #clawGrid .cell { position: relative; margin: 0; height: 64px; padding: 14px 2px 2px; font-size: 9px; line-height: 1.1; overflow: hidden; word-break: break-word; border-top: 8px solid var(--tc); }
+  #clawGrid .cell.lock { background: var(--tc); color: #fff; font-size: 24px; padding: 0; border-top: 0; opacity: 1; }
+  #clawGrid .cell i { position: absolute; right: 1px; bottom: 1px; font: 700 8px var(--px); background: var(--ink); color: var(--cream); padding: 1px 2px; }
+  #claw.busy .tabs { pointer-events: none; opacity: .6; }
+  #clawOdds { margin: 10px 0 0; font-size: 9px; color: var(--soft); line-height: 1.5; }
   #pauseBtn { position: fixed; right: 84px; top: calc(70px + env(safe-area-inset-top, 0px)); z-index: 5; cursor: pointer; display: none; padding: 8px; line-height: 0;
     box-shadow: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink), 0 8px 0 0 var(--ink); }
   #pauseBtn:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
@@ -283,6 +334,7 @@
 <div id="bonus" class="pop"></div>
 <button id="testBtn" type="button">Test mode</button>
 <button id="notesBtn" type="button">Patch notes</button>
+<button id="skinsBtn" type="button">Skins</button>
 <button id="muteBtn" type="button" aria-label="Sound on or off (M)" title="Sound (M)"></button>
 <button id="pauseBtn" type="button" aria-label="Pause (P)" title="Pause (P)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" fill="#3a2216"/><rect x="14" y="4" width="5" height="16" fill="#3a2216"/></svg></button>
 <div id="pauseOv" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
@@ -355,6 +407,25 @@
       <li><b>Leaderboard.</b> Current only shows scores from this update. all the old scores are on Legacy</li>
     </ul>
     <button type="button" id="notesOk">Got it</button>
+  </div>
+</div>
+<div id="claw" role="dialog" aria-modal="true" aria-labelledby="clawTitle" data-tab="claw" hidden>
+  <div class="card">
+    <div class="top"><h2 id="clawTitle">Skins</h2><span id="clawCoins">0</span><button type="button" id="clawClose">Close</button></div>
+    <div class="tabs"><button type="button" id="clawTabC" aria-pressed="true">Claw</button><button type="button" id="clawTabL" aria-pressed="false">Collection</button></div>
+    <div class="cl"><div id="clawStage">
+      <canvas id="clawCv"></canvas>
+      <div id="clawCtl">
+        <div id="clawStick" aria-label="Joystick"><b id="clawStk"></b><i id="clawBall"></i></div>
+        <div id="clawMid"><div id="clawMsg"></div><button type="button" id="clawPull" class="go"></button></div>
+        <button type="button" id="clawGrab" disabled>GRAB</button>
+      </div>
+    </div></div>
+    <div class="cr"><div id="clawGrid"></div><p id="clawOdds"></p></div>
+  </div>
+  <div id="clawRev" hidden>
+    <span id="clawTier"></span><div id="clawName"></div><div id="clawNote"></div>
+    <div><button type="button" id="clawEquip" class="go">Equip</button><button type="button" id="clawAgain"></button><button type="button" id="clawDone">Done</button></div>
   </div>
 </div>
 <div id="ghostName"></div>
@@ -927,28 +998,246 @@ class Merge {
 }
 
 // ---------------- models ----------------
-function buildSpy() {
-  const m = new Merge();
-  const C = { coat: 0xc9a57a, coatDark: 0xa6835a, belt: 0x6b4a2e, buckle: 0xffd23f,
-              mask: 0x26263a, wisp: 0xe4f55a, shoe: 0x1b1b26, hat: 0xc9a57a };
-  const s = 0.74;   // whole figure about 1.4 tiles tall, chunky like Crossy's characters
-  const b = (c, x, y, z, sx, sy, sz) => m.part(c, x * s, y * s, z * s, sx * s, sy * s, sz * s);
-  b(C.coatDark, -0.16, 0.18, 0, 0.22, 0.36, 0.26);
-  b(C.coatDark,  0.16, 0.18, 0, 0.22, 0.36, 0.26);
-  b(C.shoe, -0.16, 0.05, -0.05, 0.24, 0.1, 0.32);
-  b(C.shoe,  0.16, 0.05, -0.05, 0.24, 0.1, 0.32);
-  b(C.coat, 0, 0.62, 0, 0.8, 0.6, 0.5);
-  b(C.belt, 0, 0.5, 0, 0.84, 0.1, 0.54);
-  b(C.buckle, 0, 0.5, -0.28, 0.14, 0.1, 0.03);
-  b(C.coatDark, -0.5, 0.6, 0, 0.2, 0.5, 0.26);
-  b(C.coatDark,  0.5, 0.6, 0, 0.2, 0.5, 0.26);
-  b(C.mask, 0, 1.2, 0, 0.66, 0.5, 0.56);
-  b(C.wisp, -0.16, 1.22, -0.29, 0.2, 0.1, 0.04);
-  b(C.wisp,  0.16, 1.22, -0.29, 0.2, 0.1, 0.04);
-  b(C.coatDark, 0, 1.5, 0, 0.9, 0.08, 0.9);
-  b(C.belt, 0, 1.56, 0, 0.58, 0.07, 0.58);
-  b(C.hat, 0, 1.7, 0, 0.56, 0.3, 0.56);
+function buildSpy() {   // the spy's boxes live in spyShape (skins block), so decals get pushed proud there like every skin's
+  return skinModel((R, P) => spyShape(R, P, { coat: 0xc9a57a, dk: 0xa6835a, belt: 0x6b4a2e, buck: 0xffd23f, mask: 0x26263a, wisp: 0xe4f55a, shoe: 0x1b1b26 }));
+}
+
+// ---------------- skins ----------------
+// Skins come from the claw machine (SKIN_COST coins a pull, saved on your leaderboard row: see lbSpend). A pull
+// picks a tier by odds (percent, adding to 100), then one of that tier's skins at random. A skin you already own
+// gives back 10% of its tier's value instead. The spy is everyone's starter and never comes out of the claw.
+const SKIN_TIERS = {
+  common:    { name: 'Common',    odds: 50,   value: 100,  color: '#b4b2a9' },
+  uncommon:  { name: 'Uncommon',  odds: 28.9, value: 200,  color: '#8cc63f' },
+  rare:      { name: 'Rare',      odds: 15,   value: 400,  color: '#378add' },
+  epic:      { name: 'Epic',      odds: 5,    value: 800,  color: '#9b6cf0' },
+  legendary: { name: 'Legendary', odds: 1,    value: 2000, color: '#ffb020' },
+  secret:    { name: 'Secret',    odds: 0.1,  value: 5000, color: '#2a1f45' }
+};
+const SKINS = [
+  { id: 'spy', name: 'Spy', tier: null },
+  { id: 'penguin', name: 'Penguin', tier: 'common' },       { id: 'cactus', name: 'Cactus', tier: 'common' },
+  { id: 'snowman', name: 'Snowman', tier: 'uncommon' },     { id: 'frog', name: 'Frog', tier: 'uncommon' },
+  { id: 'miner', name: 'Miner', tier: 'rare' },       { id: 'robot', name: 'Robot', tier: 'rare' },
+  { id: 'ronin', name: 'Ronin', tier: 'epic' },             { id: 'astronaut', name: 'Astronaut', tier: 'epic' },
+  { id: 'gskel', name: 'Golden skeleton', tier: 'legendary' }, { id: 'gspy', name: 'Golden spy', tier: 'legendary' },
+  { id: 'gtoilet', name: 'Golden toilet', tier: 'legendary' },
+  { id: 'reaper', name: 'Reaper', tier: 'secret' }
+];
+// one pull's result: { skin, tier } (rnd is Math.random, swappable for tests)
+function skinRoll(rnd = Math.random) {
+  let r = rnd() * 100, tier = 'common';
+  for (const [k, t] of Object.entries(SKIN_TIERS)) { if (r < t.odds) { tier = k; break; } r -= t.odds; }
+  const pool = SKINS.filter(s => s.tier === tier);
+  return { skin: pool[Math.min(pool.length - 1, Math.floor(rnd() * pool.length))], tier };
+}
+// Skin models. Each is a list of boxes from roster_mockup.js (x, y, w, h = the approved front view, in buildSpy's raw
+// units before its 0.74 scale) plus a depth z / d of my own. R = one box, P = a mirrored pair. The mockup's x runs
+// along the screen, the model's front is -Z, so x is flipped. Built once and cached.
+const _tm = new THREE.Matrix4(), _te = new THREE.Euler(), _tv = new THREE.Vector3();
+// every decal is pushed at least GAP proud of the box it sits on, so no two faces share a plane (that flickers, most visibly when spinning)
+const SKIN_GAP = 0.016 * 0.74;
+function skinBump(L) {
+  const B = L.filter(o => o.p), vol = o => o.h[0] * o.h[1] * o.h[2];
+  for (let pass = 0; pass < 2; pass++) for (let i = 0; i < B.length; i++) for (let j = i + 1; j < B.length; j++) {
+    if (B[i].c === B[j].c) continue;
+    const [sm, bg] = vol(B[i]) <= vol(B[j]) ? [B[i], B[j]] : [B[j], B[i]];
+    for (let a = 0; a < 3; a++) for (const sg of [1, -1]) {
+      const d = (sm.p[a] + sg * sm.h[a] - (bg.p[a] + sg * bg.h[a])) * sg;   // how far the small box's face stands proud of the big one's
+      if (d >= SKIN_GAP - 1e-9 || d <= -SKIN_GAP) continue;
+      let area = 1; for (let k = 0; k < 3; k++) if (k !== a) area *= Math.max(0, Math.min(sm.p[k] + sm.h[k], bg.p[k] + bg.h[k]) - Math.max(sm.p[k] - sm.h[k], bg.p[k] - bg.h[k]));
+      if (area < 1e-6) continue;
+      const out = bg.p[a] + sg * (bg.h[a] + SKIN_GAP), inn = sm.p[a] - sg * sm.h[a];
+      sm.p[a] = (out + inn) / 2; sm.h[a] = Math.abs(out - inn) / 2;
+    }
+  }
+}
+function skinModel(fn) {
+  const m = new Merge(), s = 0.74, L = [];
+  const R = (c, x, y, w, h, z = 0, d = w) => L.push({ c, p: [-x * s, y * s, z * s], h: [w * s / 2, h * s / 2, d * s / 2] });
+  const P = (c, x, y, w, h, z, d) => { R(c, -x, y, w, h, z, d); R(c, x, y, w, h, z, d); };
+  // T = a box turned about y then z around its own centre (diamonds, shards); not pushed out
+  const T = (c, x, y, z, w, h, d, ry, rz) => L.push({ t: () => {
+    _c.setHex(c); _tm.makeRotationFromEuler(_te.set(0, ry, rz));
+    for (let i = 0; i < UP.length; i += 3) {
+      _tv.set(UP[i] * w * s, UP[i + 1] * h * s, UP[i + 2] * d * s).applyMatrix4(_tm);
+      m.p.push(_tv.x - x * s, _tv.y + y * s, _tv.z + z * s);
+      _tv.set(UN[i], UN[i + 1], UN[i + 2]).transformDirection(_tm); m.n.push(_tv.x, _tv.y, _tv.z); m.c.push(_c.r, _c.g, _c.b);
+    }
+  } });
+  fn(R, P, T);
+  skinBump(L);
+  for (const o of L) if (o.t) o.t(); else m.part(o.c, o.p[0], o.p[1], o.p[2], o.h[0] * 2, o.h[1] * 2, o.h[2] * 2);
   return m.geometry();
+}
+// the spy's shape in any palette (same boxes and depths as buildSpy)
+const spyShape = (R, P, C) => {
+  P(C.dk, .16, .18, .22, .36, 0, .26); P(C.shoe, .16, .05, .24, .1, -.05, .32);
+  R(C.coat, 0, .62, .8, .6, 0, .5); R(C.belt, 0, .5, .84, .1, 0, .54); R(C.buck, 0, .5, .14, .1, -.28, .03);
+  P(C.dk, .5, .6, .2, .5, 0, .26); R(C.mask, 0, 1.2, .66, .5, 0, .56); P(C.wisp, .16, 1.22, .2, .1, -.29, .04);
+  R(C.dk, 0, 1.5, .9, .08, 0, .9); R(C.belt, 0, 1.56, .58, .07, 0, .58); R(C.coat, 0, 1.7, .56, .3, 0, .56);
+};
+// the ronin: light-blue kimono down to the ankles, fitted close, with pleats and a navy sash tied in a bow behind; wide straw cone hat over a calm face
+// with a straw in the mouth; dark hair and a ponytail; katana slung across his back, hilt over his right shoulder (raw -x is his right).
+// pose: none = standing, 'dash' = right hand on the hilt, left sleeve streaming back, 'hat' = right hand on the hat brim
+const roninShape = (R, P, T, pose) => {
+  const k = 0xa4d4fa, pl = 0x80b6e6, tr = 0xe6f5ff, ob = 0x2c4470, sk = 0xf0c08a, st = 0xe6cf86, st2 = 0xcdb360, sc = 0x2b2a3a, gd = 0xd4b24a, red = 0x9a3030, hair = 0x3a2a20;
+  const arm = x => { R(k, x, .8, .22, .44, 0, .3); R(tr, x, .57, .24, .05, 0, .32); R(sk, x, .51, .12, .08, 0, .12); };   // a sleeve hanging at his side
+  P(sk, .15, .07, .14, .06, -.06, .2); P(0x7a5a32, .15, .02, .18, .04, -.05, .3);                 // toes, sandals
+  R(k, 0, .22, .72, .26, 0, .52); R(k, 0, .45, .7, .2, 0, .5); for (const x of [.1, .25]) P(pl, x, .32, .04, .46, 0, .54);   // skirt (fitted, barely wider than the chest) and pleats
+  R(ob, 0, .61, .72, .12, 0, .52); R(ob, 0, .62, .3, .16, .28, .06);                              // sash, bow
+  R(k, 0, .83, .7, .36, 0, .5); P(tr, .1, .9, .08, .18, -.255, .04); R(sk, 0, .97, .14, .06, -.25, .04);   // chest, collar
+  R(sk, 0, 1.2, .5, .44, 0, .46); P(0x2a1a14, .1, 1.24, .1, .03, -.235, .03); R(0x8a4a3a, 0, 1.08, .1, .03, -.235, .03);
+  R(0xe2c870, .05, 1.08, .04, .03, -.34, .2); R(0xe2c870, .05, 1.12, .03, .1, -.43, .03);         // the straw
+  R(hair, 0, 1.24, .54, .32, .12, .26); R(hair, 0, 1.0, .1, .2, .3, .08);
+  R(st2, 0, 1.45, .58, .08, 0, .58);
+  [[1.14, 1.5, st], [.94, 1.545, st2], [.74, 1.59, st], [.54, 1.635, st2], [.34, 1.68, st], [.14, 1.725, st2]].forEach(([w, y, c]) => R(c, 0, y, w, .045, 0, w));
+  T(sc, 0, .78, .38, .08, 1.1, .08, 0, -.9);                                                       // scabbard, left hip to right shoulder
+  T(gd, -.455, 1.14, .38, .14, .03, .14, 0, -.9); T(red, -.587, 1.245, .38, .06, .3, .06, 0, -.9); T(gd, -.71, 1.345, .38, .08, .05, .08, 0, -.9);
+  if (pose === 'dash') R(k, .46, .82, .2, .24, .2, .5), R(tr, .46, .82, .22, .26, .46, .05), R(sk, .46, .8, .1, .1, .52, .08); else arm(.46);
+  if (pose === 'dash') R(k, -.46, 1.0, .22, .34, .1, .3), R(tr, -.46, 1.19, .24, .05, .1, .32), R(sk, -.5, 1.26, .12, .1, .26, .12);
+  else if (pose === 'hat') { R(k, -.46, 1.06, .22, .5, -.06, .28); R(tr, -.46, 1.33, .24, .05, -.06, .3); R(sk, -.46, 1.4, .12, .1, -.14, .14); }
+  else arm(-.46);
+};
+const penguinShape = (R, P, flap) => {   // flap = flippers out mid-hop
+  const k = 0x22252e, w = 0xf4f6fa, o = 0xff9a2a;
+  P(o, .16, .04, .26, .08, -.06, .34); R(k, 0, .62, .8, 1.08, 0, .56); R(w, 0, .56, .52, .82, -.27, .04);
+  if (flap) { P(k, .52, .92, .26, .12, 0, .26); P(k, .74, 1.02, .24, .12, 0, .24); } else P(k, .46, .68, .12, .6, 0, .26);
+  R(k, 0, 1.38, .66, .5, 0, .56); R(w, 0, 1.36, .48, .3, -.29, .04);
+  P(k, .11, 1.4, .08, .1, -.31, .04); R(o, 0, 1.28, .18, .08, -.34, .1); R(k, 0, .34, .3, .14, .34, .22);
+};
+const minerShape = (R, P, swing) => {   // swing = the pickaxe off his back and raised high in one hand
+  const ov = 0x6a4428, sh = 0x4a4a52, y = 0xc9a030, c = 0x141416, s = 0x3a2e26, wd = 0x8a6a4a, fe = 0x7a7e88;
+  P(c, .17, .06, .28, .12, -.04, .34); P(ov, .17, .26, .24, .36, 0, .3);
+  R(ov, 0, .64, .78, .6, 0, .5);
+  P(0x3a2414, .2, .78, .07, .44, 0, .52); P(0xffd23f, .2, .62, .07, .05, -.27, .04);
+  R(sh, -.5, .68, .2, .5, 0, .26); R(c, -.5, .42, .2, .12, 0, .28);
+  if (swing) { R(sh, .5, 1.2, .2, .56, 0, .26); R(c, .5, 1.54, .2, .12, 0, .28); R(wd, .5, 1.9, .08, .6, 0, .08);
+    R(fe, .5, 2.16, .56, .09, 0, .09); for (const x of [.24, .76]) R(fe, x, 2.09, .08, .12, 0, .09); }
+  else { R(sh, .5, .68, .2, .5, 0, .26); R(c, .5, .42, .2, .12, 0, .28);
+    for (let i = 0; i < 7; i++) R(wd, .3 - i * .11, .42 + i * .13, .1, .18, .3, .07);   // pickaxe slung on his back: handle hip to shoulder,
+    R(fe, -.36, 1.3, .44, .08, .3, .08); R(fe, -.58, 1.22, .07, .16, .3, .08); }             // head sticking out above the shoulder
+  R(0xd9a878, 0, 1.2, .62, .48, 0, .54); P(c, .13, 1.27, .08, .08, -.28, .02); R(0x5a3a22, 0, 1.12, .28, .08, -.28, .02);   // face, dot eyes, moustache
+  R(y, 0, 1.48, .8, .08, 0, .8); R(y, 0, 1.62, .62, .22, 0, .62);   // helmet
+  R(0x3a3a3a, 0, 1.58, .24, .16, -.33, .06); R(0xfff6b0, 0, 1.58, .16, .1, -.37, .03);
+};
+const SKIN_BUILD = {
+  // black body, white belly, orange feet and beak, little tail
+  penguin: (R, P) => penguinShape(R, P, false), penguin_flap: (R, P) => penguinShape(R, P, true),
+  // potted cactus with two arms, spines on the ridges, a straw hat with a flower
+  cactus: (R, P) => {
+    const g = 0x4a9a4a, d = 0x3a7a3a, h = 0x7a4a22;
+    R(0xc46a3a, 0, .15, .66, .3, 0, .66); R(0xa85a30, 0, .32, .76, .08, 0, .76); R(g, 0, .9, .56, 1.1, 0, .5);
+    for (const z of [-.26, .26]) P(d, .12, .9, .04, 1.0, z, .04);
+    R(g, -.38, .78, .22, .14, 0, .2); R(g, -.44, .98, .14, .36, 0, .2); R(g, .36, 1.0, .2, .14, 0, .2); R(g, .42, 1.16, .14, .3, 0, .2);
+    P(0x1a1a1a, .1, 1.2, .07, .1, -.27, .04); R(h, 0, 1.47, .7, .06, 0, .7); R(h, 0, 1.6, .36, .22, 0, .36); R(0xff7aa8, .1, 1.53, .08, .05, -.3, .06);
+  },
+  // three snowballs, carrot nose, scarf, stick arms, top hat
+  snowman: (R, P) => {
+    const w = 0xf4f9ff, k = 0x1a1a22, red = 0xd8343a;
+    R(w, 0, .3, .8, .6, 0, .6); R(w, 0, .84, .62, .5, 0, .5); R(w, 0, 1.3, .48, .42, 0, .44);
+    P(k, .09, 1.36, .07, .07, -.23, .04); R(0xff8a2a, 0, 1.28, .08, .07, -.3, .16);
+    R(k, 0, .9, .06, .06, -.26, .04); R(k, 0, .74, .06, .06, -.31, .04);
+    R(red, 0, 1.08, .56, .08, 0, .52); R(red, .18, .96, .1, .18, -.26, .06);
+    P(0x7a5232, .42, .96, .3, .04, 0, .04); R(k, 0, 1.53, .58, .05, 0, .58); R(k, 0, 1.7, .36, .3, 0, .36);
+  },
+  // short and wide: bulgy eyes on top, pale belly, back legs folded at the sides
+  frog: (R, P) => {
+    const g = 0x5cbf4a, d = 0x3f9a34;
+    P(d, .28, .05, .3, .1, -.1, .4); R(g, 0, .32, .84, .46, 0, .6); R(0xd8f0a0, 0, .28, .52, .3, -.31, .04);
+    P(d, .44, .24, .12, .26, .12, .4); R(g, 0, .68, .8, .32, 0, .56); P(g, .22, .88, .24, .2, -.08, .26);
+    P(0xffffff, .22, .9, .18, .15, -.22, .04); P(0x1a1a1a, .22, .9, .08, .09, -.25, .04);
+    R(0xc84a4a, 0, .6, .44, .04, -.29, .03); P(0xff9ab0, .32, .66, .08, .05, -.29, .03);
+  },
+  // samurai ronin: light-blue kimono with pale trim and sash, wide straw cone hat shading a calm face with a straw in the mouth, sandals, katana slung on his back
+  ronin: (R, P, T) => roninShape(R, P, T), ronin_dash: (R, P, T) => roninShape(R, P, T, 'dash'), ronin_hat: (R, P, T) => roninShape(R, P, T, 'hat'),
+  // miner: overalls, pickaxe on his back, yellow helmet with a lamp
+  miner: (R, P) => minerShape(R, P, false), miner_swing: (R, P) => minerShape(R, P, true),
+  // grey box robot: visor with cyan eyes, chest lights, antenna, back vent
+  robot: (R, P) => {
+    const g = 0xa8b0bc, d = 0x7d8794, k = 0x2c323c, cy = 0x38e0ff;
+    P(d, .17, .2, .2, .38, 0, .24); P(k, .17, .04, .26, .08, -.04, .32); R(g, 0, .66, .8, .64, 0, .5);
+    R(k, 0, .68, .4, .3, -.26, .04); R(cy, -.08, .72, .08, .08, -.29, .03); R(0xffd23f, .08, .72, .08, .08, -.29, .03); R(0xff4a4a, 0, .6, .24, .05, -.29, .03);
+    R(k, 0, .7, .4, .3, .26, .04);
+    P(d, .5, .64, .18, .5, 0, .22); P(k, .5, .36, .2, .1, 0, .24); R(d, 0, 1.02, .2, .08, 0, .2);
+    R(g, 0, 1.3, .6, .46, 0, .5); R(k, 0, 1.32, .46, .16, -.26, .04); P(cy, .11, 1.32, .1, .08, -.29, .03);
+    P(d, .33, 1.3, .06, .16, 0, .2); R(k, 0, 1.62, .04, .2, 0, .04); R(0xff4a4a, 0, 1.76, .1, .1, 0, .1);
+  },
+  // white suit, dark-blue visor, chest panel, flag patch, backpack
+  astronaut: (R, P) => {
+    const w = 0xeef0f4, g = 0xa0a6b0;
+    P(g, .16, .06, .26, .12, -.04, .34); P(w, .16, .27, .22, .34, 0, .3); R(w, 0, .66, .78, .66, 0, .5);
+    R(g, 0, .72, .3, .18, -.26, .04); R(0xff4a4a, -.08, .74, .06, .06, -.29, .03); R(0x38e0ff, 0, .74, .06, .06, -.29, .03); R(0xffd23f, .08, .74, .06, .06, -.29, .03);
+    R(0xd8343a, -.26, .86, .12, .08, -.26, .03); P(w, .48, .66, .2, .5, 0, .26); P(g, .48, .38, .2, .1, 0, .28);
+    R(w, 0, 1.32, .7, .6, 0, .66); R(w, 0, 1.32, .6, .7, 0, .56); R(0x2a3a6a, 0, 1.32, .48, .34, -.34, .04);
+    R(0x6a8ac8, -.14, 1.4, .08, .1, -.365, .02); R(0xf2c230, 0, 1.32, .5, .03, -.365, .02);
+    R(w, 0, .82, .56, .6, .38, .26); P(g, .14, .82, .08, .5, .52, .04); R(g, 0, .56, .5, .06, .38, .28);
+  },
+  // gold skeleton (shapes of the game's own), glowing eyes
+  gskel: (R, P) => {
+    const b = 0xe8b830, d = 0x6a4a08;
+    P(b, .12, .04, .18, .06, -.04, .24); P(b, .12, .26, .09, .42, 0, .09); R(b, 0, .5, .4, .1, 0, .2); R(b, 0, .75, .08, .4, 0, .08);
+    R(b, 0, .66, .46, .06, 0, .26); R(b, 0, .78, .5, .06, 0, .26); R(b, 0, .9, .46, .06, 0, .26); P(b, .35, .72, .08, .46, 0, .08);
+    R(b, 0, 1.26, .56, .46, 0, .5); P(d, .12, 1.3, .15, .13, -.26, .04); P(0xfffbe0, .12, 1.3, .05, .05, -.285, .02);
+    R(d, 0, 1.16, .06, .06, -.26, .04); R(b, 0, 1.0, .38, .1, 0, .36); R(d, 0, 1.0, .3, .02, -.19, .03);
+  },
+  // the spy in gold
+  gspy: (R, P) => {
+    spyShape(R, P, { coat: 0xe8b830, dk: 0xc4921a, belt: 0x8a6210, buck: 0xfff4c0, mask: 0x7a5608, wisp: 0xfffbe0, shoe: 0x6a4a08 });
+  },
+  // a golden toilet: tank and flush handle at the back, lid up against the tank, seat ring over a dark water square, pedestal
+  gtoilet: (R, P) => {
+    const g = 0xe8b830, d = 0xc4921a, k = 0x8a6210;
+    R(d, 0, .14, .5, .28, -.02, .5); R(g, 0, .38, .66, .22, -.06, .62);                       // pedestal, bowl
+    R(d, 0, .6, .7, .07, -.33, .12); R(d, 0, .6, .7, .07, .11, .12); P(d, .29, .6, .12, .07, -.11, .34);   // seat ring (open middle)
+    R(0x2a3a6a, 0, .56, .46, .03, -.11, .32);                                                // water
+    R(g, 0, .95, .62, .9, .3, .26); R(d, 0, 1.43, .7, .07, .3, .32);                           // tank and its lid
+    R(g, 0, 1.02, .5, .62, .13, .05); R(d, 0, 1.34, .52, .05, .13, .07);                      // seat lid standing against the tank
+    R(k, .38, 1.2, .1, .06, .3, .06); R(d, .44, 1.2, .08, .08, .3, .08);                       // flush handle
+  },
+  // the frog mid-leap: body stretched out, front legs reaching forward, long back legs trailing behind and below
+  frog_leap: (R, P) => {
+    const g = 0x5cbf4a, d = 0x3f9a34;
+    R(g, 0, .5, .8, .38, .05, .72); R(0xd8f0a0, 0, .44, .5, .26, -.31, .04); R(g, 0, .64, .8, .3, -.18, .5);
+    P(g, .22, .84, .24, .2, -.26, .26); P(0xffffff, .22, .86, .18, .15, -.4, .04); P(0x1a1a1a, .22, .86, .08, .09, -.43, .04);
+    R(0xc84a4a, 0, .56, .44, .04, -.43, .03); P(0xff9ab0, .32, .62, .08, .05, -.43, .03);
+    P(g, .3, .46, .12, .12, -.62, .5); P(d, .3, .4, .16, .08, -.95, .16);                 // front legs and hands
+    P(d, .36, .4, .16, .2, .5, .5); P(d, .34, .24, .12, .12, .98, .6); P(d, .34, .14, .18, .06, 1.4, .3);   // thighs, long shins, feet
+  },
+  // the grim reaper, cute: the spy's proportions (big head, short body). A bone skull framed by a thin black hood, a black robe to the ground,
+  // a thin tan rope belt with a knot, and a tiny scythe in one bony hand.
+  reaper: (R, P) => {
+    const k = 0x17171f, bone = 0xeeeadb, dk = 0x07070a, wood = 0x6a4428, si = 0xc4cad6, rope = 0xc8a46a;
+    R(k, 0, .2, .74, .4, 0, .46); R(k, 0, .62, .8, .6, 0, .5);                      // robe: skirt to the ground, body
+    R(rope, 0, .5, .84, .06, 0, .54); R(rope, .14, .42, .06, .14, -.28, .04);       // thin rope belt and its knot
+    P(k, .5, .6, .2, .5, 0, .26);                                                   // sleeves
+    R(bone, 0, 1.2, .6, .46, 0, .5);                                                // big skull
+    R(k, 0, 1.47, .72, .08, 0, .62); P(k, .34, 1.2, .06, .54, 0, .62); R(k, 0, 1.2, .72, .54, .28, .08);   // thin hood: top, sides, back
+    P(dk, .13, 1.25, .13, .13, -.26, .02); R(dk, 0, 1.14, .05, .05, -.26, .02); R(dk, 0, 1.05, .22, .03, -.26, .02);   // eye holes, nose, smile
+    R(bone, .5, .33, .12, .1, -.1, .14);                                            // bony hand
+    R(wood, .5, .62, .05, .94, -.17, .05);                                          // tiny scythe: handle
+    R(si, .62, 1.06, .22, .07, -.17, .04); R(si, .71, 1.0, .06, .08, -.17, .04);    // and its little blade
+  }
+};
+let curSkin = 'spy';
+const skinGeoCache = {};
+function skinGeo(id) {
+  if (id === 'spy' || !SKIN_BUILD[id]) return skinGeoCache.spy || (skinGeoCache.spy = buildSpy());
+  return skinGeoCache[id] || (skinGeoCache[id] = skinModel(SKIN_BUILD[id]));
+}
+// golden skins shimmer: their own material whose gold glow pulses with quick glints (goldShimmer, every frame)
+const GOLD_SKINS = ['gskel', 'gspy', 'gtoilet'];
+const GOLD_MAT = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0xffc030, emissiveIntensity: 0 });
+const goldShimmer = t => { GOLD_MAT.emissiveIntensity = 0.1 + 0.1 * Math.sin(t * 2.3) + 0.35 * Math.pow(Math.max(0, Math.sin(t * 5.1) * Math.sin(t * 1.7)), 6); };
+skinGeo("spy"); for (const k in SKIN_BUILD) skinGeo(k);   // every skin and pose is built at load (a few hundred boxes): building one mid-run would draw Math.random for its id and shift the game's random numbers
+function skinMat(id) { return GOLD_SKINS.includes(id) ? GOLD_MAT : VCOL; }
+// the whole model for a skin as a Mesh (shared geometry and material, so dropping one frees nothing to dispose)
+function skinMesh(id) { return new THREE.Mesh(skinGeo(id), skinMat(id)); }
+function applySkin(id) {
+  if (!SKIN_BUILD[id]) id = 'spy';
+  curSkin = id;
+  if (typeof spyMesh === 'undefined') return;
+  spyMesh.geometry = skinGeo(id); spyMesh.material = skinMat(id);
 }
 
 function carGeometry(color) {
@@ -3342,7 +3631,7 @@ function finishHop() {
     if (!lane.fuse.has(tile)) lightFuse(lane, tile, lane.volatile && lane.volatile.has(tile) ? ZONE.volatileFuse : ZONE.fuse);
   }
   const coin = lane.coins.get(tile);
-  if (coin) { lane.group.remove(coin); lane.coins.delete(tile); game.coins++; if (!test.on && coinTotal() < COINS.max) { game.unsent++; lbStore('coinsUnsent', game.unsent); } SFX.coin(); }
+  if (coin) { lane.group.remove(coin); lane.coins.delete(tile); game.coins++; if (!test.on && coinBalance() < COINS.max) { game.unsent++; lbStore('coinsUnsent', game.unsent); } SFX.coin(); }
   if (player.v > game.dist) game.dist = player.v;
   for (const b of bonuses) {
     if (!b.done && player.v >= b.row) { b.done = true; addBonus(b.points, b.label); }
@@ -4478,7 +4767,108 @@ function updateTrainDust(dt) {
   dustMesh.instanceMatrix.needsUpdate = true;
   if (dustMesh.instanceColor) dustMesh.instanceColor.needsUpdate = true;
 }
-function clearTrainDust() { for (const c of dustP) c.life = 0; dustMesh.visible = false; }
+function clearTrainDust() { for (const c of dustP) c.life = 0; dustMesh.visible = false; clearSkinFx(); }
+// ---- skin animations (visual only: the player's hop, position and hit logic are never touched) ----
+// puffs: one pooled InstancedMesh for every skin's particles (rate puffs/s while hopping, size range, life s, rise = climb
+// over its life (negative falls), drift = sideways spread, y = start height, colors). Everything else is per-skin motion
+// numbers used in updateVisuals: astro.* (hop height x, how long the top lingers), frog.arc = hop height x.
+const SKIN_FX = {
+  snowman: { trail: true, puffs: { rate: 18, size: [0.1, 0.17], life: 1.0, rise: -0.7, drift: 0.25, y: 0.5, colors: [0xffffff, 0xeaf4ff] } },
+  // miner: swings his pick up (leans back 'lean') and chops it down through the hop; coal dust where he lands
+  miner:   { lean: 0.3, puffs: { rate: 14, size: [0.1, 0.17], life: 1.1, rise: 0.8, drift: 0.12, y: 0.4, colors: [0x15151a, 0x3a3a42, 0x55555e] },
+             landPuffs: { n: 4, size: [0.1, 0.16], life: 0.5, rise: 0.12, drift: 0.6, y: 0.05, colors: [0x15151a, 0x3a3a42] } },
+  // reaper: floats (hover + bob), glides low (glide = hop height x) leaning 'lean'; shadow trails him and
+  // cold green soul lights drift up around him all the time
+  reaper:  { hover: 0.04, bob: 0.035, glide: 0.3, lean: 0.32, puffs: { rate: 26, size: [0.08, 0.2], life: 1.0, rise: 0.25, drift: 0.3, y: 0.7, colors: [0x050508, 0x0e0e14, 0x241a3c] },
+             sparkle: { rate: 3.5, size: [0.04, 0.08], life: 1.1, rise: 0.5, drift: 0.06, colors: [0x6ff5d8, 0xb8fff0, 0x3fd0b0] } },
+  astronaut: { landPuffs: { n: 5, size: [0.12, 0.2], life: 0.7, rise: 0.15, drift: 0.7, y: 0.05, colors: [0xdfe2e8, 0xc4c8d0] }, hop: 1.8, hang: 0.6 },
+  ronin: { dash: { rate: 50, size: [0.08, 0.14], life: 0.5, rise: 0.1, drift: 0.2, y: 0.03, colors: [0xcfc7b8, 0xe8e2d6] } },
+  penguin: { dive: 0.4, hop: 1.15 },   // flippers out and a forward dive of 'dive' rad in the air
+  robot: { steps: 5 },
+  // cactus: rocks on his pot (pitch, rad) 'rocks' times in the first 'wind' of the hop (growing from rock[0] to rock[1]), then kips: swings back 'back', throws forward 'fwd' over the arc; lands with a 'settle' squash
+  cactus: { wind: 0.34, rocks: 0.75, rock: [0.2, 0.26], back: 0.4, fwd: 0.45, settle: 0.1 },
+  frog: { arc: 1.3 },
+  // golden skins: sparkles pop up around the body (standing or hopping), drift up and fade
+  gskel: { sparkle: { rate: 9, size: [0.05, 0.1], life: 0.8, rise: 0.35, drift: 0.08, colors: [0xffffff, 0xfff4b0, 0xffd23f] } }
+};
+SKIN_FX.gspy = SKIN_FX.gtoilet = SKIN_FX.gskel;
+const FXPOOL = 80;
+const fxMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false }), FXPOOL);
+fxMesh.frustumCulled = false; fxMesh.visible = false;
+scene.add(fxMesh);
+const fxP = Array.from({ length: FXPOOL }, () => ({ x: 0, y: 0, z: 0, roll: 0, dx: 0, dz: 0, age: 0, life: 0, size: 0, spin: 0, rise: 0 }));
+let fxSign = 1, skinPose = '';   // skinPose: the pose geometry to show this frame ('' = standing)
+let fxNext = 0, fxAcc = 0, fxSpk = 0, fxHop = null, fxN = 0, fxMove = 0, fxLand = false;
+const _fxQ = new THREE.Quaternion(), _fxObj = new THREE.Object3D(), _fxCol = new THREE.Color(), _fxV = new THREE.Vector3(), _fxW = new THREE.Vector3();
+let fxSeed = 12345;   // the particles' own random numbers, so they never shift the game's Math.random (same world with any skin)
+const fxR = (a, b) => { fxSeed = (fxSeed * 1664525 + 1013904223) >>> 0; return a + (b - a) * fxSeed / 4294967296; };
+function fxSpawn(F, x, y, z, roll) {
+  const slot = fxNext, c = fxP[slot]; fxNext = (fxNext + 1) % FXPOOL;   // the oldest puff is recycled when full
+  Object.assign(c, { x, y, z, roll, dx: fxR(-F.drift, F.drift), dz: fxR(-F.drift, F.drift), age: 0, life: F.life * fxR(0.8, 1.2), size: fxR(F.size[0], F.size[1]), spin: fxR(0, 3), rise: F.rise });
+  fxMesh.setColorAt(slot, _fxCol.setHex(F.colors[Math.floor(fxR(0, F.colors.length - 0.001))]));
+}
+function updateSkinFx(dt) {
+  let any = false;
+  for (let i = 0; i < FXPOOL; i++) {
+    const c = fxP[i];
+    if (c.life > 0) {
+      c.age += dt;
+      const t = c.age / c.life;
+      if (t >= 1) c.life = 0;
+      else {
+        any = true;
+        const rise = c.rise * t, s = c.size * Math.min(1, 0.4 + t * 3) * (1 - t * t);
+        _fxObj.position.set(c.x - Math.sin(c.roll) * rise + c.dx * t, c.y + Math.cos(c.roll) * rise, c.z + c.dz * t);
+        _fxObj.rotation.set(0, c.spin, c.roll); _fxObj.scale.setScalar(s);
+      }
+    }
+    if (c.life <= 0) _fxObj.scale.setScalar(0);
+    _fxObj.updateMatrix();
+    fxMesh.setMatrixAt(i, _fxObj.matrix);
+  }
+  fxMesh.visible = any;
+  fxMesh.instanceMatrix.needsUpdate = true;
+  if (fxMesh.instanceColor) fxMesh.instanceColor.needsUpdate = true;
+}
+// the snowman's trail: flat white squares on the ground under him, as wide as his base, overlapping into one path, pooled in one InstancedMesh, fading out over life seconds
+const TRAIL = { pool: 160, rate: 45, life: 3.5, w: 0.5, len: 0.5, lift: 0.025 };   // rate: squares/s while hopping, enough to overlap into one path (pool >= rate x life)
+const trailMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff }), TRAIL.pool);
+trailMesh.frustumCulled = false; trailMesh.visible = false;
+scene.add(trailMesh);
+const trailP = Array.from({ length: TRAIL.pool }, () => ({ x: 0, y: 0, z: 0, roll: 0, ry: 0, age: 0, life: 0, lane: null, log: null, r: 0 }));
+let trailNext = 0, trailAcc = 0, trailPf = 0, trailV = 0;   // trailPf/trailV: where he is this frame (set in updateVisuals)
+const _trObj = new THREE.Object3D(); _trObj.rotation.order = 'ZYX';
+// strips on a log are stored as an offset r along that log and ride with it; none are laid over water or a missing/sunk log
+function trailEmit(roll) {
+  const p = spyMesh.position, cs = Math.cos(roll), sn = Math.sin(roll), lane = lanes.get(Math.round(trailV));
+  let log = null;
+  if (lane && lane.type === 'river') { log = logUnder(lane, trailPf); if (!log) return; }
+  else if (lane && lane.type === 'pads' && !lane.pads.has(wrapP(Math.round(trailPf)))) return;
+  const c = trailP[trailNext]; trailNext = (trailNext + 1) % TRAIL.pool;
+  Object.assign(c, { x: p.x - sn * TRAIL.lift, y: p.y + cs * TRAIL.lift, z: p.z, roll, ry: 0, age: 0, life: TRAIL.life, lane: log && lane, log, r: log ? wrapP(trailPf - logStart(lane, log)) : 0 });
+}
+function updateTrail(dt) {
+  let any = false;
+  for (let i = 0; i < TRAIL.pool; i++) {
+    const c = trailP[i];
+    if (c.life > 0) {
+      c.age += dt;
+      const t = c.age / c.life;
+      if (c.log && (lanes.get(Math.round(-c.z)) !== c.lane || !c.lane.logs.includes(c.log) || logDepth(c.log) > 0.3)) c.life = 0;   // lane gone, log gone or sinking
+      if (t >= 1) c.life = 0;
+      else if (c.life > 0) {
+        any = true; const k = Math.min(1, (1 - t) * 3);
+        if (c.log) { const f = ringFrame(logStart(c.lane, c.log) + c.r, LOG_TOP - logDepth(c.log) + TRAIL.lift); c.x = f.x; c.y = f.y; c.roll = f.roll; }
+        _trObj.position.set(c.x, c.y, c.z); _trObj.rotation.set(0, c.ry, c.roll); _trObj.scale.set(TRAIL.w * k, 0.012, TRAIL.len * k);
+      }
+    }
+    if (c.life <= 0) _trObj.scale.setScalar(0);
+    _trObj.updateMatrix(); trailMesh.setMatrixAt(i, _trObj.matrix);
+  }
+  trailMesh.visible = any; trailMesh.instanceMatrix.needsUpdate = true;
+}
+function clearSkinFx() { for (const c of fxP) c.life = 0; for (const c of trailP) { c.life = 0; c.log = c.lane = null; } fxMesh.visible = false; trailMesh.visible = false; fxAcc = 0; trailAcc = 0; fxHop = null; }
 function updateStorm(dt) {
   const b = biomeAt(player.v), ok = game.mode === 'play' && game.started && (desertTest() || b.cur === 3 && b.t === 0) && stormSafe(player.v);
   const interval = () => lerp(STORM.breezePush, STORM.gustPush, storm.gust) / speedMul(player.v);
@@ -4679,8 +5069,29 @@ const SNOWMAN_GEO = (() => {
 // the throwing arm: a stick from the shoulder (its origin) along +x, turned up by rotation.z
 const SNOWMAN_ARM_GEO = (() => { const m = new Merge(); m.part(0x6b4a2f, 0.21, -0.025, 0, 0.42, 0.05, 0.05); m.part(0x6b4a2f, 0.4, 0.02, 0, 0.04, 0.1, 0.04); return m.geometry(); })();
 const SNOWBALL_GEO = (() => { const m = new Merge(); m.part(0xffffff, 0, -0.11, 0, 0.22, 0.22, 0.22); m.part(0xe2ecf6, 0, -0.11, 0, 0.26, 0.14, 0.14); return m.geometry(); })();
-const PRINT_GEO = (() => { const m = new Merge(); for (const [x, z] of [[-0.11, 0.12], [0.11, -0.12]]) m.part(0xc6d4e5, x, 0, z, 0.13, 0.012, 0.2); return m.geometry(); })();
-const SNOW_GEOS = [IGLOO_GEO, IGLOO_DOOR_GEO, SNOWMAN_GEO, SNOWMAN_ARM_GEO, SNOWBALL_GEO, PRINT_GEO];   // shared: never disposed
+// footprints per skin (keyed by curSkin when the print is laid): one shared geometry per print type, built once. Snowman and reaper have none.
+const PRINT_GEO = (() => {
+  const P = 0xc6d4e5, D = 0xaebfd4, mk = fn => { const m = new Merge(); fn((x, z, sx, sz, c = P, h = 0.012) => m.part(c, x, 0, z, sx, h, sz)); return m.geometry(); };
+  const feet = (b, w, l, f) => { for (const [x, z] of [[-0.11, 0.12], [0.11, -0.12]]) f(x, z, b); };   // left foot back, right foot forward
+  const boot = (w, l, lines) => mk(b => feet(b, w, l, (x, z) => { b(x, z, w, l); for (let i = 0; i < lines; i++) b(x, z - l / 2 + (i + 0.6) * l / lines, w * 0.8, 0.02, D, 0.016); }));
+  const shoe = mk(b => { for (const [x, z] of [[-0.11, 0.12], [0.11, -0.12]]) b(x, z, 0.13, 0.2); });
+  const G = {
+    shoe,
+    penguin: mk(b => { for (const [x, z] of [[-0.07, 0.1], [0.07, -0.1]]) { b(x, z + 0.04, 0.07, 0.05); for (const t of [-1, 0, 1]) b(x + t * 0.05, z - 0.03 - (t ? 0 : 0.02), 0.03, t ? 0.07 : 0.09); } }),
+    frog: mk(b => { for (const s of [-1, 1]) { b(s * 0.17, 0.1, 0.12, 0.1); for (const t of [-1, 0, 1]) b(s * 0.17 + t * 0.07, 0.01, 0.035, 0.1 - (t ? 0.02 : 0)); b(s * 0.08, -0.14, 0.07, 0.07); } }),
+    cactus: mk(b => { b(0, 0.14, 0.3, 0.04); b(0, -0.14, 0.3, 0.04); b(0.14, 0, 0.04, 0.32); b(-0.14, 0, 0.04, 0.32); b(0, 0, 0.1, 0.1, D); }),
+    ronin: mk(b => feet(b, 0, 0, (x, z) => { b(x * 0.8, z, 0.07, 0.24); b(x * 0.8, z + 0.02, 0.1, 0.02, D, 0.016); })),
+    miner: boot(0.17, 0.26, 4),
+    robot: mk(b => feet(b, 0, 0, (x, z) => { b(x, z, 0.2, 0.2); b(x, z, 0.1, 0.1, D, 0.016); })),
+    astronaut: boot(0.22, 0.3, 5),
+    gskel: mk(b => feet(b, 0, 0, (x, z) => { b(x, z + 0.08, 0.06, 0.06); for (const t of [-2, -1, 0, 1, 2]) b(x + t * 0.025, z - 0.04, 0.012, 0.14 - Math.abs(t) * 0.02); })),
+    gtoilet: mk(b => { b(0, 0, 0.26, 0.34); b(0, 0, 0.16, 0.24, D, 0.016); })
+  };
+  G.spy = G.gspy = shoe;
+  return G;
+})();
+const PRINT_GEO_LIST = [...new Set(Object.values(PRINT_GEO))];
+const SNOW_GEOS = [IGLOO_GEO, IGLOO_DOOR_GEO, SNOWMAN_GEO, SNOWMAN_ARM_GEO, SNOWBALL_GEO, ...PRINT_GEO_LIST];   // shared: never disposed
 const snowMarkMat = new THREE.MeshBasicMaterial({ color: 0x5fb8ff, transparent: true, opacity: 0.5, depthWrite: false });
 // frozen: a block of ice around you (a child of the player, so it hides with you)
 const iceBlock = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.5, 0.8), new THREE.MeshLambertMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0.55, depthWrite: false }));
@@ -4837,9 +5248,12 @@ function snowTakeoff(here, dp, dv) {
   const p = wrapP(Math.round(player.pf)), ig = here.igloos && here.igloos.get(p);
   if (ig) { jiggle(ig); return true; }
   if (isIce(here, p)) return false;
+  const pg = PRINT_GEO[curSkin] || PRINT_GEO.shoe;
+  if (curSkin === 'snowman' || curSkin === 'reaper') return true;   // he glides and leaves his own trail; the reaper floats
   let m = prints[printAt];
-  if (!m) { m = prints[printAt] = new THREE.Mesh(PRINT_GEO, VCOL); m.rotation.order = 'ZYX'; scene.add(m); }
+  if (!m) { m = prints[printAt] = new THREE.Mesh(pg, VCOL); m.rotation.order = 'ZYX'; scene.add(m); }
   printAt = (printAt + 1) % SNOW.prints;
+  m.geometry = pg;
   m.visible = true; m.position.z = -player.v; place(m, p, SNOW.layer + 0.004, yawFor(dp, dv));
   return true;
 }
@@ -5093,9 +5507,105 @@ function snowReset() {
 }
 
 // ---------------- drawing the player and camera ----------------
+// the per-skin hop motion. skinHop fills skinH/skinE/skinSX/SY/SZ (height, eased progress, squash) from the hop time t;
+// skinLand squashes on landing; skinFinish adds the tilts, flips and particles after the pose is set.
+// the ronin: crouch/lean/skim = his dash (also his stance sliding on ice), leap/hang = the calm leap's height x and how long its top lingers, tip = seconds a hat-tip takes
+const SKIN_RONIN = { crouch: 0.84, lean: 0.5, skim: 0.07, leap: 1.15, hang: 0.45, tip: 0.5 };
+const SKIN_PENGUIN = { belly: 1.45, lift: 0.2 };   // lean (rad) when sliding on ice, how far he's raised so he lies on the ice
+let skinH = 0, skinE = 0, skinSX = 1, skinSY = 1, skinSZ = 1, skinLX = 0, skinLY = 0, skinLZ = 0, skinDash = false;
+function skinHop(t, takeoff, air) {
+  const F = SKIN_FX[curSkin] || {}, hop = player.hop;
+  skinH = Math.sin(Math.PI * t) * (hop.leap ? CHASM.leapHeight : HOP_HEIGHT);
+  skinE = hop.slide ? t : t * t * (3 - 2 * t);
+  skinSX = skinSZ = 1 + 0.12 * takeoff - 0.06 * air; skinSY = 1 - 0.22 * takeoff + 0.12 * air;
+  skinLX = skinLY = skinLZ = 0; skinDash = false;
+  if (hop !== fxHop) { fxHop = hop; fxN++; fxSign = hop.dv ? (fxN & 1 ? 1 : -1) : hop.dp > 0 ? -1 : 1; fxMove = curSkin === 'ronin' ? roninMove(hop) : 0; }
+  if (hop.slide && curSkin !== 'ronin') return;
+  const TAU = 2 * Math.PI;
+  if (curSkin === 'cactus') {
+    const u = clamp01(t / F.wind), v = clamp01((t - F.wind) / (1 - F.wind)), s = v * v * (3 - 2 * v);   // wind-up and kip phases (pitch: negative = forward)
+    skinH = Math.sin(Math.PI * v) * (hop.leap ? CHASM.leapHeight : HOP_HEIGHT);
+    skinLX = t < F.wind ? -Math.sin(u * F.rocks * 2 * Math.PI) * lerp(F.rock[0], F.rock[1], u) + F.back * u * u : F.back * (1 - s) - F.fwd * s * (1 - v ** 4);
+    skinSX = skinSY = skinSZ = 1;
+  } else if (curSkin === 'frog') { skinH *= F.arc; if (t > 0.15 && t < 0.85) skinPose = 'frog_leap'; }   // legs stretch out mid-leap
+  else if (curSkin === 'penguin') { skinH *= F.hop; skinLX = -F.dive * air; if (t > 0.12 && t < 0.88) skinPose = 'penguin_flap'; }
+  else if (curSkin === 'miner') { skinLX = F.lean * Math.sin(TAU * t); if (t < 0.8) skinPose = 'miner_swing'; }   // back with the pick up, then forward as it comes down
+  else if (curSkin === 'reaper') {
+    skinH *= F.glide; skinSX = skinSY = skinSZ = 1;
+    if (hop.dv) skinLX = -F.lean * Math.min(1, air * 3) * Math.sign(hop.dv);   // sideways: a plain glide, no spin
+  }
+  else if (curSkin === 'snowman') { skinH = 0; skinSX = skinSY = skinSZ = 1; skinLX = -0.14 * air; }   // no hop: he glides flat, leaning into the move
+  else if (curSkin === 'robot') {
+    const n = F.steps, k = Math.min(n - 1, Math.floor(t * n));
+    skinH = HOP_HEIGHT * [0.45, 0.9, 0.9, 0.45, 0][Math.min(4, k)];
+    skinE = Math.min(1, Math.round(t * n) / n);   // the move itself goes in jerks
+    skinSX = skinSY = skinSZ = 1;
+  } else if (curSkin === 'astronaut') {
+    skinH = Math.pow(Math.sin(Math.PI * t), F.hang) * HOP_HEIGHT * F.hop * (hop.leap ? 1.5 : 1);   // hang at the top, same hop time
+    skinSX = skinSZ = 1 + 0.06 * takeoff - 0.03 * air; skinSY = 1 - 0.1 * takeoff + 0.06 * air;
+  } else if (curSkin === 'ronin') {
+    // 1 dash: low and fast, hand on the hilt, sideways too (also his stance on ice); he never draws the sword; 3 calm leap: high, upright, a hand on his hat;
+    // 4 step back with a bow. Nothing turns him over, so on a log he always stands on it.
+    const R = SKIN_RONIN, m = fxMove;
+    skinSX = skinSY = skinSZ = 1;
+    if (m === 1) { skinH = hop.slide ? 0 : R.skim * air; skinSY = R.crouch; skinLX = -R.lean * (hop.slide ? 1 : Math.min(1, air * 4)); skinDash = true; skinPose = 'ronin_dash'; }
+    else if (m === 3) { skinH = Math.pow(air, R.hang) * (hop.leap ? CHASM.leapHeight : HOP_HEIGHT * R.leap); skinLX = 0.12 * Math.cos(Math.PI * t) * air; skinPose = 'ronin_hat'; }
+    else { skinH *= 0.6; skinLX = -0.22 * air; skinPose = 'ronin_hat'; }
+  }
+}
+// the ronin's move for this hop, from where he is and where he's going: a log or a chasm leap = calm leap; backwards = bow; anything else (ice, sideways, forward) = dash.
+function roninMove(hop) {
+  const ice = hop.slide || isIce(lanes.get(hop.fv), wrapP(Math.round(hop.fp))) || isIce(lanes.get(hop.tv), wrapP(Math.round(hop.tp)));
+  const log = [hop.fv, hop.tv].some(v => { const l = lanes.get(v); return l && l.type === 'river'; });
+  return ice ? 1 : log || hop.leap ? 3 : hop.dv < 0 ? 4 : 1;
+}
+function skinLand(k) {
+  skinSX = skinSZ = 1 + 0.15 * k; skinSY = 1 - 0.25 * k;
+  if (curSkin === 'cactus') { const F = SKIN_FX.cactus; skinSY = 1 - F.settle * k; skinSX = skinSZ = 1 + 0.5 * F.settle * k; skinLX = -0.12 * k; }   // small settle, no jelly
+  else if (curSkin === 'robot') { skinSX = skinSZ = 1 + Math.sin(clock * 90) * 0.04 * k; skinSY = 1 - 0.06 * k; }   // mechanical settle
+  else if (curSkin === 'astronaut') { skinSY = 1 - 0.12 * k; skinSX = skinSZ = 1 + 0.07 * k; }
+  else if (curSkin === 'frog') { skinSY = 1 - 0.3 * k; skinSX = skinSZ = 1 + 0.2 * k; }
+  else if (curSkin === 'snowman') skinSX = skinSY = skinSZ = 1;
+  else if (curSkin === 'reaper') { skinSY = 1; skinSX = skinSZ = 1 + 0.06 * k; }   // the robe settles
+  else if (curSkin === 'ronin') {   // calm: barely a dip. After a dash the hand stays on the hilt; after a leap it stays on the hat
+    skinSY = 1 - 0.07 * k; skinSX = skinSZ = 1 + 0.03 * k;
+    if (!player.hop) skinPose = fxMove >= 3 ? 'ronin_hat' : '';
+  }
+}
+function skinFinish(dt, roll, on) {
+  const F = SKIN_FX[curSkin], mesh = spyMesh;
+  if (curSkin === 'penguin' && player.lean > 0) { const L = SKIN_PENGUIN.lift * clamp01(player.lean / SKIN_PENGUIN.belly); mesh.position.x -= Math.sin(roll) * L; mesh.position.y += Math.cos(roll) * L; }
+  if (curSkin === 'ronin' && on && !player.hop && player.landT <= 0) {   // standing about: he tips his hat every few seconds
+    const i = (clock - player.lastHopAt + 3) % 5 / SKIN_RONIN.tip;
+    if (i < 1 && clock - player.lastHopAt > 1) { skinPose = 'ronin_hat'; skinLX = -0.2 * Math.sin(Math.PI * i); }
+  }
+  if (curSkin === 'reaper' && on) { const L = F.hover + F.bob * Math.sin(clock * 2.6); mesh.position.x -= Math.sin(roll) * L; mesh.position.y += Math.cos(roll) * L; }
+  if (skinLX || skinLY || skinLZ) mesh.quaternion.multiply(_leanQ.setFromEuler(_leanE.set(skinLX, skinLY, skinLZ, 'XYZ')));
+  const g2 = skinGeo(on && skinPose || curSkin); if (mesh.geometry !== g2) mesh.geometry = g2;
+  if (F && on) {
+    if (F.trail && player.hop) for (trailAcc += TRAIL.rate * dt; trailAcc >= 1; trailAcc--) trailEmit(roll);
+    if (skinDash) for (fxAcc += F.dash.rate * dt; fxAcc >= 1; fxAcc--) fxSpawnAt(F.dash, roll);
+    const lt = player.landT > 0, P = F.puffs;
+    if (P && player.hop) for (fxAcc += P.rate * dt; fxAcc >= 1; fxAcc--) fxSpawnAt(P, roll);
+    if (F.landPuffs && lt && !fxLand) for (let i = 0; i < F.landPuffs.n; i++) fxSpawnAt(F.landPuffs, roll);
+    fxLand = lt;
+    const S = F.sparkle, p = spyMesh.position;
+    if (S) for (fxSpk += S.rate * dt; fxSpk >= 1; fxSpk--) {
+      const y = fxR(0.1, 1.4), o = fxR(-0.38, 0.38);
+      fxSpawn(S, p.x - Math.sin(roll) * y + Math.cos(roll) * o, p.y + Math.cos(roll) * y + Math.sin(roll) * o, p.z + fxR(-0.3, 0.3), roll);
+    }
+  }
+  goldShimmer(clock);
+  updateSkinFx(dt); updateTrail(dt);
+}
+function fxSpawnAt(P, roll) {
+  const p = spyMesh.position, y = P.y + fxR(-0.05, 0.05);
+  fxSpawn(P, p.x - Math.sin(roll) * y + fxR(-0.06, 0.06), p.y + Math.cos(roll) * y, p.z + fxR(-0.06, 0.06), roll);
+}
 function updateVisuals(dt) {
   updateTrainDust(dt);
   let pf = player.pf, vz = player.v, h = 0;
+  skinLX = skinLY = skinLZ = 0; skinDash = false; skinPose = '';
   let sx = 1, sy = 1, sz = 1;
   const laneNow = lanes.get(player.v);
   let base = player.onLog ? LOG_TOP - Math.min(0.3, logDepth(player.onLog)) : raisedAt(laneNow, player.pf) ? CHASM.height : 0;
@@ -5113,11 +5623,13 @@ function updateVisuals(dt) {
     const takeoff = clamp01(1 - t / 0.3), air = Math.sin(Math.PI * t);
     sy = 1 - 0.22 * takeoff + 0.12 * air;
     sx = sz = 1 + 0.12 * takeoff - 0.06 * air;
+    if (curSkin !== 'spy') { skinHop(t, takeoff, air); if (curSkin === 'robot') { h = skinH; pf = lerp(hf, ht, skinE); vz = lerp(player.hop.fv, player.hop.tv, skinE); } else h = skinH; sx = skinSX; sy = skinSY; sz = skinSZ; }
   }
-  if (player.hop && player.hop.slide) { h = 0; sx = sy = sz = 1; }   // sliding on ice: flat, no bounce
+  if (player.hop && player.hop.slide) { h = 0; sx = sy = sz = 1; if (curSkin === 'ronin') sy = SKIN_RONIN.crouch; }   // sliding on ice: flat, no bounce (the ronin crouches)
   if (player.landT > 0) {
     const k = Math.sin((player.landT / LAND_TIME) * Math.PI);
     sy = 1 - 0.25 * k; sx = sz = 1 + 0.15 * k;
+    if (curSkin !== 'spy') { skinLand(k); sx = skinSX; sy = skinSY; sz = skinSZ; }
   }
   if (player.bump > 0) h = Math.sin((player.bump / 0.14) * Math.PI) * 0.18;
 
@@ -5126,7 +5638,7 @@ function updateVisuals(dt) {
   dy = Math.atan2(Math.sin(dy), Math.cos(dy));
   player.yaw += dy * smooth(dt, 0.035);
 
-  let yaw = player.yaw, extraRoll = 0;
+  let yaw = curSkin === 'robot' ? player.yawTarget : player.yaw, extraRoll = 0;   // robot turns snap
   let z = -vz;
   const fr = ringFrame(pf, base + h);
   let px = fr.x, py = fr.y, roll = fr.roll;
@@ -5178,16 +5690,19 @@ function updateVisuals(dt) {
   }
 
   spyMesh.visible = show;
+  const fxOn = curSkin !== 'spy' && SKIN_FX[curSkin] && game.mode === 'play';
   spyMesh.position.set(px, py, z);
   spyMesh.rotation.set(extraRoll, yaw, roll);
   const sh = player.hop && player.hop.slide && game.mode === 'play' ? player.hop : null;
   let tf = 0, tb = 0;
   if (sh) { const st = sh.turn || [sh.dp, sh.dv], yw = player.yawTarget; const spd = HOP_TIME / sh.stile;   // 1 at the fastest plain hop, up to slideMax: leans further and sways quicker the faster you go
     player.swayT = (player.swayT || 0) + dt * SLIDE.swayRate * spd;
-    tf = Math.min(0.26, SLIDE.lean * Math.max(0.8, spd)); tb = -(st[0] * Math.cos(yw) + st[1] * Math.sin(yw)) * SLIDE.bank + Math.sin(player.swayT) * SLIDE.sway; }
+    tf = curSkin === 'penguin' ? SKIN_PENGUIN.belly : Math.min(0.26, SLIDE.lean * Math.max(0.8, spd)); tb = -(st[0] * Math.cos(yw) + st[1] * Math.sin(yw)) * SLIDE.bank + Math.sin(player.swayT) * SLIDE.sway; }
   player.lean += (tf - player.lean) * smooth(dt, 0.12); player.bank += (tb - player.bank) * smooth(dt, 0.1);
   if (Math.abs(player.lean) + Math.abs(player.bank) > 1e-3) spyMesh.quaternion.multiply(_leanQ.setFromEuler(_leanE.set(-player.lean, 0, player.bank)));   // in the model's own frame (its front is -Z)
   spyMesh.scale.set(sx, sy, sz);
+  trailPf = pf; trailV = vz;
+  skinFinish(dt, roll, fxOn);
 
   const snowH = player.hop ? 0 : snowTop(laneNow, player.pf);       // standing in snow: shadow and marker sit on top of it
   const gb = ringFrame(pf, base + 0.015 + snowH);
@@ -5335,7 +5850,7 @@ function updateHUD() {
     pops.lap = 2.2;
   }
   elScore.textContent = game.score;
-  elCoins.textContent = test.on ? game.coins : coinTotal();   // all-time coins (test runs show just that run's)
+  elCoins.textContent = test.on ? game.coins : coinBalance();   // coins you can spend (test runs show just that run's)
   elBest.textContent = game.best ? 'TOP ' + game.best : '';
   const dt = 1 / 60;
   pops.lap = Math.max(0, pops.lap - dt); pops.bonus = Math.max(0, pops.bonus - dt);
@@ -5346,6 +5861,7 @@ function updateHUD() {
   document.getElementById('testBtn').style.display = game.mode === 'ready' || game.mode === 'over' ? 'block' : 'none';
   document.getElementById('pauseBtn').style.display = game.mode === 'play' && game.started && !game.paused ? 'block' : 'none';
   document.getElementById('notesBtn').style.display = (game.mode === 'ready' || game.mode === 'over') && !notesOpen() ? 'block' : 'none';
+  document.getElementById('skinsBtn').style.display = (game.mode === 'ready' || game.mode === 'over') && !notesOpen() && !clawOpen() ? 'block' : 'none';
   syncMute();
   const tag = document.getElementById('testTag');
   tag.style.display = test.on && game.mode === 'play' ? 'block' : 'none';
@@ -5360,7 +5876,7 @@ function gameOver() {
                 grab: 'Pulled off the screen', slap: 'Slapped for standing still',
                 skeleton: 'Caught by a skeleton', zombie: 'A zombie came up under you', king: 'The boulder king landed on you', ghost: ghost.name ? ghost.name + '\u2019s ghost got you' : 'The ghost got you',
                 sink: 'Sank with the log', icehole: 'Fell through the ice', shatter: 'Shattered while frozen', giant: 'Flattened by a giant snowball', snake: 'Bitten by a snake', tumble: 'Flattened by a tumbleweed', needle: 'Spiked by a cactus needle', roller: lastRollerKind === 'stone' ? 'Flattened by the stone roller' : 'Flattened by a steamroller' }[game.death] || '';
-  showCenter('GAME OVER', why + '  ·  Score ' + game.score + '  ·  ' + game.coins + (game.coins === 1 ? ' coin' : ' coins') + (test.on ? '' : ' (' + coinTotal() + ' total)'),
+  showCenter('GAME OVER', why + '  ·  Score ' + game.score + '  ·  ' + game.coins + (game.coins === 1 ? ' coin' : ' coins') + (test.on ? '' : ' (' + coinBalance() + ' total)'),
              test.on ? 'Press R or tap to retry the test  ·  T to change it' : 'Press R or tap to play again', true);
   lbRunOver();
   logDeath();
@@ -5465,9 +5981,33 @@ game.best = Math.max(0, Math.floor(+lbLoad('best') || 0));
 // Coins (for skins): every coin picked up outside test mode. They go on your leaderboard row (scores/<NAME>.coins) with
 // the next run you post, at most COINS.perWrite at a time; until then they wait on this device (crd2.coinsUnsent), so
 // nothing is lost offline or before you pick a name. Your total = your row's coins + the ones still waiting.
-const COINS = { perWrite: 500, max: 1000 };   // max: the most you can stock up before skins come out
+const COINS = { perWrite: 500, max: 9999 };   // max: the most coins you can hold (your balance, after spending)
 game.unsent = Math.max(0, Math.floor(+lbLoad('coinsUnsent') || 0));
 const coinTotal = () => (LB.mine && isInt(LB.mine.coins) ? LB.mine.coins : 0) + game.unsent;
+// Skins (the claw machine): your row also keeps spent (SKIN_COST per pull, only goes up), refund (duplicate
+// refunds, only go up) and skins (ids you own; the spy is free and never listed). What you can spend is
+// coinBalance() = coins - spent + refund. The rules check the same sums (firestore.rules validSkins).
+const SKIN_COST = 100;
+const rowInt = k => LB.mine && isInt(LB.mine[k]) ? LB.mine[k] : 0;
+const coinBalance = () => coinTotal() - rowInt('spent') + rowInt('refund');
+const skinsOwned = () => LB.mine && Array.isArray(LB.mine.skins) ? LB.mine.skins : [];
+// one pull: saves the cost, the refund (0 for a new skin) and the skin on your row BEFORE the result is shown,
+// so reloading can't re-roll. Resolves '' when saved, else a message for the player.
+function lbSpend(id, refund) {
+  if (LB.state !== 'ok' || !LB.name || LB.needPin || !LB.mine || !rowOk(LB.mine)) return Promise.resolve('Post a run with a leaderboard name first, so your skins save.');
+  let d = null;
+  return lbWriting.then(() => {                       // after any score still going up, so this builds on it
+    d = Object.assign({}, LB.mine); delete d.id;
+    const sent = Math.min(game.unsent, COINS.perWrite);   // coins waiting on this device go up with it
+    d.coins = (isInt(d.coins) ? d.coins : 0) + sent;
+    d.spent = rowInt('spent') + SKIN_COST;
+    if (d.coins - d.spent + rowInt('refund') < 0) { d = null; return; }
+    d.refund = rowInt('refund') + refund;
+    const sk = skinsOwned();
+    d.skins = sk.includes(id) ? sk.slice() : sk.concat(id);
+    return lbWrite(d, null, sent);
+  }).then(() => !d ? 'Not enough coins on your account yet. Play a run to send the rest up.' : LB.mine === d ? '' : 'Couldn\u2019t save that. Your coins weren\u2019t spent.');
+}
 
 // The Current board's key: scores keep their "best this period" in the week/wBest/wRun/wAt fields (from when the
 // board was weekly), and the period is now the release, e.g. 'v1.1-2----' (the database wants 10 characters).
@@ -5667,10 +6207,13 @@ async function lbSaveName(rawName, rawPin) {
   if (renaming && old !== n && oldMine && rowOk(oldMine)) {                 // renaming: bring your scores along
     runs.push([oldMine.run, false, oldMine.at]);
     if (weekOk(oldMine, wk)) runs.push([oldMine.wRun, true, oldMine.wAt]);
-    if (isInt(oldMine.coins) && oldMine.coins > 0) { game.unsent += oldMine.coins; lbStore('coinsUnsent', game.unsent); }   // your coins come too (sent up 500 at a time)
+    const bal = (isInt(oldMine.coins) ? oldMine.coins : 0) - (isInt(oldMine.spent) ? oldMine.spent : 0) + (isInt(oldMine.refund) ? oldMine.refund : 0);
+    if (bal > 0) { game.unsent += bal; lbStore('coinsUnsent', game.unsent); }   // your coins come too (what's left to spend, sent up 500 at a time)
   }
   if (LB.pending) { runs.push([LB.pending, true]); LB.pending = null; }
   const d = runs.length ? lbMerge(runs) : null;
+  // shortcut: the rules can't check skins carried to a new name (a hand-made row could list any skin); skins are cosmetic, fine unless they ever give an edge
+  if (d && renaming && Array.isArray(oldMine.skins)) d.skins = [...new Set(skinsOwned().concat(oldMine.skins))];
   if (d) await lbWrite(d, null, lbMerge.sent);
   if (renaming && old !== n) {                                              // free the old name
     try { await LB.db.doc('scores/' + old).delete(); } catch (e) {}
@@ -6210,7 +6753,7 @@ testPanel.addEventListener('click', e => {
   }
 });
 document.getElementById('testBtn').addEventListener('click', openTestPanel);
-const inTestUI = e => statsOpen() || (e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #notesBtn, #pauseBtn, #pauseOv, #muteBtn, #stats'));
+const inTestUI = e => statsOpen() || (e.target && e.target.closest && e.target.closest('#testPanel, #testBtn, #notesBtn, #skinsBtn, #claw, #pauseBtn, #pauseOv, #muteBtn, #stats'));
 
 const muteBtn = document.getElementById('muteBtn');
 // speaker: on, muted, or a quiet speaker while the browser hasn't let sound start yet
@@ -6251,6 +6794,375 @@ for (const ev of ['pointerdown', 'pointerup']) window.addEventListener(ev, e => 
   if (ev === 'pointerdown' && e.target === elNotes) closeNotes();
   e.stopImmediatePropagation();                       // (the Got it button still gets its click)
 }, true);
+// ---------------- skins: claw machine + collection ----------------
+// A small 3D claw machine in the Skins panel. It uses ONE extra WebGLRenderer on #clawCv, made the first time the panel opens and
+// only drawing while it is open (the machine scene, then a spin-around scene for the reveal and the collection preview).
+// A pull is rolled and saved (lbSpend) BEFORE the claw moves; steering only picks which capsule gets lifted, never the result.
+const CLAW = {
+  speed: 3.2,      // claw speed while steering, world units per second
+  timer: 10,       // seconds you get to aim before it grabs by itself
+  r: 0.32,         // capsule radius
+  top: 3.4,        // claw head height while it travels
+  pit: { x: 2.8, z: 1.9 },                      // how far the claw can go from the middle
+  chute: { x: -2.4, z: 1.4, y: 0.42 },          // the prize chute (front left): where the claw lets go
+  build: { common: [0.4, 0.02], uncommon: [0.65, 0.04], rare: [0.9, 0.06], epic: [1.15, 0.09], legendary: [1.35, 0.12], secret: [1.5, 0.16] },   // build-up before the pop: [seconds, shake size]
+  cams: { m: [[0, 4.9, 10.8], [0, 2.3, 0]], h: [[-1.2, 0.6, 8.2], [-2, -1.7, 3]] },   // camera [position, looks at]: machine, prize hatch
+  colors: [0x3d8bff, 0xff5fa2, 0xffd23f, 0x4cd964, 0xff8a1f, 0x9b6cf0]   // capsule top colours
+};
+const elClaw = document.getElementById('claw');
+document.body.appendChild(elClaw);          // out of the letterboxed game box, so the full-screen reveal really is the whole screen
+const cl = id => document.getElementById(id);
+const clawOpen = () => !elClaw.hidden;
+const KEYV = { ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1] };
+const CL = { x: 0, z: 0, y: CLAW.top, open: 1, cap: null };          // the claw
+const clawKeys = new Set(), clawStick = { x: 0, y: 0 };
+let clawG = null, clawBusy = false, clawPhase = 'idle', clawView = 'machine', clawEq = 'spy', clawShown = null, clawMode = 'new';
+let clawSkip = false, clawLeft = 0, clawGrabNow = null, clawSpin = 0, clawDrag = null, clawLoopOn = false, clawLast = 0, clawBulb = 0, clawStickKey = '';
+const clawTw = (ms, f) => new Promise(res => { const t0 = performance.now(); const s = t => { const k = clawSkip ? 1 : Math.min(1, (t - t0) / ms); f(k); if (k < 1) requestAnimationFrame(s); else res(); }; requestAnimationFrame(s); });
+const clawEase = k => k * k * (3 - 2 * k);
+const clawClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const clawOwned = id => id === 'spy' || skinsOwned().includes(id);
+
+function clawCapGeo(hex) {                    // a round capsule: coloured top, white bottom, dark band; flat shaded, vertex colours
+  const g = new THREE.SphereGeometry(CLAW.r, 8, 8).toNonIndexed(), p = g.attributes.position, col = new Float32Array(p.count * 3);
+  const top = new THREE.Color(hex), wh = new THREE.Color(0xf6f1e6), bd = new THREE.Color(0x3a2216);
+  for (let i = 0; i < p.count; i += 3) {
+    const y = (p.getY(i) + p.getY(i + 1) + p.getY(i + 2)) / 3 / CLAW.r, c = Math.abs(y) < 0.2 ? bd : y > 0 ? top : wh;
+    for (let j = 0; j < 3; j++) { col[(i + j) * 3] = c.r; col[(i + j) * 3 + 1] = c.g; col[(i + j) * 3 + 2] = c.b; }
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.computeVertexNormals(); return g;
+}
+
+function clawBuild() {
+  const r = new THREE.WebGLRenderer({ canvas: cl('clawCv'), antialias: true, alpha: true });
+  r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  const lam = c => new THREE.MeshLambertMaterial({ color: c }), bas = c => new THREE.MeshBasicMaterial({ color: c });
+  const lights = sc => { sc.add(new THREE.AmbientLight(0xffffff, 0.7)); const d = new THREE.DirectionalLight(0xffffff, 0.65); d.position.set(3, 8, 6); sc.add(d); };
+  const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+  const S = new THREE.Scene(); lights(S);
+  const add = (geo, mat, x, y, z, par) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); (par || S).add(m); return m; };
+  const red = new THREE.MeshPhongMaterial({ color: 0xd8242b, shininess: 90, specular: 0x886666 }), purple = lam(0x6a3fb5), pink = lam(0xff5fa2);
+  const teal = lam(0x2fc1b5), silver = lam(0xcfd6dc);
+  const glass = new THREE.MeshPhongMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.2, shininess: 100, specular: 0xffffff, depthWrite: false });
+  const streak = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false }), dark = lam(0x8a1a20), cream = lam(0xfff1c9);
+  // lower cabinet: solid body, darker side panels with a stripe, the control deck sticking out at the front (the real joystick and GRAB button are the overlays drawn over it), coin slot
+  add(box(7.6, 3.2, 5.2), red, 0, -1.6, 0);
+  for (const x of [-3.82, 3.82]) { add(box(0.04, 3.0, 5.0), dark, x, -1.6, 0); add(box(0.05, 0.25, 5.0), cream, x, -1.0, 0); }
+  add(box(7.2, 0.14, 0.05), cream, 0, -2.9, 2.62);
+  add(box(7.8, 0.2, 1.2), dark, 0, -0.7, 3.2);
+  add(box(0.7, 0.4, 0.05), lam(0xffd23f), 2.3, -1.7, 2.62); add(box(0.4, 0.08, 0.06), lam(0x1a0f14), 2.3, -1.65, 2.64);
+  // glass box above it: pit rim, four corner posts, the marquee on top with a lit sign, a purple backdrop
+  add(box(6.2, 0.06, 4.2), purple, 0, 0.03, 0);
+  for (const [w, d, x, z] of [[6.4, 0.25, 0, -2.1], [6.4, 0.25, 0, 2.1], [0.25, 4.2, -3.1, 0], [0.25, 4.2, 3.1, 0]]) add(box(w, 0.5, d), purple, x, 0.25, z);
+  for (const x of [-3.6, 3.6]) for (const z of [-2.4, 2.4]) add(box(0.35, 4.8, 0.35), red, x, 2.4, z);
+  add(box(7.9, 1.0, 5.4), red, 0, 5.3, 0);
+  add(box(5.6, 0.75, 0.06), lam(0x2a1630), 0, 5.3, 2.72); add(box(5.3, 0.55, 0.08), bas(0xffc83d), 0, 5.3, 2.74);
+  [0.3, 0.45, 0.3, 0.4, 0.3, 0.1, 0.4, 0.3, 0.45, 0.3, 0.4, 0.3].forEach((h, i) => { if (h > 0.2) add(box(0.22, h, 0.09), bas(i % 2 ? 0xd8242b : 0x6a3fb5), -2.4 + i * 0.44, 5.3, 2.79); });   // "SKIN CLAW" as coloured blocks
+  add(box(7.2, 4.7, 0.1), lam(0x3b2b6b), 0, 2.4, -2.35);
+  // glass panes (front and both sides) with silver trim and a few reflection streaks, drawn after the opaque parts
+  const pane = (w, h, d, x, y, z) => { const m = add(box(w, h, d), glass, x, y, z); m.renderOrder = 3; };
+  pane(7.0, 4.6, 0.04, 0, 2.4, 2.4); pane(0.04, 4.6, 4.6, -3.6, 2.4, 0); pane(0.04, 4.6, 4.6, 3.6, 2.4, 0);
+  for (const y of [0.1, 4.7]) { add(box(7.0, 0.1, 0.08), silver, 0, y, 2.4); add(box(0.08, 0.1, 4.6), silver, -3.6, y, 0); add(box(0.08, 0.1, 4.6), silver, 3.6, y, 0); }
+  const sk = (w, h, x, y, z, ry) => { const m = add(new THREE.PlaneGeometry(w, h), streak, x, y, z); m.rotation.set(0, ry, 0.5); m.renderOrder = 4; };
+  sk(0.2, 3.4, -2.3, 2.5, 2.43, 0); sk(0.08, 3.0, -1.9, 2.5, 2.43, 0); sk(0.2, 3.4, 1.8, 2.5, 2.43, 0);
+  sk(0.2, 3.0, -3.57, 2.5, -0.6, Math.PI / 2); sk(0.2, 3.0, 3.57, 2.5, 0.8, Math.PI / 2);
+  // prize hatch (front, under the chute) with a door that swings open onto a tray
+  const hx = CLAW.chute.x, door = new THREE.Group(); door.position.set(hx, -2.2, 2.64); S.add(door);
+  add(box(1.3, 1.1, 0.04), lam(0x1a0f14), hx, -1.7, 2.61); add(box(1.2, 1.0, 0.08), lam(0xf2a12b), 0, 0.5, 0.04, door);
+  add(box(1.7, 0.1, 1.4), silver, hx, -2.3, 3.5);
+  for (const [w, d, x, z] of [[1.7, 0.1, 0, 0.7], [0.1, 1.4, -0.8, 0], [0.1, 1.4, 0.8, 0]]) add(box(w, 0.25, d), pink, hx + x, -2.2, 3.5 + z);
+  // bulbs that chase down the front pillars and along the roof: warm white, orange, dim
+  const bulbG = new THREE.SphereGeometry(0.1, 6, 5), bm = [bas(0xfff1c9), bas(0xff8a1f), bas(0x7a5a3a)], bulbs = [];
+  for (const x of [-3.6, 3.6]) for (let k = 0; k < 9; k++) bulbs.push(add(bulbG, bm[2], x, 0.5 + k * 0.5, 2.62));
+  for (const y of [4.88, 5.72]) for (let k = 0; k < 13; k++) bulbs.push(add(bulbG, bm[2], -3.6 + k * 0.6, y, 2.76));
+  // prize chute (front left)
+  const ch = CLAW.chute;
+  add(box(1.2, 0.1, 1.2), lam(0x2a1630), ch.x, 0.05, ch.z);
+  for (const [w, d, x, z] of [[1.2, 0.1, 0, 0.55], [1.2, 0.1, 0, -0.55], [0.1, 1.2, -0.55, 0], [0.1, 1.2, 0.55, 0]]) add(box(w, 0.6, d), pink, ch.x + x, 0.3, ch.z + z);
+  // gantry, cable, claw
+  for (const x of [-3.4, 3.4]) add(box(0.15, 0.15, 5.2), silver, x, 4.55, 0);
+  const bridge = add(box(6.9, 0.2, 0.3), silver, 0, 4.55, 0), carriage = add(box(0.6, 0.3, 0.6), teal, 0, 4.45, 0);
+  const cable = add(new THREE.CylinderGeometry(0.03, 0.03, 1, 5), silver, 0, 4, 0);
+  const claw = new THREE.Group(); S.add(claw); add(box(0.42, 0.22, 0.42), teal, 0, 0, 0, claw);
+  const prongs = [];
+  for (let i = 0; i < 3; i++) {
+    const a = new THREE.Group(), p = new THREE.Group(); a.rotation.y = i * 2.094; p.position.set(0, -0.08, 0.2); claw.add(a); a.add(p);
+    add(box(0.08, 0.55, 0.08), silver, 0, -0.27, 0, p); add(box(0.08, 0.22, 0.08), teal, 0, -0.56, -0.06, p).rotation.x = 0.7; prongs.push(p);
+  }
+  // aiming marker on the pile
+  const mark = new THREE.Group(); S.add(mark);
+  for (const [geo, mat] of [[new THREE.CircleGeometry(0.34, 14), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthTest: false, depthWrite: false })],
+                            [new THREE.RingGeometry(0.3, 0.4, 14), new THREE.MeshBasicMaterial({ color: 0xffd23f, depthTest: false })]]) {
+    const m = add(geo, mat, 0, 0, 0, mark); m.rotation.x = -Math.PI / 2; m.renderOrder = 5;
+  }
+  // the pit: two staggered layers of round capsules (one shared geometry per colour)
+  const geos = CLAW.colors.map(clawCapGeo), caps = [], home = [], rr = CLAW.r;
+  const layer = (nx, nz, x0, z0, y) => { for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
+    const x = x0 + i * 0.65 + (Math.random() - 0.5) * 0.12, z = z0 + j * 0.68 + (Math.random() - 0.5) * 0.12;
+    if (Math.abs(x - ch.x) < 0.95 && Math.abs(z - ch.z) < 0.95) continue;
+    const m = add(geos[Math.floor(Math.random() * geos.length)], VCOL, x, y + (Math.random() - 0.5) * 0.06, z);
+    m.rotation.set((Math.random() - 0.5) * 1.2, Math.random() * 6, (Math.random() - 0.5) * 1.2); caps.push(m); home.push(m.position.clone());
+  } };
+  layer(9, 6, -2.6, -1.7, 0.06 + rr); layer(8, 5, -2.28, -1.36, 0.06 + rr + 0.52);
+  const mCam = new THREE.PerspectiveCamera(46, 1.25, 0.1, 60), camV = {}, tmp = new THREE.Vector3();
+  for (const k in CLAW.cams) camV[k] = CLAW.cams[k].map(a => new THREE.Vector3(...a));
+  // reveal scene (full screen, over a CSS glow): the capsule, rotating light rays, sparkle cubes, a glow ball, and the skin on a spinning pivot
+  const R = new THREE.Scene(); lights(R);
+  const pm = new THREE.MeshBasicMaterial({ color: 0xffffff }), fm = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false }), bits = [];
+  const rayM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const rays = new THREE.Group(); rays.position.z = -1.5; R.add(rays);
+  const rayG = new THREE.PlaneGeometry(0.3, 9); for (let i = 0; i < 10; i++) { const m = add(rayG, rayM, 0, 0, 0, rays); m.rotation.z = i * Math.PI / 10; }
+  const bitG = box(0.14, 0.14, 0.14);
+  for (let i = 0; i < 20; i++) { const b = add(bitG, pm, 0, 0, 0, R); b.visible = false; bits.push({ m: b, v: new THREE.Vector3() }); }
+  const flash = add(new THREE.SphereGeometry(0.5, 8, 6), fm, 0, 0.3, 0.2, R); flash.visible = false;
+  const capR = add(geos[0], VCOL, 0, 0.3, 0, R); capR.visible = false;
+  const pivot = new THREE.Group(); pivot.position.y = 0.35; R.add(pivot);
+  const skinMesh = add(skinGeo('spy'), VCOL, 0, 0, 0, pivot);
+  const rCam = new THREE.PerspectiveCamera(35, 1.25, 0.1, 50); rCam.position.set(0, 0, 6.5);
+  // fades the cabinet to black as the reveal takes over the screen
+  const fadeM = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0, depthTest: false, depthWrite: false });
+  const fade = add(new THREE.PlaneGeometry(3, 3), fadeM, 0, 0, -0.5, mCam); fade.renderOrder = 99; fade.visible = false; S.add(mCam);
+  clawG = { camV, tmp, door, r, S, R, mCam, rCam, claw, bridge, carriage, cable, prongs, mark, caps, home, bulbs, bm, bits, flash, pm, fm, rays, rayM, capR, fade, fadeM, pivot, skinMesh };
+}
+
+function clawSize() {
+  const cv = cl('clawCv'), w = cv.clientWidth, h = cv.clientHeight;
+  if (!clawG || !w || !h) return;
+  const a = w / h, g = clawG; g.r.setSize(w, h, false); g.mCam.aspect = g.rCam.aspect = a;
+  g.mCam.fov = a < 1.25 ? 2 * Math.atan(0.53 / a) * 57.296 : 46;          // narrow screens (phones) see wider so the cabinet still fits
+  g.rCam.position.z = 6.5 * Math.max(1, 0.8 / a); g.mCam.updateProjectionMatrix(); g.rCam.updateProjectionMatrix();
+}
+window.addEventListener('resize', () => { if (clawOpen()) clawSize(); });
+
+function clawCam(a, b, k) {                    // camera between two of CLAW.cams
+  const g = clawG, e = clawEase(k);
+  g.mCam.position.lerpVectors(g.camV[a][0], g.camV[b][0], e); g.tmp.lerpVectors(g.camV[a][1], g.camV[b][1], e); g.mCam.lookAt(g.tmp);
+}
+function clawPlace() {
+  const g = clawG;
+  g.claw.position.set(CL.x, CL.y, CL.z); g.carriage.position.set(CL.x, 4.45, CL.z); g.bridge.position.z = CL.z;
+  const len = 4.45 - CL.y; g.cable.scale.y = len; g.cable.position.set(CL.x, CL.y + len / 2, CL.z);
+  for (const p of g.prongs) p.rotation.x = -0.45 + (1 - CL.open) * 0.7;
+  if (CL.cap) CL.cap.position.set(CL.x, CL.y - 0.5, CL.z);
+  g.mark.position.set(CL.x, 1.45, CL.z);
+}
+function clawResetPile() {
+  const g = clawG;
+  g.caps.forEach((m, i) => { m.visible = true; m.position.copy(g.home[i]); m.scale.setScalar(1); });
+  Object.assign(CL, { x: 0, z: 0, y: CLAW.top, open: 1, cap: null });
+  g.mark.visible = false; g.flash.visible = false; for (const b of g.bits) b.m.visible = false;
+}
+function clawVec() {
+  let x = 0, y = 0;
+  for (const k of clawKeys) { x += KEYV[k][0]; y += KEYV[k][1]; }
+  if (!x && !y) { x = clawStick.x; y = clawStick.y; }
+  const l = Math.hypot(x, y); return l > 1 ? [x / l, y / l] : [x, y];
+}
+const clawSay = t => { cl('clawMsg').textContent = t; };
+function clawCoinsShow() { cl('clawCoins').textContent = coinBalance(); }
+
+function clawFrame(t) {
+  if (!clawOpen()) { clawLoopOn = false; return; }
+  requestAnimationFrame(clawFrame);
+  const dt = Math.min(0.05, (t - clawLast) / 1000 || 0); clawLast = t;
+  const g = clawG, v = clawVec();
+  if ((clawBulb += dt) > 0.18) { clawBulb = 0; g.step = (g.step || 0) + 1; g.bulbs.forEach((b, i) => { b.material = g.bm[(i + g.step) % 3]; }); }
+  const key = v[0].toFixed(2) + v[1].toFixed(2);
+  if (key !== clawStickKey) {                                                   // the joystick tilts toward where you push
+    clawStickKey = key; const bx = v[0] * 26, by = v[1] * 26;
+    cl('clawBall').style.transform = 'translate(' + bx + 'px,' + by + 'px)';
+    const s = cl('clawStk').style; s.width = Math.hypot(bx, by) + 'px'; s.transform = 'rotate(' + Math.atan2(by, bx) + 'rad)';
+  }
+  if (clawView === 'reveal') {
+    if (!clawDrag) clawSpin += dt * 0.8;
+    g.pivot.rotation.y = clawSpin; g.rays.rotation.z += dt * 0.25; g.r.render(g.R, g.rCam);
+  } else if (elClaw.dataset.tab === 'claw' || elClaw.classList.contains('full')) {
+    if (clawPhase === 'steer') {
+      CL.x = clawClamp(CL.x + v[0] * CLAW.speed * dt, -CLAW.pit.x, CLAW.pit.x); CL.z = clawClamp(CL.z + v[1] * CLAW.speed * dt, -CLAW.pit.z, CLAW.pit.z);
+      clawLeft -= dt; clawSay('Aim, then GRAB! ' + Math.max(0, Math.ceil(clawLeft)));
+      if (clawLeft <= 0 && clawGrabNow) clawGrabNow();
+    }
+    clawPlace(); g.r.render(g.S, g.mCam);
+  }
+}
+
+function clawToMachine() {
+  const g = clawG;
+  clawView = 'machine'; clawPhase = 'idle'; clawShown = null; clawSkip = false;
+  elClaw.classList.remove('full', 'glow'); cl('clawRev').hidden = true; clawCam('m', 'm', 1); g.door.rotation.x = 0; g.fade.visible = false; g.capR.visible = false;
+  cl('clawGrab').disabled = true; cl('clawPull').disabled = false;
+  clawResetPile(); clawSay('Pull the claw for ' + SKIN_COST + ' coins.'); clawSize();
+}
+// the colours of a tier's reveal: light rays, sparkles and glow ball, and the dark radial background behind the canvas
+function clawGlow(tier) {
+  const g = clawG, c = new THREE.Color(tier === 'secret' ? 0x9b6cf0 : tier ? SKIN_TIERS[tier].color : '#f2a12b');
+  g.fm.color.copy(c); g.rayM.color.copy(c); g.pm.color.copy(c).lerp(new THREE.Color(0xffffff), 0.45);
+  elClaw.style.setProperty('--glow', '#' + c.multiplyScalar(tier === 'secret' ? 0.45 : 0.85).getHexString());
+}
+function clawShow(id, note, mode) {            // the full-screen reveal: after a pull, or a preview from the collection
+  const s = SKINS.find(k => k.id === id), t = s.tier ? SKIN_TIERS[s.tier] : { name: 'Starter', color: '#f2a12b' }, g = clawG;
+  clawShown = id; clawMode = mode; clawView = 'reveal';
+  const tb = cl('clawTier'); tb.textContent = t.name; tb.style.background = t.color; tb.style.color = ['rare', 'epic', 'secret'].includes(s.tier) ? '#fff5e6' : '#3a2216';
+  cl('clawName').textContent = s.name; cl('clawNote').textContent = note;
+  cl('clawAgain').textContent = mode === 'view' ? 'Back' : 'Pull again'; cl('clawAgain').hidden = mode === 'view';
+  cl('clawRev').hidden = false; elClaw.classList.add('full', 'glow'); clawSize(); clawGlow(s.tier);
+  g.pivot.remove(g.skinMesh); g.skinMesh = skinMesh(id); g.pivot.add(g.skinMesh);   // skinMesh: body + the reaper's strands; geometry and materials are shared, nothing to dispose
+  const bb = new THREE.Box3(); g.skinMesh.traverse(o => { if (o.geometry) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); bb.union(o.geometry.boundingBox); } });
+  const c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3()), k = 1.9 / Math.max(sz.x, sz.y, sz.z);
+  g.skinMesh.scale.setScalar(k); g.skinMesh.position.copy(c).multiplyScalar(-k);
+  g.capR.visible = false; g.pivot.visible = true; g.pivot.scale.setScalar(1); g.rayM.opacity = 0.3;
+  clawSpin = 0.4; clawEquipSync();
+}
+// leave the reveal: a pull goes back to the machine (and pulls again if asked), a preview back to the collection
+function clawLeave(again) {
+  if (clawBusy) return;
+  const view = clawMode === 'view';
+  if (view) { elClaw.classList.remove('full', 'glow'); cl('clawRev').hidden = true; clawView = 'machine'; clawSize(); return; }
+  clawToMachine(); clawTab('claw'); if (again) clawPull();
+}
+function clawTab(t) {
+  elClaw.dataset.tab = t; cl('clawTabC').setAttribute('aria-pressed', String(t === 'claw')); cl('clawTabL').setAttribute('aria-pressed', String(t === 'col'));
+  if (t === 'claw') clawSize();
+}
+function clawEquipSync() {
+  const b = cl('clawEquip'); b.textContent = clawEq === clawShown ? 'Equipped' : 'Equip'; b.disabled = clawEq === clawShown;
+}
+function clawEquip(id) { clawEq = id; applySkin(id); lbStore('skin', id); clawEquipSync(); clawGrid(); }
+function clawGrid() {
+  cl('clawGrid').innerHTML = SKINS.map(s => {
+    const c = s.tier ? SKIN_TIERS[s.tier].color : '#f2a12b', has = clawOwned(s.id);
+    return '<button type="button" class="cell' + (has ? '' : ' lock') + '" data-id="' + s.id + '" style="--tc:' + c + '"' + (has ? '' : ' disabled') + '>' + (has ? s.name : '?') + (clawEq === s.id ? '<i>ON</i>' : '') + '</button>';
+  }).join('');
+}
+
+async function clawPull() {
+  if (clawBusy || clawView !== 'machine') return;
+  if (coinBalance() < SKIN_COST) { clawSay('Not enough coins'); return; }
+  clawBusy = true; elClaw.classList.add('busy'); cl('clawClose').disabled = true; cl('clawPull').disabled = true;
+  try {
+    const { skin, tier } = skinRoll(), dup = skinsOwned().includes(skin.id), refund = dup ? Math.round(SKIN_TIERS[tier].value * 0.1) : 0;
+    clawSay('One moment...');
+    let msg; try { msg = await lbSpend(skin.id, refund); } catch (e) { msg = 'Couldn’t save that. Your coins weren’t spent.'; }
+    if (msg) { clawSay(msg); cl('clawPull').disabled = false; return; }
+    clawCoinsShow();
+    // steer: the result is already saved, so this only chooses which capsule the claw lifts
+    clawPhase = 'steer'; clawLeft = CLAW.timer; clawG.mark.visible = true; cl('clawGrab').disabled = false;
+    await new Promise(res => { clawGrabNow = () => { clawGrabNow = null; res(); }; });
+    cl('clawGrab').disabled = true; clawPhase = 'grab';
+    const cap = await clawGrab();
+    await clawDeliver(cap, tier, () => {
+      clawPhase = 'idle';
+      if (dup) SFX.coin();
+      SFX.bonus(tier === 'legendary' || tier === 'secret');
+      clawShow(skin.id, dup ? 'Duplicate: +' + refund + ' coins' : 'New skin!', dup ? 'dup' : 'new', true);
+    });
+    clawGrid();
+  } finally { clawBusy = false; elClaw.classList.remove('busy'); cl('clawClose').disabled = false; clawPhase = 'idle'; clawSkip = false; }
+}
+async function clawGrab() {
+  const g = clawG, ch = CLAW.chute;
+  let best = null, bd = 99;
+  for (const c of g.caps) {                                            // nearest capsule with nothing on top of it
+    if (!c.visible || g.caps.some(o => o !== c && o.visible && o.position.y > c.position.y + 0.2 && Math.hypot(o.position.x - c.position.x, o.position.z - c.position.z) < 0.5)) continue;
+    const d = Math.hypot(c.position.x - CL.x, c.position.z - CL.z) - c.position.y * 0.1;
+    if (d < bd) { bd = d; best = c; }
+  }
+  g.mark.visible = false;
+  const x0 = CL.x, z0 = CL.z, y0 = CL.y, ty = best.position.y + 0.6, bx = best.position.x, bz = best.position.z;
+  await clawTw(900, k => { const e = clawEase(k); CL.x = x0 + (bx - x0) * e; CL.z = z0 + (bz - z0) * e; CL.y = y0 + (ty - y0) * e; });
+  await clawTw(350, k => { CL.open = 1 - k; });
+  CL.cap = best;
+  await clawTw(800, k => { CL.y = ty + (CLAW.top - ty) * clawEase(k); });
+  await clawTw(1100, k => { const e = clawEase(k); CL.x = bx + (ch.x - bx) * e; CL.z = bz + (ch.z - bz) * e; });
+  await clawTw(350, k => { CL.open = k; });
+  clawPlace(); CL.cap = null; clawPhase = 'deliver';                  // from here a tap or Space skips to the reveal
+  const fy = best.position.y;
+  await clawTw(450, k => { best.position.y = fy + (ch.y - 0.3 - fy) * k * k; });
+  best.visible = false; SFX.bump();                                  // down the chute, out of sight: a muffled clunk
+  return best;
+}
+// the capsule comes out of the hatch; the screen fades to the dark reveal, where it wobbles and glows (longer and harder for rarer tiers),
+// pops, and the skin stands where it was
+async function clawDeliver(cap, tier, reveal) {
+  const g = clawG, hx = CLAW.chute.x, [sec, amp] = CLAW.build[tier];
+  const cx = CL.x, cz = CL.z;
+  await Promise.all([clawTw(500, k => clawCam('m', 'h', k)), clawTw(500, k => { CL.x = cx * (1 - clawEase(k)); CL.z = cz * (1 - clawEase(k)); })]);
+  await clawTw(350, k => { g.door.rotation.x = clawEase(k) * 1.5; });
+  cap.visible = true; cap.scale.setScalar(1);
+  await clawTw(800, k => { const e = clawEase(k); cap.position.set(hx, -1.78 - 0.08 * e, 2.45 + 0.9 * e); cap.rotation.set(e * 6, 0, 0); });
+  clawGlow(tier); elClaw.classList.add('full', 'glow'); clawSize(); g.fade.visible = true;       // the canvas takes the whole screen and the cabinet fades out
+  await clawTw(300, k => { g.fadeM.opacity = k; });
+  g.fade.visible = false; clawView = 'reveal';
+  g.capR.geometry = cap.geometry; g.capR.visible = true; g.pivot.visible = false; g.capR.position.x = 0;
+  await clawTw(sec * 1000, k => {
+    const t = k * sec, a = amp * (0.3 + k) * 3, dark = tier === 'secret' && k < 0.45;
+    g.capR.position.x = Math.sin(t * 50) * a * 0.6; g.capR.rotation.set(Math.cos(t * 41) * a, 0, Math.sin(t * 37) * a * 2); g.capR.scale.setScalar(2 + k * 0.5);
+    g.capR.visible = !dark || Math.random() < 0.55;                        // Secret flickers before it glows
+    g.flash.visible = !dark; g.fm.opacity = k * 0.5; g.flash.scale.setScalar(2.6 + k * 1.2); g.rayM.opacity = dark ? 0 : k * 0.5;
+  });
+  g.capR.visible = false; reveal();
+  g.pivot.scale.setScalar(0.3);
+  await Promise.all([clawBurst(), clawTw(400, k => g.pivot.scale.setScalar(0.3 + 0.7 * k))]);
+}
+async function clawBurst() {                                           // the pop: sparkle cubes fly out, the glow ball swells, the rays flare
+  const g = clawG;
+  for (const b of g.bits) { b.v.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.2).normalize().multiplyScalar(2 + Math.random() * 3.5); b.m.visible = true; }
+  g.flash.visible = true;
+  await clawTw(900, k => {
+    for (const b of g.bits) { b.m.position.set(b.v.x * k, 0.3 + b.v.y * k - 1.2 * k * k, b.v.z * k); b.m.rotation.set(k * 6, k * 5, 0); b.m.scale.setScalar(2.2 * (1 - k)); }
+    g.flash.scale.setScalar(2.6 + k * 5); g.fm.opacity = (1 - k) * 0.8; g.rayM.opacity = 0.9 - 0.6 * k;
+  });
+  for (const b of g.bits) b.m.visible = false; g.flash.visible = false; g.fm.opacity = 1;
+}
+
+function clawShowPanel() {
+  const sk = lbLoad('skin'); clawEq = SKINS.some(s => s.id === sk) ? sk : 'spy';
+  elClaw.hidden = false; if (!clawG) clawBuild();
+  clawTab('claw'); clawSize(); clawToMachine(); clawCoinsShow(); clawGrid();
+  if (!clawLoopOn) { clawLoopOn = true; clawLast = performance.now(); requestAnimationFrame(clawFrame); }
+  try { cl('clawPull').focus({ preventScroll: true }); } catch (e) {}
+}
+function clawHide() { if (clawBusy) return; elClaw.hidden = true; clawKeys.clear(); clawStick.x = clawStick.y = 0; }
+cl('clawPull').textContent = 'Pull - ' + SKIN_COST;
+cl('clawOdds').textContent = Object.values(SKIN_TIERS).map(t => t.name + ' ' + t.odds + '%').join(' · ');
+cl('skinsBtn').addEventListener('click', e => { e.stopPropagation(); clawShowPanel(); });
+cl('clawClose').addEventListener('click', clawHide);
+cl('clawPull').addEventListener('click', clawPull);
+cl('clawGrab').addEventListener('click', () => { if (clawGrabNow) clawGrabNow(); });
+cl('clawEquip').addEventListener('click', () => { if (clawShown) clawEquip(clawShown); });
+cl('clawAgain').addEventListener('click', () => clawLeave(true));
+cl('clawDone').addEventListener('click', () => clawLeave(false));
+cl('clawTabC').addEventListener('click', () => clawTab('claw'));
+cl('clawTabL').addEventListener('click', () => clawTab('col'));
+cl('clawGrid').addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('.cell'); if (!b || clawBusy || b.disabled) return;
+  const s = SKINS.find(k => k.id === b.dataset.id); clawShow(s.id, s.tier ? 'Tap Equip to wear it' : 'Your starter skin', 'view');
+});
+// joystick: drag the orange ball
+const clawStickEl = cl('clawStick');
+const clawStickAt = e => { const r = clawStickEl.getBoundingClientRect(); clawStick.x = clawClamp((e.clientX - r.left - r.width / 2) / 26, -1, 1); clawStick.y = clawClamp((e.clientY - r.top - r.height / 2) / 26, -1, 1); };
+clawStickEl.addEventListener('pointerdown', e => { try { clawStickEl.setPointerCapture(e.pointerId); } catch (err) {} clawStickAt(e); });
+clawStickEl.addEventListener('pointermove', e => { if (e.buttons || e.pressure) clawStickAt(e); });
+for (const ev of ['pointerup', 'pointercancel']) clawStickEl.addEventListener(ev, () => { clawStick.x = clawStick.y = 0; });
+// drag the 3D skin to spin it
+const clawCv = cl('clawCv');
+clawCv.addEventListener('pointerdown', e => { if (clawPhase === 'deliver') { clawSkip = true; return; } if (clawView !== 'reveal') return; clawDrag = e.clientX; try { clawCv.setPointerCapture(e.pointerId); } catch (err) {} });
+clawCv.addEventListener('pointermove', e => { if (clawDrag === null) return; clawSpin += (e.clientX - clawDrag) * 0.015; clawDrag = e.clientX; });
+for (const ev of ['pointerup', 'pointercancel']) clawCv.addEventListener(ev, () => { clawDrag = null; });
+// while the panel is up the game never sees a key or a tap (the panel covers the screen; a tap on the dark edge closes it)
+for (const ev of ['pointerdown', 'pointerup']) elClaw.addEventListener(ev, e => { if (ev === 'pointerdown' && e.target === elClaw) clawHide(); e.stopPropagation(); });
+window.addEventListener('keydown', e => {
+  if (!clawOpen()) return;
+  SFX.unlock();
+  if (e.code === 'Escape') { e.preventDefault(); if (elClaw.classList.contains('full')) { if (clawView === 'reveal') clawLeave(false); } else clawHide(); }
+  else if (KEYV[e.code]) { e.preventDefault(); clawKeys.add(e.code); }
+  else if ((e.code === 'Space' || e.code === 'Enter') && clawPhase === 'steer') { e.preventDefault(); if (clawGrabNow) clawGrabNow(); }
+  else if ((e.code === 'Space' || e.code === 'Enter') && clawPhase === 'deliver') { e.preventDefault(); clawSkip = true; }
+  e.stopImmediatePropagation();
+}, true);
+window.addEventListener('keyup', e => { if (clawOpen()) clawKeys.delete(e.code); }, true);
+// wear the skin you picked last time (cosmetic: not re-checked against what you own)
+{ const sk = lbLoad('skin'); if (SKINS.some(s => s.id === sk)) applySkin(sk); }
 // ---------------- pause ----------------
 // P or the pause button during a run. While paused the game doesn't update at all (the clock stops, so trains,
 // timers and the king's magic all wait), the screen is dimmed, and nothing but Resume, P/Esc and mute does anything.
